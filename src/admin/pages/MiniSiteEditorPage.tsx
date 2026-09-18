@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { getMiniSiteDetail, patchMiniSite, MiniSiteApiError } from "../lib/minisitesApi";
-import { isValidSlugFormat } from "../../shared/reservedSlugs";
+import { getMiniSiteDetail, MiniSiteApiError } from "../lib/minisitesApi";
 import { useToast } from "../lib/toast";
 import { createEditorStore, EditorStoreProvider } from "../editor/editorStore";
+import { useAutosave, type SaveStatus } from "../editor/useAutosave";
 import { BasicInfoEditor } from "../editor/BasicInfoEditor";
 import { VisualIdentityEditor } from "../editor/VisualIdentityEditor";
 import { HeaderEditor } from "../editor/HeaderEditor";
@@ -17,8 +17,6 @@ import { LivePreview } from "../editor/LivePreview";
 import { FullPageSpinner } from "../components/FullPageSpinner";
 import { ArrowLeftIcon, CheckCircleIcon, EyeIcon, SaveIcon, SendIcon } from "../components/icons";
 
-type SaveStatus = "idle" | "saving" | "saved" | "error";
-
 export function MiniSiteEditorPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -27,10 +25,7 @@ export function MiniSiteEditorPage() {
   const [store] = useState(() => createEditorStore(id!));
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
-
-  const debounceRef = useRef<number | undefined>(undefined);
-  const skipFirstRef = useRef(true);
+  const { status: saveStatus, flushNow } = useAutosave(store, !loading && !loadError);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,58 +48,18 @@ export function MiniSiteEditorPage() {
     // Roda só quando `id` muda — `store` é estável (useState initializer).
   }, [id]);
 
-  async function flushSave() {
-    if (!store.getState().loaded) return;
-    const state = store.getState();
-    setSaveStatus("saving");
-    try {
-      await patchMiniSite(state.minisiteId, {
-        internalName: state.internalName,
-        niche: state.niche,
-        slug: isValidSlugFormat(state.slug) ? state.slug : undefined,
-        config: state.config,
-      });
-      setSaveStatus("saved");
-    } catch (err) {
-      setSaveStatus("error");
-      showToast(err instanceof MiniSiteApiError ? err.message : "Não foi possível salvar.", "error");
-    }
-  }
-
-  const internalName = store((s) => s.internalName);
-  const niche = store((s) => s.niche);
-  const slug = store((s) => s.slug);
-  const config = store((s) => s.config);
-
-  useEffect(() => {
-    if (loading || loadError) return;
-    if (skipFirstRef.current) {
-      skipFirstRef.current = false;
-      return;
-    }
-    window.clearTimeout(debounceRef.current);
-    debounceRef.current = window.setTimeout(() => {
-      flushSave();
-    }, 1000);
-    return () => window.clearTimeout(debounceRef.current);
-    // flushSave lê o estado mais atual via store.getState() — não precisa entrar como dependência.
-  }, [internalName, niche, slug, config, loading, loadError]);
-
   async function handleSaveDraft() {
-    window.clearTimeout(debounceRef.current);
-    await flushSave();
+    await flushNow();
     showToast("Rascunho salvo");
   }
 
   async function handlePreview() {
-    window.clearTimeout(debounceRef.current);
-    await flushSave();
+    await flushNow();
     window.open(`/${store.getState().slug}`, "_blank", "noopener,noreferrer");
   }
 
   async function handlePublish() {
-    window.clearTimeout(debounceRef.current);
-    await flushSave();
+    await flushNow();
     navigate(`/app/minisites/${id}/layout`);
   }
 

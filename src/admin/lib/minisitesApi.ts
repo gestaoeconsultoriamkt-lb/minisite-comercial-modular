@@ -115,6 +115,24 @@ export async function duplicateMiniSite(id: string): Promise<MiniSiteListItem> {
   return data.minisite;
 }
 
+export async function publishMiniSite(id: string): Promise<MiniSiteDetail> {
+  const response = await fetch(`/api/minisites/${id}/publish`, { method: "POST" });
+  const data = await parseJsonOrThrow<{ minisite: MiniSiteDetail }>(response);
+  return data.minisite;
+}
+
+export async function disableMiniSite(id: string): Promise<MiniSiteDetail> {
+  const response = await fetch(`/api/minisites/${id}/disable`, { method: "POST" });
+  const data = await parseJsonOrThrow<{ minisite: MiniSiteDetail }>(response);
+  return data.minisite;
+}
+
+export async function reactivateMiniSite(id: string): Promise<MiniSiteDetail> {
+  const response = await fetch(`/api/minisites/${id}/reactivate`, { method: "POST" });
+  const data = await parseJsonOrThrow<{ minisite: MiniSiteDetail }>(response);
+  return data.minisite;
+}
+
 export async function deleteMiniSite(id: string): Promise<void> {
   const response = await fetch(`/api/minisites/${id}`, { method: "DELETE" });
   await parseJsonOrThrow<{ status: string }>(response);

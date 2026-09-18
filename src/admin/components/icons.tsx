@@ -390,3 +390,40 @@ export function GripIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function ChevronRightIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="m9 6 6 6-6 6" />
+    </svg>
+  );
+}
+
+export function ListIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M9 6.5h11M9 12h11M9 17.5h11" />
+      <circle cx="4.2" cy="6.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="4.2" cy="12" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="4.2" cy="17.5" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function PowerIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 4v7" />
+      <path d="M7 6.3a7.5 7.5 0 1 0 10 0" />
+    </svg>
+  );
+}
+
+export function RotateIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4.5 12a7.5 7.5 0 0 1 13-5.1M19.5 12a7.5 7.5 0 0 1-13 5.1" />
+      <path d="M17 4.5v3.5h-3.5M7 19.5V16h3.5" />
+    </svg>
+  );
+}

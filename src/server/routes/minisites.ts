@@ -6,6 +6,7 @@ import { requireApiAuth } from "../middleware/authGuards";
 import { createMiniSiteInputSchema, patchMiniSiteInputSchema } from "../../shared/schemas/minisiteApi";
 import { createDefaultMiniSiteConfig, migrateMiniSiteConfig, serializeMiniSiteConfig } from "../../shared/schemas/migrateMiniSiteConfig";
 import { isReservedSlug, isValidSlugFormat } from "../../shared/reservedSlugs";
+import { computePublishChecklist } from "../../shared/publishability";
 import type { AppEnv } from "../types";
 
 export const minisitesRoutes = new Hono<AppEnv>();
@@ -214,6 +215,58 @@ minisitesRoutes.post("/minisites/:id/duplicate", async (c) => {
 
   await db.insert(minisites).values(row);
   return c.json({ minisite: toListItem(row as MiniSiteRow) }, 201);
+});
+
+// POST /api/minisites/:id/publish — draft/disabled -> active; já ativo = "atualizar publicação" (no-op de status).
+minisitesRoutes.post("/minisites/:id/publish", async (c) => {
+  const db = getDb(c.env);
+  const owned = await findOwned(db, c.req.param("id"), c.get("userId"));
+  if (!owned) return c.json({ code: "NOT_FOUND", message: "MiniSite não encontrado." }, 404);
+
+  const { config } = migrateMiniSiteConfig(owned.configJson, owned.configVersion);
+  const checklist = computePublishChecklist({ internalName: owned.internalName, slug: owned.slug, config });
+  if (!checklist.canPublish) {
+    return c.json(
+      { code: "CHECKLIST_BLOCKED", message: `Não é possível publicar: ${checklist.blockers.join(", ")}.` },
+      400,
+    );
+  }
+
+  const now = new Date().toISOString();
+  const patch: Partial<typeof minisites.$inferInsert> = { status: "active", updatedAt: now };
+  if (!owned.publishedAt) patch.publishedAt = now; // preserva published_at original em republicações
+
+  await db.update(minisites).set(patch).where(eq(minisites.id, owned.id));
+  const updated = await findOwned(db, owned.id, c.get("userId"));
+  return c.json({ minisite: toDetail(updated!) });
+});
+
+// POST /api/minisites/:id/disable — active -> disabled. Não apaga dado nem published_at.
+minisitesRoutes.post("/minisites/:id/disable", async (c) => {
+  const db = getDb(c.env);
+  const owned = await findOwned(db, c.req.param("id"), c.get("userId"));
+  if (!owned) return c.json({ code: "NOT_FOUND", message: "MiniSite não encontrado." }, 404);
+
+  await db
+    .update(minisites)
+    .set({ status: "disabled", updatedAt: new Date().toISOString() })
+    .where(eq(minisites.id, owned.id));
+  const updated = await findOwned(db, owned.id, c.get("userId"));
+  return c.json({ minisite: toDetail(updated!) });
+});
+
+// POST /api/minisites/:id/reactivate — disabled -> active. Mantém published_at original.
+minisitesRoutes.post("/minisites/:id/reactivate", async (c) => {
+  const db = getDb(c.env);
+  const owned = await findOwned(db, c.req.param("id"), c.get("userId"));
+  if (!owned) return c.json({ code: "NOT_FOUND", message: "MiniSite não encontrado." }, 404);
+
+  await db
+    .update(minisites)
+    .set({ status: "active", updatedAt: new Date().toISOString() })
+    .where(eq(minisites.id, owned.id));
+  const updated = await findOwned(db, owned.id, c.get("userId"));
+  return c.json({ minisite: toDetail(updated!) });
 });
 
 // DELETE /api/minisites/:id
