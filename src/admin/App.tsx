@@ -6,47 +6,54 @@ import { SignUpPage } from "./pages/SignUpPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { AppShell } from "./pages/AppShell";
-import { MiniSitesPlaceholderPage } from "./pages/MiniSitesPlaceholderPage";
+import { MiniSitesPage } from "./pages/MiniSitesPage";
+import { MiniSiteEditorPlaceholderPage } from "./pages/MiniSiteEditorPlaceholderPage";
+import { MediaPlaceholderPage } from "./pages/MediaPlaceholderPage";
 import { SettingsPlaceholderPage } from "./pages/SettingsPlaceholderPage";
+import { ToastProvider } from "./lib/toast";
 
 export function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route
-          path="/login"
-          element={
-            <RequireGuest>
-              <LoginPage />
-            </RequireGuest>
-          }
-        />
-        <Route
-          path="/cadastro"
-          element={
-            <RequireGuest>
-              <SignUpPage />
-            </RequireGuest>
-          }
-        />
-        <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
-        <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              <RequireGuest>
+                <LoginPage />
+              </RequireGuest>
+            }
+          />
+          <Route
+            path="/cadastro"
+            element={
+              <RequireGuest>
+                <SignUpPage />
+              </RequireGuest>
+            }
+          />
+          <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+          <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
 
-        <Route
-          path="/app"
-          element={
-            <RequireAuth>
-              <AppShell />
-            </RequireAuth>
-          }
-        >
-          <Route index element={<Navigate to="minisites" replace />} />
-          <Route path="minisites" element={<MiniSitesPlaceholderPage />} />
-          <Route path="configuracoes" element={<SettingsPlaceholderPage />} />
-        </Route>
+          <Route
+            path="/app"
+            element={
+              <RequireAuth>
+                <AppShell />
+              </RequireAuth>
+            }
+          >
+            <Route index element={<Navigate to="minisites" replace />} />
+            <Route path="minisites" element={<MiniSitesPage />} />
+            <Route path="minisites/:id/editar" element={<MiniSiteEditorPlaceholderPage />} />
+            <Route path="midia" element={<MediaPlaceholderPage />} />
+            <Route path="configuracoes" element={<SettingsPlaceholderPage />} />
+          </Route>
 
-        <Route path="*" element={<Navigate to="/app/minisites" replace />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="*" element={<Navigate to="/app/minisites" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </ToastProvider>
   );
 }

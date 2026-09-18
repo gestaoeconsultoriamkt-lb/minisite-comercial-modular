@@ -20,4 +20,6 @@ export interface Bindings {
 
 export interface AppEnv {
   Bindings: Bindings;
+  /** `userId` é setado pelo middleware `requireApiAuth` (ver middleware/authGuards.ts). */
+  Variables: { userId: string };
 }

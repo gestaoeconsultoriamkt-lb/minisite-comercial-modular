@@ -31,6 +31,16 @@ export async function requireBootstrapOpen(c: Context<AppEnv>, next: Next) {
   return next();
 }
 
+/** `/api/minisites/*`: exige sessão válida; disponibiliza `userId` via `c.get("userId")`. */
+export async function requireApiAuth(c: Context<AppEnv>, next: Next) {
+  const session = await getSession(c.env, c.req.raw);
+  if (!session) {
+    return c.json({ code: "UNAUTHORIZED", message: "Sessão inválida ou expirada." }, 401);
+  }
+  c.set("userId", session.user.id);
+  return next();
+}
+
 export function serveAssets(c: Context<AppEnv>) {
   return c.env.ASSETS.fetch(c.req.raw);
 }

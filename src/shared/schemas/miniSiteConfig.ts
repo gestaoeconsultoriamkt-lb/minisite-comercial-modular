@@ -106,6 +106,8 @@ export const appearanceSchema = z
 export const headerSchema = z
   .object({
     variant: z.enum(["highlight", "compact"]).default("highlight"),
+    /** Nome exibido publicamente; cai para `internal_name` quando ausente. */
+    displayName: z.string().optional(),
     headline: z.string().optional(),
     shortDescription: z.string().optional(),
   })

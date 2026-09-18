@@ -3,6 +3,7 @@ import { authRoutes } from "./routes/auth";
 import { bootstrapRoutes } from "./routes/bootstrap";
 import { healthRoutes } from "./routes/health";
 import { mediaRoutes } from "./routes/media";
+import { minisitesRoutes } from "./routes/minisites";
 import { publicRoutes } from "./routes/public";
 import { requireAuth, requireBootstrapOpen, redirectIfAuthenticated, serveAssets } from "./middleware/authGuards";
 import { getSession } from "./auth/session";
@@ -31,6 +32,7 @@ const app = new Hono<AppEnv>();
 app.route("/api", healthRoutes);
 app.route("/api", authRoutes);
 app.route("/api", bootstrapRoutes);
+app.route("/api", minisitesRoutes);
 app.route("/", mediaRoutes);
 
 app.get("/assets/*", serveAssets);
