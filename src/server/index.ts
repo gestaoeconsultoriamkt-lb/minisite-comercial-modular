@@ -5,6 +5,7 @@ import { healthRoutes } from "./routes/health";
 import { mediaRoutes } from "./routes/media";
 import { minisitesRoutes } from "./routes/minisites";
 import { publicRoutes } from "./routes/public";
+import { uploadsRoutes } from "./routes/uploads";
 import { requireAuth, requireBootstrapOpen, redirectIfAuthenticated, serveAssets } from "./middleware/authGuards";
 import { getSession } from "./auth/session";
 import type { AppEnv } from "./types";
@@ -33,6 +34,7 @@ app.route("/api", healthRoutes);
 app.route("/api", authRoutes);
 app.route("/api", bootstrapRoutes);
 app.route("/api", minisitesRoutes);
+app.route("/api", uploadsRoutes);
 app.route("/", mediaRoutes);
 
 app.get("/assets/*", serveAssets);

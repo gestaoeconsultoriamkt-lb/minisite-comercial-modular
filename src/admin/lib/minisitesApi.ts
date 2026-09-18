@@ -1,3 +1,5 @@
+import type { MiniSiteConfig } from "../../shared/schemas/miniSiteConfig";
+
 export type MiniSiteStatus = "draft" | "active" | "disabled";
 
 export interface MiniSiteListItem {
@@ -22,6 +24,25 @@ export interface CreateMiniSiteInput {
   niche: string;
   slug: string;
   displayName?: string;
+}
+
+export interface MiniSiteDetail {
+  id: string;
+  slug: string;
+  internalName: string;
+  niche: string | null;
+  status: MiniSiteStatus;
+  config: MiniSiteConfig;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+}
+
+export interface PatchMiniSiteInput {
+  internalName?: string;
+  niche?: string;
+  slug?: string;
+  config?: MiniSiteConfig;
 }
 
 export class MiniSiteApiError extends Error {
@@ -51,10 +72,31 @@ export async function listMiniSites(): Promise<MiniSiteListItem[]> {
   return data.minisites;
 }
 
-export async function getMiniSite(id: string): Promise<MiniSiteListItem> {
+export async function getMiniSiteDetail(id: string): Promise<MiniSiteDetail> {
   const response = await fetch(`/api/minisites/${id}`);
-  const data = await parseJsonOrThrow<{ minisite: MiniSiteListItem }>(response);
+  const data = await parseJsonOrThrow<{ minisite: MiniSiteDetail }>(response);
   return data.minisite;
+}
+
+export async function patchMiniSite(id: string, input: PatchMiniSiteInput): Promise<MiniSiteDetail> {
+  const response = await fetch(`/api/minisites/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(input),
+  });
+  const data = await parseJsonOrThrow<{ minisite: MiniSiteDetail }>(response);
+  return data.minisite;
+}
+
+export type UploadPurpose = "logo" | "cover" | "background" | "gallery" | "card" | "section";
+
+export async function uploadMedia(minisiteId: string, purpose: UploadPurpose, file: Blob): Promise<{ key: string }> {
+  const formData = new FormData();
+  formData.append("minisiteId", minisiteId);
+  formData.append("purpose", purpose);
+  formData.append("file", file);
+  const response = await fetch("/api/uploads", { method: "POST", body: formData });
+  return parseJsonOrThrow<{ key: string }>(response);
 }
 
 export async function createMiniSite(input: CreateMiniSiteInput): Promise<MiniSiteListItem> {

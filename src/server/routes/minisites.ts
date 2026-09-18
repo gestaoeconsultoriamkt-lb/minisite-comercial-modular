@@ -3,7 +3,7 @@ import { and, desc, eq, ne } from "drizzle-orm";
 import { getDb } from "../db";
 import { minisites, type MiniSiteRow } from "../db/schema";
 import { requireApiAuth } from "../middleware/authGuards";
-import { createMiniSiteInputSchema } from "../../shared/schemas/minisiteApi";
+import { createMiniSiteInputSchema, patchMiniSiteInputSchema } from "../../shared/schemas/minisiteApi";
 import { createDefaultMiniSiteConfig, migrateMiniSiteConfig, serializeMiniSiteConfig } from "../../shared/schemas/migrateMiniSiteConfig";
 import { isReservedSlug, isValidSlugFormat } from "../../shared/reservedSlugs";
 import type { AppEnv } from "../types";
@@ -32,6 +32,21 @@ function toListItem(row: MiniSiteRow) {
   };
 }
 
+function toDetail(row: MiniSiteRow) {
+  const { config } = migrateMiniSiteConfig(row.configJson, row.configVersion);
+  return {
+    id: row.id,
+    slug: row.slug,
+    internalName: row.internalName,
+    niche: row.niche,
+    status: row.status,
+    config,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+    publishedAt: row.publishedAt,
+  };
+}
+
 async function slugExists(db: ReturnType<typeof getDb>, slug: string, excludeId?: string) {
   const rows = await db
     .select({ id: minisites.id })
@@ -51,7 +66,7 @@ async function generateUniqueSlug(db: ReturnType<typeof getDb>, baseSlug: string
   return candidate;
 }
 
-function findOwned(db: ReturnType<typeof getDb>, id: string, ownerUserId: string) {
+export function findOwned(db: ReturnType<typeof getDb>, id: string, ownerUserId: string) {
   return db
     .select()
     .from(minisites)
@@ -72,12 +87,57 @@ minisitesRoutes.get("/minisites", async (c) => {
   return c.json({ minisites: rows.map(toListItem) });
 });
 
-// GET /api/minisites/:id — usado pela página placeholder do editor.
+// GET /api/minisites/:id — detalhe completo (com config), usado pelo Editor.
 minisitesRoutes.get("/minisites/:id", async (c) => {
   const db = getDb(c.env);
   const row = await findOwned(db, c.req.param("id"), c.get("userId"));
   if (!row) return c.json({ code: "NOT_FOUND", message: "MiniSite não encontrado." }, 404);
-  return c.json({ minisite: toListItem(row) });
+  return c.json({ minisite: toDetail(row) });
+});
+
+// PATCH /api/minisites/:id — autosave/edição. Só atualiza os campos enviados.
+minisitesRoutes.patch("/minisites/:id", async (c) => {
+  const db = getDb(c.env);
+  const owned = await findOwned(db, c.req.param("id"), c.get("userId"));
+  if (!owned) return c.json({ code: "NOT_FOUND", message: "MiniSite não encontrado." }, 404);
+
+  const body = await c.req.json().catch(() => null);
+  const parsed = patchMiniSiteInputSchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json({ code: "INVALID_INPUT", message: parsed.error.issues[0]?.message ?? "Dados inválidos." }, 400);
+  }
+  const { internalName, niche, slug, config } = parsed.data;
+
+  const patch: Partial<typeof minisites.$inferInsert> = { updatedAt: new Date().toISOString() };
+  if (internalName !== undefined) patch.internalName = internalName;
+  if (niche !== undefined) patch.niche = niche;
+  if (config !== undefined) {
+    const serialized = serializeMiniSiteConfig(config);
+    patch.configJson = serialized.configJson;
+    patch.configVersion = serialized.configVersion;
+  }
+
+  if (slug !== undefined && slug !== owned.slug) {
+    if (!isValidSlugFormat(slug) || isReservedSlug(slug)) {
+      return c.json({ code: "SLUG_RESERVED", message: "Este endereço não pode ser usado. Escolha outro." }, 400);
+    }
+    if (await slugExists(db, slug, owned.id)) {
+      return c.json({ code: "SLUG_TAKEN", message: "Esse endereço já está em uso. Escolha outro." }, 409);
+    }
+    patch.slug = slug;
+  }
+
+  try {
+    await db.update(minisites).set(patch).where(eq(minisites.id, owned.id));
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("UNIQUE")) {
+      return c.json({ code: "SLUG_TAKEN", message: "Esse endereço já está em uso. Escolha outro." }, 409);
+    }
+    throw error;
+  }
+
+  const updated = await findOwned(db, owned.id, c.get("userId"));
+  return c.json({ minisite: toDetail(updated!) });
 });
 
 // POST /api/minisites — cria um novo MiniSite em rascunho.

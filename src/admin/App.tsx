@@ -7,7 +7,8 @@ import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./pages/ResetPasswordPage";
 import { AppShell } from "./pages/AppShell";
 import { MiniSitesPage } from "./pages/MiniSitesPage";
-import { MiniSiteEditorPlaceholderPage } from "./pages/MiniSiteEditorPlaceholderPage";
+import { MiniSiteEditorPage } from "./pages/MiniSiteEditorPage";
+import { LayoutPlaceholderPage } from "./pages/LayoutPlaceholderPage";
 import { MediaPlaceholderPage } from "./pages/MediaPlaceholderPage";
 import { SettingsPlaceholderPage } from "./pages/SettingsPlaceholderPage";
 import { ToastProvider } from "./lib/toast";
@@ -46,7 +47,8 @@ export function App() {
           >
             <Route index element={<Navigate to="minisites" replace />} />
             <Route path="minisites" element={<MiniSitesPage />} />
-            <Route path="minisites/:id/editar" element={<MiniSiteEditorPlaceholderPage />} />
+            <Route path="minisites/:id/editar" element={<MiniSiteEditorPage />} />
+            <Route path="minisites/:id/layout" element={<LayoutPlaceholderPage />} />
             <Route path="midia" element={<MediaPlaceholderPage />} />
             <Route path="configuracoes" element={<SettingsPlaceholderPage />} />
           </Route>

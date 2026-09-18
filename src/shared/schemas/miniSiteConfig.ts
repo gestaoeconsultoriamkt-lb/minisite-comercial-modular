@@ -31,12 +31,15 @@ export const buttonSchema = z.object({
   position: z.number().int().nonnegative(),
 });
 
+export const cardCtaTypeSchema = z.enum(["whatsapp", "url"]);
+
 export const cardSchema = z.object({
   id: z.string(),
   title: z.string().min(1),
   description: z.string().optional(),
   price: z.number().nonnegative().optional(),
   imageKey: z.string().optional(),
+  ctaType: cardCtaTypeSchema.optional(),
   ctaLabel: z.string().optional(),
   ctaTarget: z.string().optional(),
   whatsappMessage: z.string().optional(),
@@ -46,6 +49,10 @@ export const cardSchema = z.object({
 export const sectionSchema = z.object({
   id: z.string(),
   title: z.string().min(1),
+  imageKey: z.string().optional(),
+  /** Controla a exibição de preço/CTA para os itens desta seção; o dado do item é preservado de todo modo. */
+  showPrices: z.boolean().default(true),
+  showCta: z.boolean().default(true),
   position: z.number().int().nonnegative(),
   cards: z.array(cardSchema).default([]),
 });
@@ -85,10 +92,15 @@ export const wifiSchema = z
 
 export const locationSchema = z
   .object({
-    address: z.string().min(1),
+    address: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    /** Link "Abrir no Google Maps" — cole o link normal do Google Maps. */
+    mapsUrl: z.string().optional(),
+    /** URL de embed (iframe) opcional, se disponível. */
+    mapEmbedUrl: z.string().optional(),
     lat: z.number().optional(),
     lng: z.number().optional(),
-    mapEmbedUrl: z.url().optional(),
   })
   .optional();
 
@@ -102,6 +114,12 @@ export const appearanceSchema = z
     colorButtonText: hexColor.optional(),
   })
   .default({});
+
+export const footerSchema = z
+  .object({
+    showSocialIcons: z.boolean().default(true),
+  })
+  .default({ showSocialIcons: true });
 
 export const headerSchema = z
   .object({
@@ -127,6 +145,7 @@ export const miniSiteConfigSchema = z.object({
   location: locationSchema,
   gallery: z.array(galleryImageSchema).default([]),
   sections: z.array(sectionSchema).default([]),
+  footer: footerSchema,
   moduleOrder: z.array(z.string()).default([]),
 });
 
@@ -134,3 +153,8 @@ export type MiniSiteConfig = z.infer<typeof miniSiteConfigSchema>;
 export type MiniSiteButton = z.infer<typeof buttonSchema>;
 export type MiniSiteSection = z.infer<typeof sectionSchema>;
 export type MiniSiteCard = z.infer<typeof cardSchema>;
+export type MiniSiteLocation = NonNullable<z.infer<typeof locationSchema>>;
+export type MiniSitePix = NonNullable<z.infer<typeof pixSchema>>;
+export type MiniSiteWifi = NonNullable<z.infer<typeof wifiSchema>>;
+export type MiniSiteSocialLinks = z.infer<typeof socialLinksSchema>;
+export type MiniSiteButtonType = z.infer<typeof buttonTypeSchema>;

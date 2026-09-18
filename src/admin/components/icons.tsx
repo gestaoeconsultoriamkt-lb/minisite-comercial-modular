@@ -284,3 +284,109 @@ export function WindowIcon(props: IconProps) {
     </svg>
   );
 }
+
+export function ClipboardIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="5" y="4.5" width="14" height="16" rx="2" />
+      <rect x="9" y="3" width="6" height="3" rx="1" />
+      <path d="M8.5 11h7M8.5 14.5h7M8.5 18h4" />
+    </svg>
+  );
+}
+
+export function PaletteIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 3.5a8.5 8.5 0 1 0 0 17c1 0 1.6-.8 1.6-1.6 0-.4-.2-.8-.4-1.1-.2-.3-.4-.6-.4-1 0-.8.6-1.4 1.4-1.4h1.7a4 4 0 0 0 4.1-4.1c0-4.3-3.9-7.8-8-7.8Z" />
+      <circle cx="7.5" cy="11" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="10" cy="7.5" r="1.1" fill="currentColor" stroke="none" />
+      <circle cx="14.5" cy="7.5" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+export function TypeIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M5 6.5h14M12 6.5V18" />
+      <path d="M8.5 18h7" />
+    </svg>
+  );
+}
+
+export function ZapIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12.5 3 5 13.5h5.5L11 21l7.5-10.5H13Z" />
+    </svg>
+  );
+}
+
+export function UsersIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="9" cy="8.5" r="3" />
+      <path d="M3.5 19c.6-3.2 3-5 5.5-5s4.9 1.8 5.5 5" />
+      <path d="M15.5 6.5a2.8 2.8 0 0 1 0 5.4M18.5 19c-.3-2-1.3-3.5-2.8-4.4" />
+    </svg>
+  );
+}
+
+export function MapPinIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 21.5S5 15 5 10a7 7 0 1 1 14 0c0 5-7 11.5-7 11.5Z" />
+      <circle cx="12" cy="10" r="2.5" />
+    </svg>
+  );
+}
+
+export function ShareIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="18" cy="5.5" r="2.25" />
+      <circle cx="6" cy="12" r="2.25" />
+      <circle cx="18" cy="18.5" r="2.25" />
+      <path d="m8 10.8 8-4.2M8 13.2l8 4.2" />
+    </svg>
+  );
+}
+
+export function SaveIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M5 4.5h11l3 3v12a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5.5a1 1 0 0 1 1-1Z" />
+      <path d="M8 4.5V9h7V4.5M7.5 20v-6h9v6" />
+    </svg>
+  );
+}
+
+export function ArrowUpIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 19V5M6 11l6-6 6 6" />
+    </svg>
+  );
+}
+
+export function ArrowDownIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M12 5v14M6 13l6 6 6-6" />
+    </svg>
+  );
+}
+
+export function GripIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="9" cy="6" r="1" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="9" cy="18" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="6" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="12" r="1" fill="currentColor" stroke="none" />
+      <circle cx="15" cy="18" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
