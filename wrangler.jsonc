@@ -22,8 +22,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "minisite-comercial-modular",
-      "database_id": "REPLACE_WITH_REAL_D1_DATABASE_ID",
+      "database_name": "db-minisite-modular",
+      "database_id": "b65db2ab-3649-4a48-ad99-37da85cbec3e",
       "migrations_dir": "./drizzle/migrations"
     }
   ],
@@ -33,7 +33,7 @@
   "r2_buckets": [
     {
       "binding": "MEDIA_BUCKET",
-      "bucket_name": "minisite-comercial-modular-media"
+      "bucket_name": "minisite-media"
     }
   ],
 
