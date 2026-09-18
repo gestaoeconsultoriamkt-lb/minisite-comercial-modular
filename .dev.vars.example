@@ -1,0 +1,9 @@
+# Copie este arquivo para ".dev.vars" (git-ignorado) e preencha localmente.
+# Em produção, use "wrangler secret put <NOME>" — nunca commitar valores reais.
+
+BETTER_AUTH_SECRET=
+BETTER_AUTH_URL=http://localhost:5173
+
+BREVO_API_KEY=
+BREVO_SENDER_EMAIL=
+BREVO_SENDER_NAME=MiniSite

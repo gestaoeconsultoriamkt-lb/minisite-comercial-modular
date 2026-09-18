@@ -1,0 +1,43 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "minisite-comercial-modular",
+  "compatibility_date": "2026-09-18",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./src/server/index.ts",
+
+  // Servidos pelo Worker (assets do build do admin ficam em dist/client).
+  // run_worker_first garante que TODO request passa pelo Hono primeiro,
+  // que decide o que delega para ASSETS (/app/*) e o que trata ele mesmo
+  // (/api/*, /media/*, /:slug).
+  "assets": {
+    "directory": "./dist/client",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+
+  // ⚠️ Recurso a criar manualmente: `npx wrangler d1 create minisite-comercial-modular`
+  // e substituir "database_id" abaixo pelo ID real retornado. Sem login/D1 real,
+  // o dev local roda com um banco SQLite emulado automaticamente (não requer este ID).
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "minisite-comercial-modular",
+      "database_id": "REPLACE_WITH_REAL_D1_DATABASE_ID",
+      "migrations_dir": "./drizzle/migrations"
+    }
+  ],
+
+  // ⚠️ Recurso a criar manualmente: `npx wrangler r2 bucket create minisite-comercial-modular-media`.
+  // Em dev local, o binding é emulado sem precisar do bucket real existir na conta.
+  "r2_buckets": [
+    {
+      "binding": "MEDIA_BUCKET",
+      "bucket_name": "minisite-comercial-modular-media"
+    }
+  ],
+
+  "vars": {
+    "APP_ENV": "development"
+  }
+}
