@@ -18,8 +18,14 @@ authRoutes.on(["GET", "POST"], "/auth/*", async (c) => {
   if (isSignUpRequest) {
     const db = getDb(c.env);
     if (await hasAnyUser(db)) {
+      // Mesmo shape { code, message } dos erros do Better Auth, para que o
+      // client (better-fetch) e translateAuthError() no admin tratem este
+      // 403 igual a qualquer outro erro de auth.
       return c.json(
-        { error: "Cadastro público desabilitado: já existe um administrador cadastrado." },
+        {
+          code: "SIGNUP_DISABLED",
+          message: "Cadastro público desabilitado: já existe um administrador cadastrado.",
+        },
         403,
       );
     }

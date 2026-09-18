@@ -1,34 +1,52 @@
-import { useEffect, useState } from "react";
-import { MiniSiteRenderer } from "../shared/renderer";
-import { createDefaultMiniSiteConfig } from "../shared/schemas/migrateMiniSiteConfig";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { RequireAuth } from "./components/RequireAuth";
+import { RequireGuest } from "./components/RequireGuest";
+import { LoginPage } from "./pages/LoginPage";
+import { SignUpPage } from "./pages/SignUpPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "./pages/ResetPasswordPage";
+import { AppShell } from "./pages/AppShell";
+import { MiniSitesPlaceholderPage } from "./pages/MiniSitesPlaceholderPage";
+import { SettingsPlaceholderPage } from "./pages/SettingsPlaceholderPage";
 
-type HealthStatus = "checking" | "ok" | "error";
-
-/**
- * Entrypoint mínimo do admin — só existe para validar o build/execução do
- * Vite + React nesta fase, e provar que `shared/renderer` também roda no
- * client (mesmo componente usado depois no preview real do editor).
- * Telas 1–4 são implementadas nas fases seguintes.
- */
 export function App() {
-  const [health, setHealth] = useState<HealthStatus>("checking");
-
-  useEffect(() => {
-    fetch("/api/health")
-      .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
-      .then(() => setHealth("ok"))
-      .catch(() => setHealth("error"));
-  }, []);
-
   return (
-    <main style={{ fontFamily: "system-ui, sans-serif", padding: "2rem" }}>
-      <h1>MiniSite Comercial Modular</h1>
-      <p>Fase 0 — fundação técnica.</p>
-      <p>Status da API (/api/health): {health}</p>
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/login"
+          element={
+            <RequireGuest>
+              <LoginPage />
+            </RequireGuest>
+          }
+        />
+        <Route
+          path="/cadastro"
+          element={
+            <RequireGuest>
+              <SignUpPage />
+            </RequireGuest>
+          }
+        />
+        <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
+        <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
 
-      <hr />
-      <p>Spike do renderer compartilhado (mesmo componente do SSR público):</p>
-      <MiniSiteRenderer displayName="Preview de exemplo" config={createDefaultMiniSiteConfig()} />
-    </main>
+        <Route
+          path="/app"
+          element={
+            <RequireAuth>
+              <AppShell />
+            </RequireAuth>
+          }
+        >
+          <Route index element={<Navigate to="minisites" replace />} />
+          <Route path="minisites" element={<MiniSitesPlaceholderPage />} />
+          <Route path="configuracoes" element={<SettingsPlaceholderPage />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/app/minisites" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
