@@ -64,14 +64,21 @@ export const galleryImageSchema = z.object({
   alt: z.string().optional(),
 });
 
+/**
+ * Guarda o valor bruto digitado (@handle, domínio sem protocolo ou URL
+ * completa) — não força `z.url()` porque o campo aceita handle puro
+ * (ex.: "@leandrobertholini"), que não é uma URL válida por si só. A
+ * normalização/resolução para uma URL absoluta acontece só no ponto de
+ * uso (ver src/shared/socialLinks.ts), igual ao padrão dos botões de ação.
+ */
 export const socialLinksSchema = z
   .object({
-    instagram: z.url().optional(),
-    facebook: z.url().optional(),
-    tiktok: z.url().optional(),
-    kwai: z.url().optional(),
-    youtube: z.url().optional(),
-    linkedin: z.url().optional(),
+    instagram: z.string().optional(),
+    facebook: z.string().optional(),
+    tiktok: z.string().optional(),
+    kwai: z.string().optional(),
+    youtube: z.string().optional(),
+    linkedin: z.string().optional(),
   })
   .default({});
 
@@ -111,6 +118,8 @@ export const appearanceSchema = z
     backgroundKey: z.string().optional(),
     colorPrimary: hexColor.optional(),
     colorSecondary: hexColor.optional(),
+    /** Fundo de TODOS os botões (ação e redes sociais) — visual único da marca. */
+    colorButtonBackground: hexColor.optional(),
     colorButtonText: hexColor.optional(),
   })
   .default({});

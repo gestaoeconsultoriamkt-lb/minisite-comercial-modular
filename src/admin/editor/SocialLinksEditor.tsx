@@ -23,7 +23,11 @@ export function SocialLinksEditor() {
   }
 
   return (
-    <EditorSection icon={<UsersIcon className="h-5 w-5" />} title="Redes sociais" subtitle="Informe suas redes sociais para aparecer no seu MiniSite.">
+    <EditorSection
+      icon={<UsersIcon className="h-5 w-5" />}
+      title="Redes sociais"
+      subtitle="Cole o link completo ou digite só o @perfil — aparecem como ícones no rodapé e como botões próprios no corpo do MiniSite."
+    >
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         {SOCIAL_FIELDS.map(({ key, label, placeholder }) => {
           const Icon = SOCIAL_ICONS[key];

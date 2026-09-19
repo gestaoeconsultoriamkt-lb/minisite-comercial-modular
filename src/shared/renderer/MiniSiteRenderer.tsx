@@ -2,9 +2,11 @@ import type { ReactNode } from "react";
 import type { MiniSiteConfig } from "../schemas/miniSiteConfig";
 import { getAssetUrl } from "../assetUrl";
 import { SOCIAL_ICONS } from "../icons";
+import { getFilledSocialEntries } from "../socialLinks";
 import { getOrderedModules, type ModuleKey } from "../moduleOrder";
 import { GallerySection } from "./GallerySection";
 import { ButtonsSection } from "./ButtonsSection";
+import { SocialButtonsSection } from "./SocialButtonsSection";
 import { CatalogSection } from "./CatalogSection";
 import { LocationSection } from "./LocationSection";
 
@@ -16,6 +18,7 @@ export interface MiniSiteRendererProps {
 const MODULE_COMPONENTS: Record<ModuleKey, (config: MiniSiteConfig) => ReactNode> = {
   gallery: (config) => <GallerySection config={config} />,
   actionButtons: (config) => <ButtonsSection config={config} />,
+  socialButtons: (config) => <SocialButtonsSection config={config} />,
   catalog: (config) => <CatalogSection config={config} />,
   location: (config) => <LocationSection config={config} />,
 };
@@ -34,9 +37,10 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
   const { appearance, header, footer } = config;
   const isCompact = header.variant === "compact";
 
-  const socialEntries = (Object.keys(SOCIAL_ICONS) as (keyof typeof SOCIAL_ICONS)[])
-    .map((platform) => ({ platform, url: config.socialLinks[platform] }))
-    .filter((entry): entry is { platform: keyof typeof SOCIAL_ICONS; url: string } => Boolean(entry.url));
+  // Mesma resolução @handle/domínio/URL completa usada pelos botões de
+  // redes sociais no corpo da página — rodapé e corpo nunca discordam
+  // sobre o que "conta" como preenchido nem sobre o destino do link.
+  const socialEntries = getFilledSocialEntries(config.socialLinks);
 
   // Fundo da página: só usa a imagem de fundo dedicada (`backgroundKey`).
   // A capa NUNCA assume esse papel por conta própria — ela é usada de
@@ -92,10 +96,10 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
 
           {footer.showSocialIcons && socialEntries.length > 0 ? (
             <div className="mt-8 flex items-center gap-4">
-              {socialEntries.map(({ platform, url }) => {
+              {socialEntries.map(({ platform, href }) => {
                 const Icon = SOCIAL_ICONS[platform];
                 return (
-                  <a key={platform} href={url} target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-white">
+                  <a key={platform} href={href} target="_blank" rel="noopener noreferrer" className="text-white/80 hover:text-white">
                     <Icon className="h-5 w-5" />
                   </a>
                 );

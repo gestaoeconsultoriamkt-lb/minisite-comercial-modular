@@ -1,5 +1,6 @@
 import type { MiniSiteConfig } from "../schemas/miniSiteConfig";
 import { ExternalLinkIcon, MapPinIcon } from "../icons";
+import { normalizeUrl } from "../urls";
 
 function googleMapsSearchUrl(query: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
@@ -10,7 +11,10 @@ export function LocationSection({ config }: { config: MiniSiteConfig }) {
   const hasLocation = Boolean(location?.address || location?.mapsUrl);
   if (!hasLocation) return null;
 
-  const mapsHref = location?.mapsUrl || (location?.address ? googleMapsSearchUrl(location.address) : null);
+  // Mesma normalização dos demais links baseados em URL — sem protocolo,
+  // o navegador trataria como caminho relativo do próprio app/SSR.
+  const mapsHref = location?.mapsUrl ? normalizeUrl(location.mapsUrl) : location?.address ? googleMapsSearchUrl(location.address) : null;
+  const mapEmbedSrc = location?.mapEmbedUrl ? normalizeUrl(location.mapEmbedUrl) : null;
 
   return (
     <section className="mt-6 w-full rounded-2xl bg-white/95 p-4 text-left text-slate-900">
@@ -25,8 +29,8 @@ export function LocationSection({ config }: { config: MiniSiteConfig }) {
           {location.state ? ` - ${location.state}` : ""}
         </p>
       ) : null}
-      {location?.mapEmbedUrl ? (
-        <iframe title="Mapa" src={location.mapEmbedUrl} className="mt-3 h-40 w-full rounded-xl border-0" loading="lazy" />
+      {mapEmbedSrc ? (
+        <iframe title="Mapa" src={mapEmbedSrc} className="mt-3 h-40 w-full rounded-xl border-0" loading="lazy" />
       ) : null}
       {mapsHref ? (
         <a

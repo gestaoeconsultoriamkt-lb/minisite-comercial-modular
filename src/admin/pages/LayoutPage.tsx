@@ -48,11 +48,13 @@ import {
   RotateIcon,
   SaveIcon,
   SendIcon,
+  UsersIcon,
 } from "../components/icons";
 
 const MODULE_ICONS: Record<ModuleKey, typeof ImageIcon> = {
   gallery: ImageIcon,
   actionButtons: LinkIcon,
+  socialButtons: UsersIcon,
   catalog: ListIcon,
   location: MapPinIcon,
 };

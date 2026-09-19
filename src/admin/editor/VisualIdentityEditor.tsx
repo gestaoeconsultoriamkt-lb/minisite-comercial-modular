@@ -45,15 +45,23 @@ export function VisualIdentityEditor() {
         onChange={(key) => updateAppearance({ backgroundKey: key })}
       />
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <ColorField label="Cor primária" value={appearance.colorPrimary ?? "#1d4ed8"} onChange={(hex) => updateAppearance({ colorPrimary: hex })} />
         <ColorField label="Cor secundária" value={appearance.colorSecondary ?? "#0f1d45"} onChange={(hex) => updateAppearance({ colorSecondary: hex })} />
+        <ColorField
+          label="Cor de fundo dos botões"
+          value={appearance.colorButtonBackground ?? appearance.colorPrimary ?? "#1d4ed8"}
+          onChange={(hex) => updateAppearance({ colorButtonBackground: hex })}
+        />
         <ColorField
           label="Cor do texto dos botões"
           value={appearance.colorButtonText ?? "#ffffff"}
           onChange={(hex) => updateAppearance({ colorButtonText: hex })}
         />
       </div>
+      <p className="-mt-3 text-xs text-slate-400">
+        Todos os botões do MiniSite (ação e redes sociais) usam essas duas cores — visual único e consistente da marca.
+      </p>
     </EditorSection>
   );
 }

@@ -157,13 +157,16 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
           ) : null}
 
           {type === "agendar" || type === "avaliar_google" || type === "site" || type === "link_personalizado" ? (
-            <TextField
-              name={`${type}-url`}
-              label={type === "avaliar_google" ? "Link direto da avaliação" : "Destino (URL)"}
-              placeholder="https://"
-              value={typeof value.url === "string" ? value.url : ""}
-              onChange={(e) => upsertButton({ url: e.target.value })}
-            />
+            <div className="flex flex-col gap-1.5">
+              <TextField
+                name={`${type}-url`}
+                label={type === "avaliar_google" ? "Link direto da avaliação" : "Destino (URL)"}
+                placeholder="https://"
+                value={typeof value.url === "string" ? value.url : ""}
+                onChange={(e) => upsertButton({ url: e.target.value })}
+              />
+              <p className="text-xs text-slate-400">Pode digitar sem "https://" — adicionamos automaticamente.</p>
+            </div>
           ) : null}
 
           {type === "pix" ? (

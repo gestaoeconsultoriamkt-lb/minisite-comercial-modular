@@ -1,5 +1,6 @@
 import type { MiniSiteButton, MiniSiteButtonType, MiniSiteConfig } from "./schemas/miniSiteConfig";
 import { buildWhatsAppUrl } from "./whatsapp";
+import { normalizeUrl } from "./urls";
 
 /**
  * Os 8 tipos de botão com editor dedicado nesta fase (V1). "localizacao" e
@@ -57,7 +58,7 @@ export function getButtonHref(button: MiniSiteButton): string | null {
       return null;
     default: {
       const url = typeof value.url === "string" ? value.url.trim() : "";
-      return url || null;
+      return url ? normalizeUrl(url) : null;
     }
   }
 }
