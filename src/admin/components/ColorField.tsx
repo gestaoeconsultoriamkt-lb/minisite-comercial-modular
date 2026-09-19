@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { HexColorPicker } from "react-colorful";
 
 interface ColorFieldProps {
@@ -9,9 +9,22 @@ interface ColorFieldProps {
 
 const HEX_PATTERN = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 
+/**
+ * Compartilhado pelas 3 cores da identidade visual (primária, secundária,
+ * texto dos botões) — mesmo padrão de UX para todas: swatch + hex digitável
+ * + picker visual, sempre em sincronia com o valor real do config.
+ */
 export function ColorField({ label, value, onChange }: ColorFieldProps) {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState(value);
+  const focusedRef = useRef(false);
+
+  // Resincroniza com o valor externo quando o campo não está em edição —
+  // cobre o config sendo recarregado (ex.: trocar de MiniSite sem
+  // desmontar o editor) sem sobrescrever o que o usuário está digitando.
+  useEffect(() => {
+    if (!focusedRef.current) setText(value);
+  }, [value]);
 
   function commitText(next: string) {
     setText(next);
@@ -33,7 +46,13 @@ export function ColorField({ label, value, onChange }: ColorFieldProps) {
           type="text"
           value={text}
           onChange={(e) => commitText(e.target.value)}
-          onBlur={() => setText(HEX_PATTERN.test(value) ? value : text)}
+          onFocus={() => {
+            focusedRef.current = true;
+          }}
+          onBlur={() => {
+            focusedRef.current = false;
+            setText(HEX_PATTERN.test(value) ? value : text);
+          }}
           placeholder="#000000"
           className="w-28 rounded-lg border border-slate-200 px-2.5 py-2 text-sm uppercase text-slate-900 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40"
         />

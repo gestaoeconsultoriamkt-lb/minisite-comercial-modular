@@ -31,13 +31,13 @@ export function VisualIdentityEditor() {
           shape="wide"
           imageKey={appearance.coverKey}
           onChange={(key) => updateAppearance({ coverKey: key })}
-          hint="Recomendado 1200x630"
+          hint="Aparece no topo do MiniSite, atrás do logo e do nome. Recomendado 1200x630."
         />
       </div>
 
       <ImageUploadField
         label="Imagem de fundo (opcional)"
-        hint="Se não definir, a capa é usada automaticamente como fundo desfocado."
+        hint="Fundo desfocado atrás de todo o conteúdo da página. Independente da capa — se não definir, o fundo usa um gradiente com as cores da marca."
         minisiteId={minisiteId}
         purpose="background"
         shape="wide"
