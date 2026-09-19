@@ -2,28 +2,43 @@ import { useState } from "react";
 import { EditorSection } from "../components/EditorSection";
 import { TextField } from "../components/TextField";
 import { Button } from "../components/Button";
-import { ChevronDownIcon, ExternalLinkIcon, ZapIcon } from "../components/icons";
+import { AlertCircleIcon, ChevronDownIcon, ExternalLinkIcon, ZapIcon } from "../components/icons";
+import { BUTTON_ICONS } from "../../shared/icons";
 import {
   BUTTON_TYPE_LABELS,
   EDITABLE_BUTTON_TYPES,
   getButtonHref,
   isButtonEnabled,
+  isButtonReady,
 } from "../../shared/actionButtons";
 import type { MiniSiteButton, MiniSiteConfig } from "../../shared/schemas/miniSiteConfig";
 import { useEditorStore } from "./editorStore";
 
 type EditableButtonType = (typeof EDITABLE_BUTTON_TYPES)[number];
 
-function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) {
+/**
+ * Track em escala padrão do Tailwind (sem valores arbitrários): trilha de
+ * 44px, bolinha de 20px com margem de 2px de cada lado nos dois estados
+ * (`translate-x-0` / `translate-x-5` = 20px) — nunca invade o conteúdo ao
+ * lado porque o próprio switch é um elemento isolado, sem texto adjacente
+ * dentro dele.
+ */
+function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
   return (
     <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={`${checked ? "Desativar" : "Ativar"} ${label}`}
       onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? "bg-brand-blue-600" : "bg-slate-200"}`}
+      className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40 focus:ring-offset-1 ${
+        checked ? "bg-brand-blue-600" : "bg-slate-200"
+      }`}
     >
-      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-[22px]" : "translate-x-0.5"}`} />
+      <span
+        aria-hidden
+        className={`ml-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${checked ? "translate-x-5" : "translate-x-0"}`}
+      />
     </button>
   );
 }
@@ -35,6 +50,9 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
 
   const button = config.buttons.find((b) => b.type === type);
   const enabled = isButtonEnabled(button);
+  const ready = button ? isButtonReady(button, config) : false;
+  const label = BUTTON_TYPE_LABELS[type];
+  const Icon = BUTTON_ICONS[type] ?? ZapIcon;
 
   function upsertButton(valuePatch: Record<string, unknown>) {
     const existing = config.buttons.find((b) => b.type === type);
@@ -67,22 +85,40 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
   const canTestLink = type !== "pix" && type !== "wifi";
   const testHref = button ? getButtonHref(button) : null;
 
+  const statusText = !enabled ? "Desativado" : ready ? "Ativo no MiniSite" : "Ativo — preencha os campos abaixo";
+  const statusClassName = !enabled ? "text-slate-400" : ready ? "text-emerald-600" : "text-amber-600";
+
   return (
-    <div className="rounded-xl border border-slate-100">
-      <div className="flex items-center gap-3 px-4 py-3">
-        <ToggleSwitch checked={enabled} onChange={toggle} />
+    <div className={`overflow-hidden rounded-xl border shadow-sm transition-colors ${enabled ? "border-brand-blue-100" : "border-slate-100"}`}>
+      <div className={`flex items-center gap-3 px-4 py-3.5 ${enabled ? "bg-brand-blue-50/40" : "bg-white"}`}>
+        <div
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
+            enabled ? "bg-brand-blue-100 text-brand-blue-600" : "bg-slate-100 text-slate-400"
+          }`}
+        >
+          <Icon className="h-4.5 w-4.5" />
+        </div>
+
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="flex flex-1 items-center justify-between gap-2 text-left"
+          className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left"
         >
-          <span className="text-sm font-semibold text-brand-navy-900">{BUTTON_TYPE_LABELS[type]}</span>
-          <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-bold text-brand-navy-900">{label}</span>
+            <span className={`mt-0.5 flex items-center gap-1 text-xs font-medium ${statusClassName}`}>
+              {enabled && !ready ? <AlertCircleIcon className="h-3.5 w-3.5 shrink-0" /> : null}
+              {statusText}
+            </span>
+          </span>
+          <ChevronDownIcon className={`h-4 w-4 shrink-0 text-slate-400 transition-transform ${expanded ? "rotate-180" : ""}`} />
         </button>
+
+        <ToggleSwitch checked={enabled} onChange={toggle} label={label} />
       </div>
 
       {expanded ? (
-        <div className="flex flex-col gap-4 border-t border-slate-100 px-4 py-4">
+        <div className="flex flex-col gap-4 border-t border-slate-100 bg-slate-50/60 px-4 py-4">
           <TextField
             name={`${type}-label`}
             label="Texto do botão"
@@ -159,7 +195,7 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
 function PixFields({ config, onChange }: { config: MiniSiteConfig; onChange: (patch: Partial<MiniSiteConfig>) => void }) {
   const pix = config.pix ?? { keyType: "aleatoria" as const, key: "", holderName: "" };
   return (
-    <div className="flex flex-col gap-4 rounded-xl bg-slate-50 p-3">
+    <div className="flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-3">
       <div className="max-w-xs">
         <label className="text-sm font-semibold text-brand-navy-900">Tipo da chave</label>
         <select
@@ -183,7 +219,7 @@ function PixFields({ config, onChange }: { config: MiniSiteConfig; onChange: (pa
 function WifiFields({ config, onChange }: { config: MiniSiteConfig; onChange: (patch: Partial<MiniSiteConfig>) => void }) {
   const wifi = config.wifi ?? { ssid: "", password: "" };
   return (
-    <div className="flex flex-col gap-4 rounded-xl bg-slate-50 p-3">
+    <div className="flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-3">
       <TextField name="wifiSsid" label="Nome da rede (SSID)" value={wifi.ssid} onChange={(e) => onChange({ wifi: { ...wifi, ssid: e.target.value } })} />
       <TextField name="wifiPassword" label="Senha" value={wifi.password ?? ""} onChange={(e) => onChange({ wifi: { ...wifi, password: e.target.value } })} />
     </div>
@@ -193,7 +229,7 @@ function WifiFields({ config, onChange }: { config: MiniSiteConfig; onChange: (p
 export function ActionButtonsEditor() {
   return (
     <EditorSection icon={<ZapIcon className="h-5 w-5" />} title="Botões de ação" subtitle="Escolha quais botões exibir no seu MiniSite. Você pode ativar ou desativar a qualquer momento.">
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {EDITABLE_BUTTON_TYPES.map((type) => (
           <ButtonRow key={type} type={type} />
         ))}
