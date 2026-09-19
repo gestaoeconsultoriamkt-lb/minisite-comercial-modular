@@ -22,7 +22,7 @@ export function SocialButtonsSection({ config }: { config: MiniSiteConfig }) {
           <MiniSiteButtonLink
             key={platform}
             href={href}
-            icon={<Icon className="h-4 w-4" />}
+            icon={<Icon className="h-4.5 w-4.5" />}
             label={SOCIAL_PLATFORM_LABELS[platform]}
             colors={colors}
           />

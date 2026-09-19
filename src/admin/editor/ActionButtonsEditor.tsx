@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { EditorSection } from "../components/EditorSection";
 import { TextField } from "../components/TextField";
+import { ColorField } from "../components/ColorField";
 import { Button } from "../components/Button";
 import { AlertCircleIcon, ChevronDownIcon, ExternalLinkIcon, ZapIcon } from "../components/icons";
 import { BUTTON_ICONS } from "../../shared/icons";
@@ -11,6 +12,7 @@ import {
   isButtonEnabled,
   isButtonReady,
 } from "../../shared/actionButtons";
+import { getButtonColors } from "../../shared/renderer/MiniSiteButton";
 import type { MiniSiteButton, MiniSiteConfig } from "../../shared/schemas/miniSiteConfig";
 import { useEditorStore } from "./editorStore";
 
@@ -87,6 +89,12 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
 
   const statusText = !enabled ? "Desativado" : ready ? "Ativo no MiniSite" : "Ativo — preencha os campos abaixo";
   const statusClassName = !enabled ? "text-slate-400" : ready ? "text-emerald-600" : "text-amber-600";
+
+  // Cor efetiva (individual se houver, senão a global) — usada só para
+  // pré-visualizar no swatch; a sobrescrita em si é opcional por botão.
+  const effectiveColors = getButtonColors(config, button);
+  const hasIndividualBackground = typeof value.colorBackground === "string";
+  const hasIndividualText = typeof value.colorText === "string";
 
   return (
     <div className={`overflow-hidden rounded-xl border shadow-sm transition-colors ${enabled ? "border-brand-blue-100" : "border-slate-100"}`}>
@@ -176,6 +184,41 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
           {type === "wifi" ? (
             <WifiFields config={config} onChange={updatePixWifiOrConfig} />
           ) : null}
+
+          <div className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-1">
+              <ColorField
+                label="Cor de fundo individual (opcional)"
+                value={effectiveColors.background}
+                onChange={(hex) => upsertButton({ colorBackground: hex })}
+              />
+              {hasIndividualBackground ? (
+                <button
+                  type="button"
+                  onClick={() => upsertButton({ colorBackground: undefined })}
+                  className="self-start text-xs font-medium text-brand-blue-600 hover:underline"
+                >
+                  Usar cor global
+                </button>
+              ) : null}
+            </div>
+            <div className="flex flex-col gap-1">
+              <ColorField
+                label="Cor do texto individual (opcional)"
+                value={effectiveColors.text}
+                onChange={(hex) => upsertButton({ colorText: hex })}
+              />
+              {hasIndividualText ? (
+                <button
+                  type="button"
+                  onClick={() => upsertButton({ colorText: undefined })}
+                  className="self-start text-xs font-medium text-brand-blue-600 hover:underline"
+                >
+                  Usar cor global
+                </button>
+              ) : null}
+            </div>
+          </div>
 
           {canTestLink ? (
             <Button

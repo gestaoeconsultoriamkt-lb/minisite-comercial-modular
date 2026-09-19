@@ -5,25 +5,23 @@ import { EDITABLE_BUTTON_TYPES, getButtonHref, getButtonLabel, isButtonReady } f
 import { getButtonColors, MiniSiteButtonLink, type MiniSiteButtonColors } from "./MiniSiteButton";
 
 /**
- * Revelar Pix/Wi-Fi usa <details>/<summary> nativo — funciona sem JS tanto
- * no preview (React hidratado) quanto no HTML estático do SSR público. O
- * botão "copiar" é só um bônus quando há um React vivo (preview); no SSR
- * puro ele fica inerte (sem hidratação ainda) — degrada bem, não quebra.
- *
- * Mesma cor de fundo/texto dos demais botões, mas layout próprio: título
- * principal + subtítulo menor centralizados, mais alto que um botão comum
- * (duas linhas + o valor revelado), já que ele acumula duas ações
- * (ver/copiar) em vez de uma navegação simples.
+ * Pix/Wi-Fi usam <details>/<summary> nativo para revelar/copiar — funciona
+ * sem JS tanto no preview (React hidratado) quanto no HTML estático do SSR
+ * público. O <summary> É o botão: mesmo padrão visual (altura, padding,
+ * raio, ícone+texto, cor) dos demais — sem subtítulo, sem parecer um
+ * componente diferente na lista. O valor revelado aparece como um painel
+ * neutro separado abaixo, só quando aberto — não afeta a altura/aparência
+ * do botão fechado.
  */
 function CopyableReveal({
   icon,
-  title,
+  label,
   value,
   hint,
   colors,
 }: {
   icon: ReactNode;
-  title: string;
+  label: string;
   value: string;
   hint?: string;
   colors: MiniSiteButtonColors;
@@ -46,22 +44,21 @@ function CopyableReveal({
   }
 
   return (
-    <details className="group overflow-hidden rounded-2xl shadow-sm" style={{ backgroundColor: colors.background, color: colors.text }}>
-      <summary className="flex cursor-pointer list-none flex-col items-center gap-0.5 px-4 py-4 text-center">
-        <span className="flex items-center gap-2 text-base font-bold">
-          {icon}
-          {title}
-        </span>
-        <span className="text-xs font-medium opacity-80 group-open:hidden">toque para ver</span>
-        <span className="hidden text-xs font-medium opacity-80 group-open:block">toque para copiar</span>
+    <details className="group">
+      <summary
+        className="flex cursor-pointer list-none items-center justify-center gap-2.5 rounded-2xl px-4 py-3.5 text-[15px] font-semibold shadow-sm transition hover:opacity-90 active:opacity-80"
+        style={{ backgroundColor: colors.background, color: colors.text }}
+      >
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
+        <span className="truncate">{label}</span>
       </summary>
-      <div className="mx-4 mb-3 flex items-center justify-between gap-2 rounded-xl bg-black/10 px-3 py-2">
-        <code className="truncate text-xs">{value}</code>
-        <button type="button" onClick={handleCopy} aria-label="Copiar" className="shrink-0 opacity-90 transition hover:opacity-100" style={{ color: colors.text }}>
+      <div className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
+        <code className="truncate text-xs text-slate-700">{value}</code>
+        <button type="button" onClick={handleCopy} aria-label="Copiar" className="shrink-0 text-slate-500 transition hover:text-slate-900">
           <CopyIcon className="h-4 w-4" />
         </button>
       </div>
-      {copied || hint ? <p className="mb-4 px-4 text-center text-xs opacity-80">{copied ? "Copiado!" : hint}</p> : null}
+      {copied || hint ? <p className="mt-1 px-1 text-xs font-medium text-slate-400">{copied ? "Copiado!" : hint}</p> : null}
     </details>
   );
 }
@@ -72,25 +69,23 @@ export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
   );
 
   if (readyButtons.length === 0) return null;
-  const colors = getButtonColors(config);
 
   return (
     <div className="mt-6 flex w-full flex-col gap-2.5">
       {readyButtons.map((button) => {
         const Icon = BUTTON_ICONS[button.type] ?? ExternalLinkIcon;
         const label = getButtonLabel(button);
+        const colors = getButtonColors(config, button);
 
         if (button.type === "pix" && config.pix) {
-          return (
-            <CopyableReveal key={button.id} icon={<PixIcon className="h-5 w-5" />} title={label} value={config.pix.key} hint={config.pix.holderName} colors={colors} />
-          );
+          return <CopyableReveal key={button.id} icon={<PixIcon className="h-5 w-5" />} label={label} value={config.pix.key} hint={config.pix.holderName} colors={colors} />;
         }
         if (button.type === "wifi" && config.wifi) {
           return (
             <CopyableReveal
               key={button.id}
               icon={<WifiIcon className="h-5 w-5" />}
-              title={label}
+              label={label}
               value={config.wifi.password ? `${config.wifi.ssid} / ${config.wifi.password}` : config.wifi.ssid}
               hint="Rede / senha"
               colors={colors}
@@ -101,7 +96,7 @@ export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
         const href = getButtonHref(button);
         if (!href) return null;
 
-        return <MiniSiteButtonLink key={button.id} href={href} icon={<Icon className="h-4 w-4" />} label={label} colors={colors} />;
+        return <MiniSiteButtonLink key={button.id} href={href} icon={<Icon className="h-4.5 w-4.5" />} label={label} colors={colors} />;
       })}
     </div>
   );
