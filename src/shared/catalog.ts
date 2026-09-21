@@ -16,7 +16,14 @@ export function getReadyCards(section: MiniSiteSection): MiniSiteCard[] {
   return [...section.cards].filter(isCatalogCardReady).sort((a, b) => a.position - b.position);
 }
 
-/** Uma seção só aparece no MiniSite quando tem ao menos um item pronto. */
+/**
+ * Readiness da seção é independente da readiness dos itens: uma seção
+ * aparece no MiniSite quando tem título e ao menos um conteúdo visual
+ * válido — a própria imagem da seção OU um item pronto. Uma seção com
+ * título + imagem mas zero itens já é conteúdo real (ex.: "Pizzas e
+ * esfihas tradicionais" com foto, catálogo de itens ainda por vir) e não
+ * deve depender de ter item nenhum para ser mostrada.
+ */
 export function isCatalogSectionReady(section: MiniSiteSection): boolean {
-  return section.cards.some(isCatalogCardReady);
+  return Boolean(section.title?.trim()) && (Boolean(section.imageKey) || section.cards.some(isCatalogCardReady));
 }

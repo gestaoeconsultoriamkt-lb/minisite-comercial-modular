@@ -99,9 +99,11 @@ export function CatalogSectionEditor({ minisiteId, section, onChange, onRemove }
             Exibir botão (opcional)
           </label>
           <span className={`text-xs font-semibold sm:ml-auto ${sectionReady ? "text-emerald-600" : "text-slate-400"}`}>
-            {sectionReady
-              ? `${readyCount} de ${totalCount} ${totalCount === 1 ? "item visível" : "itens visíveis"} no MiniSite`
-              : "Nenhum item visível ainda — adicione um título ao item"}
+            {!sectionReady
+              ? "Adicione uma imagem da seção ou um item com título"
+              : readyCount > 0
+                ? `${readyCount} de ${totalCount} ${totalCount === 1 ? "item visível" : "itens visíveis"} no MiniSite`
+                : "Seção visível — ainda sem itens"}
           </span>
         </div>
       </div>

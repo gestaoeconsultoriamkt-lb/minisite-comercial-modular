@@ -63,17 +63,19 @@ export function CatalogSection({ config }: { config: MiniSiteConfig }) {
         const cards = getReadyCards(section);
         return (
           <div key={section.id}>
-            <div className="mb-2 flex items-center gap-2">
-              {section.imageKey ? (
-                <img src={getAssetUrl(section.imageKey)} alt="" className="h-8 w-8 rounded-lg object-cover" />
-              ) : null}
-              <h3 className="text-sm font-bold text-white">{section.title}</h3>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {cards.map((card) => (
-                <CatalogCard key={card.id} card={card} section={section} whatsappPhone={whatsappPhone} />
-              ))}
-            </div>
+            <h3 className="mb-2 text-sm font-bold text-white">{section.title}</h3>
+            {section.imageKey ? (
+              // Imagem da seção é conteúdo visual próprio da seção — aparece
+              // mesmo sem nenhum item, sempre em crop proporcional (object-cover).
+              <img src={getAssetUrl(section.imageKey)} alt="" className="mb-3 h-32 w-full rounded-2xl object-cover" />
+            ) : null}
+            {cards.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {cards.map((card) => (
+                  <CatalogCard key={card.id} card={card} section={section} whatsappPhone={whatsappPhone} />
+                ))}
+              </div>
+            ) : null}
           </div>
         );
       })}
