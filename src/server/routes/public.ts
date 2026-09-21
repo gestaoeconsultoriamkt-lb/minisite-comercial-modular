@@ -41,12 +41,16 @@ publicRoutes.get("/:slug", async (c) => {
   }
 
   const { config } = migrateMiniSiteConfig(row.configJson, row.configVersion);
-  const displayName = config.header.displayName || row.internalName;
+  // Nome público na hero é opcional (sem fallback); <title>/og:title sempre
+  // precisa de um valor, então esse sim cai no nome interno.
+  const heroDisplayName = config.header.displayName ?? "";
+  const seoTitle = config.header.displayName || row.internalName;
   const origin = new URL(c.req.url).origin;
 
   return c.html(
     renderMiniSitePage({
-      displayName,
+      heroDisplayName,
+      seoTitle,
       config,
       slug: row.slug,
       origin,

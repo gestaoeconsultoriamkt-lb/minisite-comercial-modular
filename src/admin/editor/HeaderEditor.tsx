@@ -16,15 +16,15 @@ export function HeaderEditor() {
     <EditorSection icon={<TypeIcon className="h-5 w-5" />} title="Cabeçalho" subtitle="Nome, headline e apresentação do seu negócio.">
       <TextField
         name="displayName"
-        label="Nome do negócio"
-        placeholder="Nome exibido no MiniSite"
+        label="Nome do negócio (opcional)"
+        placeholder="Deixe em branco se a logo já mostra o nome"
         value={header.displayName ?? ""}
         onChange={(e) => updateHeader({ displayName: e.target.value })}
       />
 
       <TextField
         name="headline"
-        label="Headline"
+        label="Headline (opcional)"
         placeholder="Uma frase que resume seu negócio"
         value={header.headline ?? ""}
         onChange={(e) => updateHeader({ headline: e.target.value })}
@@ -32,7 +32,7 @@ export function HeaderEditor() {
 
       <TextareaField
         name="shortDescription"
-        label="Descrição curta"
+        label="Descrição curta (opcional)"
         placeholder="Uma linha curta de apoio à headline"
         rows={2}
         value={header.shortDescription ?? ""}

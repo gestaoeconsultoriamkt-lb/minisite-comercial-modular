@@ -8,7 +8,10 @@ import type { MiniSiteConfig } from "../../shared/schemas/miniSiteConfig";
 import publicStyles from "../../admin/styles.css?inline";
 
 export interface RenderMiniSitePageOptions {
-  displayName: string;
+  /** Nome público da hero — opcional, string vazia não renderiza nada (ver MiniSiteRenderer). */
+  heroDisplayName: string;
+  /** <title>/og:title — sempre tem valor (cai no nome interno se não houver nome público). */
+  seoTitle: string;
   config: MiniSiteConfig;
   slug: string;
   origin: string;
@@ -25,14 +28,14 @@ function escapeHtml(value: string): string {
  * (LivePreview) com o `config` real de um MiniSite, mais SEO básico
  * (title/description/OG). Sem hidratação — HTML estático puro.
  */
-export function renderMiniSitePage({ displayName, config, slug, origin, noindex }: RenderMiniSitePageOptions): string {
-  const body = renderToStaticMarkup(<MiniSiteRenderer displayName={displayName} config={config} />);
+export function renderMiniSitePage({ heroDisplayName, seoTitle, config, slug, origin, noindex }: RenderMiniSitePageOptions): string {
+  const body = renderToStaticMarkup(<MiniSiteRenderer displayName={heroDisplayName} config={config} />);
 
   const description = config.header.shortDescription || config.header.headline || "";
   const imageKey = config.appearance.coverKey || config.appearance.logoKey;
   const ogImage = imageKey ? `${origin}${getAssetUrl(imageKey)}` : null;
   const pageUrl = `${origin}/${slug}`;
-  const title = escapeHtml(displayName);
+  const title = escapeHtml(seoTitle);
   const safeDescription = escapeHtml(description);
 
   return `<!DOCTYPE html>

@@ -1,7 +1,8 @@
 import { ImageUploadField } from "../components/ImageUploadField";
 import { TextField } from "../components/TextField";
 import { TextareaField } from "../components/TextareaField";
-import { ChevronDownIcon, TrashIcon } from "../components/icons";
+import { AlertCircleIcon, ChevronDownIcon, TrashIcon } from "../components/icons";
+import { isCatalogCardReady } from "../../shared/catalog";
 import type { MiniSiteCard } from "../../shared/schemas/miniSiteConfig";
 
 interface CatalogItemEditorProps {
@@ -14,12 +15,23 @@ interface CatalogItemEditorProps {
 /**
  * Preço, CTA e imagem são independentes e opcionais por item — combine
  * livremente (só foto+título; foto+título+preço; +CTA; qualquer combinação).
+ * Título é o único campo obrigatório para o item aparecer no MiniSite.
  */
 export function CatalogItemEditor({ minisiteId, item, onChange, onRemove }: CatalogItemEditorProps) {
+  const ready = isCatalogCardReady(item);
+
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-slate-100 p-4">
+    <div className={`flex flex-col gap-4 rounded-xl border p-4 ${ready ? "border-slate-100" : "border-amber-200 bg-amber-50/40"}`}>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-semibold text-brand-navy-900">Item</p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-sm font-semibold text-brand-navy-900">Item</p>
+          {!ready ? (
+            <span className="flex items-center gap-1 text-xs font-medium text-amber-600">
+              <AlertCircleIcon className="h-3.5 w-3.5" />
+              Sem título — não aparece no MiniSite
+            </span>
+          ) : null}
+        </div>
         <button type="button" onClick={onRemove} aria-label="Remover item" className="text-slate-400 hover:text-red-600">
           <TrashIcon className="h-4 w-4" />
         </button>

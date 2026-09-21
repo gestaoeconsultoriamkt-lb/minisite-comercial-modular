@@ -1,6 +1,7 @@
 import { getAssetUrl } from "../assetUrl";
 import { findButton, isButtonEnabled } from "../actionButtons";
 import { buildWhatsAppUrl } from "../whatsapp";
+import { getReadyCards, isCatalogSectionReady } from "../catalog";
 import type { MiniSiteCard, MiniSiteConfig, MiniSiteSection as MiniSiteSectionData } from "../schemas/miniSiteConfig";
 
 function CatalogCard({ card, section, whatsappPhone }: { card: MiniSiteCard; section: MiniSiteSectionData; whatsappPhone: string | null }) {
@@ -47,7 +48,7 @@ function CatalogCard({ card, section, whatsappPhone }: { card: MiniSiteCard; sec
 }
 
 export function CatalogSection({ config }: { config: MiniSiteConfig }) {
-  const sections = [...config.sections].sort((a, b) => a.position - b.position);
+  const sections = [...config.sections].filter(isCatalogSectionReady).sort((a, b) => a.position - b.position);
   if (sections.length === 0) return null;
 
   const whatsappButton = findButton(config, "whatsapp");
@@ -59,8 +60,7 @@ export function CatalogSection({ config }: { config: MiniSiteConfig }) {
   return (
     <section className="mt-6 flex flex-col gap-6">
       {sections.map((section) => {
-        const cards = [...section.cards].sort((a, b) => a.position - b.position);
-        if (cards.length === 0) return null;
+        const cards = getReadyCards(section);
         return (
           <div key={section.id}>
             <div className="mb-2 flex items-center gap-2">

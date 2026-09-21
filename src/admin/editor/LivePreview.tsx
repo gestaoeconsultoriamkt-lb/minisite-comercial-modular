@@ -5,11 +5,11 @@ import { useEditorStore } from "./editorStore";
 type PreviewMode = "mobile" | "desktop";
 
 export function LivePreview() {
-  const internalName = useEditorStore((s) => s.internalName);
   const config = useEditorStore((s) => s.config);
   const [mode, setMode] = useState<PreviewMode>("mobile");
 
-  const displayName = config.header.displayName || internalName || "Seu negócio";
+  // Nome público é opcional (não cai no nome interno) — ver MiniSiteRenderer.
+  const displayName = config.header.displayName ?? "";
 
   return (
     // Wrapper "cru": o grid pai estica este bloco para a altura da coluna

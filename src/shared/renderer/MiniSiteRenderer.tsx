@@ -11,6 +11,7 @@ import { CatalogSection } from "./CatalogSection";
 import { LocationSection } from "./LocationSection";
 
 export interface MiniSiteRendererProps {
+  /** Nome público exibido na hero — opcional; string vazia não renderiza nada (nunca cai no nome interno). */
   displayName: string;
   config: MiniSiteConfig;
 }
@@ -72,12 +73,17 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
             {appearance.logoKey ? (
               <img
                 src={getAssetUrl(appearance.logoKey)}
-                alt={displayName}
+                alt={displayName || "Logo"}
                 className={`rounded-2xl border-2 border-white/80 object-cover shadow-lg ${isCompact ? "h-16 w-16" : "h-24 w-24"}`}
               />
             ) : null}
 
-            <h1 className={`mt-4 font-extrabold text-white ${isCompact ? "text-xl" : "text-2xl"}`}>{displayName}</h1>
+            {/* Nome público opcional: algumas logos já trazem o nome da marca —
+                sem valor, não renderiza nada (nunca um placeholder tipo "Seu
+                negócio" nem espaço reservado). */}
+            {displayName ? (
+              <h1 className={`mt-4 font-extrabold text-white ${isCompact ? "text-xl" : "text-2xl"}`}>{displayName}</h1>
+            ) : null}
             {header.headline ? (
               <p className={`mt-1 font-semibold text-white/90 ${isCompact ? "text-sm" : "text-base"}`}>{header.headline}</p>
             ) : null}

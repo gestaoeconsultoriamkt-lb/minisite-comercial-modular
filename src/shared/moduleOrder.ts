@@ -1,5 +1,6 @@
 import type { MiniSiteConfig } from "./schemas/miniSiteConfig";
 import { EDITABLE_BUTTON_TYPES, isButtonReady } from "./actionButtons";
+import { isCatalogSectionReady } from "./catalog";
 import { getFilledSocialEntries } from "./socialLinks";
 
 /**
@@ -7,13 +8,17 @@ import { getFilledSocialEntries } from "./socialLinks";
  * rodapé social sempre no final — não fazem parte desta lista. Os botões
  * de redes sociais no corpo (`socialButtons`) coexistem com os ícones do
  * rodapé: são duas saídas independentes para o mesmo `config.socialLinks`.
+ *
+ * A ordem desta lista só vale como DEFAULT/fallback — para MiniSites sem
+ * `module_order` personalizado ainda (ver getOrderedModules). Uma ordem já
+ * salva pelo usuário na Tela de Layout nunca é sobrescrita por ela.
  */
-export const MODULE_KEYS = ["gallery", "actionButtons", "socialButtons", "catalog", "location"] as const;
+export const MODULE_KEYS = ["actionButtons", "gallery", "socialButtons", "catalog", "location"] as const;
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 
 export const MODULE_INFO: Record<ModuleKey, { label: string; description: string }> = {
-  gallery: { label: "Galeria", description: "Imagens em destaque do seu negócio" },
   actionButtons: { label: "Botões de ação", description: "WhatsApp, Google, Site, PIX e outros" },
+  gallery: { label: "Galeria", description: "Imagens em destaque do seu negócio" },
   socialButtons: { label: "Redes sociais", description: "Instagram, Facebook, TikTok e outras" },
   catalog: { label: "Catálogo / Seções", description: "Produtos, serviços ou categorias" },
   location: { label: "Como chegar", description: "Endereço e mapa" },
@@ -31,7 +36,7 @@ function hasActionButtons(config: MiniSiteConfig): boolean {
 }
 
 function hasCatalog(config: MiniSiteConfig): boolean {
-  return config.sections.some((section) => section.cards.length > 0);
+  return config.sections.some(isCatalogSectionReady);
 }
 
 function hasLocation(config: MiniSiteConfig): boolean {
