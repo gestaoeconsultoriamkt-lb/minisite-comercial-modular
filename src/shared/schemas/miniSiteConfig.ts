@@ -49,7 +49,9 @@ export const cardSchema = z.object({
 export const sectionSchema = z.object({
   id: z.string(),
   title: z.string().min(1),
+  /** @deprecated Substituído por `imageKeys` (múltiplas imagens/carrossel). Mantido só para ler registros antigos — ver getSectionImages(). */
   imageKey: z.string().optional(),
+  imageKeys: z.array(z.string()).default([]),
   /** Controla a exibição de preço/CTA para os itens desta seção; o dado do item é preservado de todo modo. */
   showPrices: z.boolean().default(true),
   showCta: z.boolean().default(true),

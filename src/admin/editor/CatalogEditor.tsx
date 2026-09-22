@@ -16,6 +16,7 @@ export function CatalogEditor() {
     const newSection: MiniSiteSection = {
       id: crypto.randomUUID(),
       title: "Nova seção",
+      imageKeys: [],
       showPrices: true,
       showCta: true,
       position: sections.length,

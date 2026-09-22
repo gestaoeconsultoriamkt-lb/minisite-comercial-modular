@@ -1,9 +1,12 @@
-import { useState } from "react";
-import { ImageUploadField } from "../components/ImageUploadField";
+import { useRef, useState } from "react";
 import { Button } from "../components/Button";
 import { ChevronDownIcon, PlusIcon, TrashIcon } from "../components/icons";
 import { CatalogItemEditor } from "./CatalogItemEditor";
-import { isCatalogSectionReady } from "../../shared/catalog";
+import { getAssetUrl } from "../../shared/assetUrl";
+import { uploadMedia, MiniSiteApiError } from "../lib/minisitesApi";
+import { compressImage } from "../lib/imageProcessing";
+import { useToast } from "../lib/toast";
+import { getSectionImages, isCatalogSectionReady } from "../../shared/catalog";
 import type { MiniSiteCard, MiniSiteSection } from "../../shared/schemas/miniSiteConfig";
 
 /**
@@ -26,6 +29,87 @@ function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange
     >
       <span aria-hidden className={`ml-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${checked ? "translate-x-5" : "translate-x-0"}`} />
     </button>
+  );
+}
+
+/**
+ * Múltiplas imagens por seção (carrossel no preview/página pública).
+ * Escreve sempre em `imageKeys` — a primeira edição já carrega para lá
+ * qualquer imagem legada de `imageKey` (via getSectionImages), sem passo
+ * de migração explícito.
+ */
+function SectionImagesField({
+  minisiteId,
+  section,
+  onChange,
+}: {
+  minisiteId: string;
+  section: MiniSiteSection;
+  onChange: (patch: Partial<MiniSiteSection>) => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const { showToast } = useToast();
+  const images = getSectionImages(section);
+
+  async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+      showToast("Envie uma imagem PNG, JPG ou WebP.", "error");
+      return;
+    }
+    setUploading(true);
+    try {
+      const compressed = await compressImage(file, "section");
+      const { key } = await uploadMedia(minisiteId, "section", compressed);
+      onChange({ imageKeys: [...images, key] });
+    } catch (err) {
+      showToast(err instanceof MiniSiteApiError ? err.message : "Não foi possível enviar a imagem.", "error");
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  function remove(index: number) {
+    onChange({ imageKeys: images.filter((_, i) => i !== index) });
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center justify-between">
+        <p className="text-sm font-semibold text-brand-navy-900">Imagens da seção (opcional)</p>
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="rounded-lg border border-brand-blue-200 bg-brand-blue-50 px-3 py-1.5 text-xs font-semibold text-brand-blue-700 transition hover:bg-brand-blue-100 disabled:opacity-60"
+        >
+          {uploading ? "Enviando..." : "Adicionar imagem"}
+        </button>
+      </div>
+      <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleFileSelected} />
+      {images.length === 0 ? (
+        <p className="text-xs text-slate-400">Nenhuma imagem ainda. Com mais de uma, elas aparecem em carrossel no MiniSite.</p>
+      ) : (
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+          {images.map((key, index) => (
+            <div key={`${key}-${index}`} className="group relative overflow-hidden rounded-xl border border-slate-100">
+              <img src={getAssetUrl(key)} alt="" className="aspect-[4/3] w-full object-cover" />
+              <button
+                type="button"
+                onClick={() => remove(index)}
+                aria-label="Remover imagem"
+                className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 transition group-hover:opacity-100"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -110,14 +194,7 @@ export function CatalogSectionEditor({ minisiteId, section, onChange, onRemove }
 
       {expanded ? (
         <div className="flex flex-col gap-4 border-t border-slate-100 p-4">
-          <ImageUploadField
-            label="Imagem da seção (opcional)"
-            minisiteId={minisiteId}
-            purpose="section"
-            shape="wide"
-            imageKey={section.imageKey}
-            onChange={(key) => onChange({ imageKey: key })}
-          />
+          <SectionImagesField minisiteId={minisiteId} section={section} onChange={onChange} />
 
           <div className="flex flex-col gap-3">
             {[...section.cards]

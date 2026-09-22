@@ -25,6 +25,15 @@ export function CalendarIcon(props: IconProps) {
   );
 }
 
+export function TagIcon(props: IconProps) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M11.5 3.5H6.75A2.25 2.25 0 0 0 4.5 5.75v4.75c0 .5.2 1 .55 1.35l8.65 8.65a1.5 1.5 0 0 0 2.1 0l5.15-5.15a1.5 1.5 0 0 0 0-2.1l-8.65-8.65a2 2 0 0 0-1.35-.55Z" />
+      <circle cx="9" cy="9" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 export function StarIcon(props: IconProps) {
   return (
     <svg {...base} {...props} fill={props.fill === "currentColor" ? "currentColor" : "none"}>
