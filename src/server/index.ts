@@ -4,6 +4,7 @@ import { bootstrapRoutes } from "./routes/bootstrap";
 import { healthRoutes } from "./routes/health";
 import { mediaRoutes } from "./routes/media";
 import { minisitesRoutes } from "./routes/minisites";
+import { previewRoutes } from "./routes/preview";
 import { publicRoutes } from "./routes/public";
 import { uploadsRoutes } from "./routes/uploads";
 import { requireAuth, requireBootstrapOpen, redirectIfAuthenticated, serveAssets } from "./middleware/authGuards";
@@ -25,8 +26,11 @@ import type { AppEnv } from "./types";
  *   /login, /cadastro,
  *   /esqueci-senha,
  *   /redefinir-senha, /app/*    -> SPA (ASSETS), com guards de sessão/bootstrap
+ *   /preview/:id                -> SSR do DRAFT, só para o dono autenticado
  *   /:slug                      -> SSR público (spike da Fase 0)
- * Ordem importa: rotas específicas antes do catch-all de slug.
+ * Ordem importa: rotas específicas antes do catch-all de slug. "preview" é
+ * slug reservado (ver reservedSlugs.ts) então não há colisão possível com
+ * o slug de um MiniSite real.
  */
 const app = new Hono<AppEnv>();
 
@@ -57,6 +61,7 @@ app.get("/", async (c) => {
   return c.redirect(session ? "/app/minisites" : "/login", 302);
 });
 
+app.route("/", previewRoutes);
 app.route("/", publicRoutes);
 
 export default app;

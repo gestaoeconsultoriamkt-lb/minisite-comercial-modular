@@ -54,7 +54,10 @@ export function MiniSiteEditorPage() {
 
   async function handlePreview() {
     await flushNow();
-    window.open(`/${store.getState().slug}`, "_blank", "noopener,noreferrer");
+    // `/preview/:id` (não `/${slug}`) — SSR do DRAFT, sempre; `/:slug`
+    // público mostra o snapshot PUBLICADO para MiniSites ativos, mesmo
+    // para o dono (ver src/server/routes/preview.ts).
+    window.open(`/preview/${store.getState().minisiteId}`, "_blank", "noopener,noreferrer");
   }
 
   async function handlePublish() {
