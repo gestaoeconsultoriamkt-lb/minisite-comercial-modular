@@ -1,42 +1,20 @@
 import { useRef, useState } from "react";
-import { Button } from "../components/Button";
-import { ChevronDownIcon, PlusIcon, TrashIcon } from "../components/icons";
-import { CatalogItemEditor } from "./CatalogItemEditor";
+import { ToggleSwitch } from "../components/ToggleSwitch";
+import { ChevronDownIcon, TrashIcon } from "../components/icons";
 import { getAssetUrl } from "../../shared/assetUrl";
 import { uploadMedia, MiniSiteApiError } from "../lib/minisitesApi";
 import { compressImage } from "../lib/imageProcessing";
 import { useToast } from "../lib/toast";
-import { getSectionImages, isCatalogSectionReady } from "../../shared/catalog";
-import type { MiniSiteCard, MiniSiteSection } from "../../shared/schemas/miniSiteConfig";
+import { getSectionImageItems, isCatalogSectionReady, type CatalogImageItem } from "../../shared/catalog";
+import type { MiniSiteSection, MiniSiteSectionImage } from "../../shared/schemas/miniSiteConfig";
 
 /**
- * Trilha em escala padrão do Tailwind (mesmo padrão já aplicado aos
- * toggles dos Botões de ação): 44px de trilha, bolinha de 20px com 2px de
- * margem nos dois estados (`translate-x-0` / `translate-x-5`) — nunca
- * sobrepõe o texto ao lado.
- */
-function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={`${checked ? "Desativar" : "Ativar"} ${label}`}
-      onClick={() => onChange(!checked)}
-      className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40 focus:ring-offset-1 ${
-        checked ? "bg-brand-blue-600" : "bg-slate-200"
-      }`}
-    >
-      <span aria-hidden className={`ml-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${checked ? "translate-x-5" : "translate-x-0"}`} />
-    </button>
-  );
-}
-
-/**
- * Múltiplas imagens por seção (carrossel no preview/página pública).
- * Escreve sempre em `imageKeys` — a primeira edição já carrega para lá
- * qualquer imagem legada de `imageKey` (via getSectionImages), sem passo
- * de migração explícito.
+ * Imagens da seção — cada uma com nome/preço opcionais, editáveis em
+ * campos compactos abaixo da miniatura (sem popover/modal, para agilizar
+ * a edição). Toda escrita recalcula `position` pela ordem do array e
+ * grava sempre em `images` — a primeira edição já carrega para lá
+ * qualquer imagem legada de `imageKeys`/`imageKey` (via
+ * getSectionImageItems), sem passo de migração explícito.
  */
 function SectionImagesField({
   minisiteId,
@@ -50,7 +28,18 @@ function SectionImagesField({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const { showToast } = useToast();
-  const images = getSectionImages(section);
+  const items = getSectionImageItems(section);
+
+  function writeImages(next: CatalogImageItem[]) {
+    const images: MiniSiteSectionImage[] = next.map((it, index) => ({
+      id: it.id,
+      imageKey: it.imageKey,
+      label: it.label,
+      price: it.price,
+      position: index,
+    }));
+    onChange({ images });
+  }
 
   async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -64,7 +53,7 @@ function SectionImagesField({
     try {
       const compressed = await compressImage(file, "section");
       const { key } = await uploadMedia(minisiteId, "section", compressed);
-      onChange({ imageKeys: [...images, key] });
+      writeImages([...items, { id: crypto.randomUUID(), imageKey: key }]);
     } catch (err) {
       showToast(err instanceof MiniSiteApiError ? err.message : "Não foi possível enviar a imagem.", "error");
     } finally {
@@ -72,14 +61,18 @@ function SectionImagesField({
     }
   }
 
-  function remove(index: number) {
-    onChange({ imageKeys: images.filter((_, i) => i !== index) });
+  function remove(id: string) {
+    writeImages(items.filter((it) => it.id !== id));
+  }
+
+  function updateItem(id: string, patch: Partial<CatalogImageItem>) {
+    writeImages(items.map((it) => (it.id === id ? { ...it, ...patch } : it)));
   }
 
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold text-brand-navy-900">Imagens da seção (opcional)</p>
+        <p className="text-sm font-semibold text-brand-navy-900">Imagens da seção</p>
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
@@ -90,21 +83,43 @@ function SectionImagesField({
         </button>
       </div>
       <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleFileSelected} />
-      {images.length === 0 ? (
-        <p className="text-xs text-slate-400">Nenhuma imagem ainda. Com mais de uma, elas aparecem em carrossel no MiniSite.</p>
+      {items.length === 0 ? (
+        <p className="text-xs text-slate-400">Nenhuma imagem ainda. A seção não aparece no MiniSite até ter ao menos uma foto.</p>
       ) : (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {images.map((key, index) => (
-            <div key={`${key}-${index}`} className="group relative overflow-hidden rounded-xl border border-slate-100">
-              <img src={getAssetUrl(key)} alt="" className="aspect-[4/3] w-full object-cover" />
-              <button
-                type="button"
-                onClick={() => remove(index)}
-                aria-label="Remover imagem"
-                className="absolute inset-0 flex items-center justify-center bg-black/50 text-white opacity-0 transition group-hover:opacity-100"
-              >
-                <TrashIcon className="h-4 w-4" />
-              </button>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {items.map((item) => (
+            <div key={item.id} className="flex flex-col gap-1.5">
+              <div className="group relative overflow-hidden rounded-xl border border-slate-100">
+                <img src={getAssetUrl(item.imageKey)} alt="" className="aspect-[3/4] w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => remove(item.id)}
+                  aria-label="Remover imagem"
+                  className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1.5 text-white opacity-0 transition group-hover:opacity-100"
+                >
+                  <TrashIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
+              <input
+                type="text"
+                aria-label="Nome da imagem (opcional)"
+                name={`section-image-${item.id}-label`}
+                placeholder="Nome (opcional)"
+                value={item.label ?? ""}
+                onChange={(e) => updateItem(item.id, { label: e.target.value || undefined })}
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-1 focus:ring-brand-blue-500/40"
+              />
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                aria-label="Preço da imagem (opcional)"
+                name={`section-image-${item.id}-price`}
+                placeholder="Preço"
+                value={item.price ?? ""}
+                onChange={(e) => updateItem(item.id, { price: e.target.value === "" ? undefined : Number(e.target.value) })}
+                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-1 focus:ring-brand-blue-500/40"
+              />
             </div>
           ))}
         </div>
@@ -123,21 +138,7 @@ interface CatalogSectionEditorProps {
 export function CatalogSectionEditor({ minisiteId, section, onChange, onRemove }: CatalogSectionEditorProps) {
   const [expanded, setExpanded] = useState(true);
 
-  function updateItem(id: string, patch: Partial<MiniSiteCard>) {
-    onChange({ cards: section.cards.map((c) => (c.id === id ? { ...c, ...patch } : c)) });
-  }
-
-  function removeItem(id: string) {
-    onChange({ cards: section.cards.filter((c) => c.id !== id).map((c, i) => ({ ...c, position: i })) });
-  }
-
-  function addItem() {
-    const newItem: MiniSiteCard = { id: crypto.randomUUID(), title: "Novo item", position: section.cards.length };
-    onChange({ cards: [...section.cards, newItem] });
-  }
-
-  const totalCount = section.cards.length;
-  const readyCount = section.cards.filter((c) => c.title.trim()).length;
+  const images = getSectionImageItems(section);
   const sectionReady = isCatalogSectionReady(section);
 
   return (
@@ -178,16 +179,10 @@ export function CatalogSectionEditor({ minisiteId, section, onChange, onRemove }
             <ToggleSwitch checked={section.showPrices} onChange={(v) => onChange({ showPrices: v })} label="Exibir preço" />
             Exibir preço (opcional)
           </label>
-          <label className="flex items-center gap-2.5 text-sm font-medium text-slate-600">
-            <ToggleSwitch checked={section.showCta} onChange={(v) => onChange({ showCta: v })} label="Exibir botão" />
-            Exibir botão (opcional)
-          </label>
           <span className={`text-xs font-semibold sm:ml-auto ${sectionReady ? "text-emerald-600" : "text-slate-400"}`}>
             {!sectionReady
-              ? "Adicione uma imagem da seção ou um item com título"
-              : readyCount > 0
-                ? `${readyCount} de ${totalCount} ${totalCount === 1 ? "item visível" : "itens visíveis"} no MiniSite`
-                : "Seção visível — ainda sem itens"}
+              ? "Adicione ao menos uma imagem para esta seção aparecer no MiniSite"
+              : `${images.length} ${images.length === 1 ? "imagem" : "imagens"} no MiniSite`}
           </span>
         </div>
       </div>
@@ -195,24 +190,6 @@ export function CatalogSectionEditor({ minisiteId, section, onChange, onRemove }
       {expanded ? (
         <div className="flex flex-col gap-4 border-t border-slate-100 p-4">
           <SectionImagesField minisiteId={minisiteId} section={section} onChange={onChange} />
-
-          <div className="flex flex-col gap-3">
-            {[...section.cards]
-              .sort((a, b) => a.position - b.position)
-              .map((item) => (
-                <CatalogItemEditor
-                  key={item.id}
-                  minisiteId={minisiteId}
-                  item={item}
-                  onChange={(patch) => updateItem(item.id, patch)}
-                  onRemove={() => removeItem(item.id)}
-                />
-              ))}
-          </div>
-
-          <Button type="button" variant="secondary" fullWidth={false} icon={<PlusIcon className="h-4 w-4" />} onClick={addItem}>
-            Adicionar item
-          </Button>
         </div>
       ) : null}
     </div>

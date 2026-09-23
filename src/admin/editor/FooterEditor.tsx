@@ -1,21 +1,8 @@
 import { EditorSection } from "../components/EditorSection";
+import { ToggleSwitch } from "../components/ToggleSwitch";
 import { ShareIcon } from "../components/icons";
 import { SOCIAL_ICONS } from "../../shared/icons";
 import { useEditorStore } from "./editorStore";
-
-function ToggleSwitch({ checked, onChange }: { checked: boolean; onChange: (checked: boolean) => void }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      onClick={() => onChange(!checked)}
-      className={`relative h-6 w-11 shrink-0 rounded-full transition ${checked ? "bg-brand-blue-600" : "bg-slate-200"}`}
-    >
-      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${checked ? "translate-x-[22px]" : "translate-x-0.5"}`} />
-    </button>
-  );
-}
 
 export function FooterEditor() {
   const footer = useEditorStore((s) => s.config.footer);
@@ -31,6 +18,7 @@ export function FooterEditor() {
           <ToggleSwitch
             checked={footer.showSocialIcons}
             onChange={(checked) => patchConfig({ footer: { ...footer, showSocialIcons: checked } })}
+            label="ícones no rodapé"
           />
           <span className="text-sm font-semibold text-brand-navy-900">Exibir ícones no rodapé</span>
         </div>

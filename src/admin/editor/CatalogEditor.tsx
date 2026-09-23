@@ -17,6 +17,7 @@ export function CatalogEditor() {
       id: crypto.randomUUID(),
       title: "Nova seção",
       imageKeys: [],
+      images: [],
       showPrices: true,
       showCta: true,
       position: sections.length,
@@ -45,7 +46,7 @@ export function CatalogEditor() {
       }
     >
       {sorted.length === 0 ? (
-        <p className="text-sm text-slate-400">Nenhuma seção criada ainda. O catálogo não aparece no MiniSite até ter ao menos uma seção com itens.</p>
+        <p className="text-sm text-slate-400">Nenhuma seção criada ainda. O catálogo não aparece no MiniSite até ter ao menos uma seção com imagens.</p>
       ) : (
         <div className="flex flex-col gap-4">
           {sorted.map((section) => (

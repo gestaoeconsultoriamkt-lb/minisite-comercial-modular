@@ -6,7 +6,6 @@ import { getFilledSocialEntries } from "../socialLinks";
 import { getOrderedModules, type ModuleKey } from "../moduleOrder";
 import { GallerySection } from "./GallerySection";
 import { ButtonsSection } from "./ButtonsSection";
-import { SocialButtonsSection } from "./SocialButtonsSection";
 import { CatalogSection } from "./CatalogSection";
 import { LocationSection } from "./LocationSection";
 
@@ -19,7 +18,6 @@ export interface MiniSiteRendererProps {
 const MODULE_COMPONENTS: Record<ModuleKey, (config: MiniSiteConfig) => ReactNode> = {
   gallery: (config) => <GallerySection config={config} />,
   actionButtons: (config) => <ButtonsSection config={config} />,
-  socialButtons: (config) => <SocialButtonsSection config={config} />,
   catalog: (config) => <CatalogSection config={config} />,
   location: (config) => <LocationSection config={config} />,
 };

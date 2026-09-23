@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { EditorSection } from "../components/EditorSection";
 import { Button } from "../components/Button";
+import { TextField } from "../components/TextField";
+import { ToggleSwitch } from "../components/ToggleSwitch";
 import { ArrowDownIcon, ArrowUpIcon, ImageIcon, PlusIcon, TrashIcon } from "../components/icons";
 import { getAssetUrl } from "../../shared/assetUrl";
 import { uploadMedia, MiniSiteApiError } from "../lib/minisitesApi";
@@ -11,10 +13,15 @@ import { useEditorStore } from "./editorStore";
 export function GalleryEditor() {
   const minisiteId = useEditorStore((s) => s.minisiteId);
   const gallery = useEditorStore((s) => s.config.gallery);
+  const heading = useEditorStore((s) => s.config.galleryHeading);
   const patchConfig = useEditorStore((s) => s.patchConfig);
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const { showToast } = useToast();
+
+  function updateHeading(patch: Partial<typeof heading>) {
+    patchConfig({ galleryHeading: { ...heading, ...patch } });
+  }
 
   const sorted = [...gallery].sort((a, b) => a.position - b.position);
 
@@ -67,6 +74,20 @@ export function GalleryEditor() {
       }
     >
       <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleFileSelected} />
+
+      <div className="flex flex-col gap-3 rounded-xl border border-slate-100 p-3">
+        <TextField
+          name="galleryTitle"
+          label="Título da galeria"
+          placeholder="Galeria"
+          value={heading.title}
+          onChange={(e) => updateHeading({ title: e.target.value })}
+        />
+        <label className="flex items-center gap-2.5 text-sm font-medium text-slate-600">
+          <ToggleSwitch checked={heading.show} onChange={(v) => updateHeading({ show: v })} label="Exibir título da galeria" />
+          Exibir título da galeria
+        </label>
+      </div>
 
       {sorted.length === 0 ? (
         <p className="text-sm text-slate-400">Nenhuma imagem adicionada ainda. A galeria não aparece no MiniSite até ter ao menos uma foto.</p>

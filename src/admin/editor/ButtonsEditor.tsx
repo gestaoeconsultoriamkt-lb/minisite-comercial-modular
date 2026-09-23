@@ -3,8 +3,9 @@ import { EditorSection } from "../components/EditorSection";
 import { TextField } from "../components/TextField";
 import { ColorField } from "../components/ColorField";
 import { Button } from "../components/Button";
+import { ToggleSwitch } from "../components/ToggleSwitch";
 import { AlertCircleIcon, ChevronDownIcon, ExternalLinkIcon, ZapIcon } from "../components/icons";
-import { BUTTON_ICONS } from "../../shared/icons";
+import { BUTTON_ICONS, SOCIAL_ICONS } from "../../shared/icons";
 import {
   BUTTON_TYPE_LABELS,
   EDITABLE_BUTTON_TYPES,
@@ -13,37 +14,10 @@ import {
   isButtonReady,
 } from "../../shared/actionButtons";
 import { getButtonColors } from "../../shared/renderer/MiniSiteButton";
-import type { MiniSiteButton, MiniSiteConfig } from "../../shared/schemas/miniSiteConfig";
+import type { MiniSiteButton, MiniSiteConfig, MiniSiteSocialLinks } from "../../shared/schemas/miniSiteConfig";
 import { useEditorStore } from "./editorStore";
 
 type EditableButtonType = (typeof EDITABLE_BUTTON_TYPES)[number];
-
-/**
- * Track em escala padrão do Tailwind (sem valores arbitrários): trilha de
- * 44px, bolinha de 20px com margem de 2px de cada lado nos dois estados
- * (`translate-x-0` / `translate-x-5` = 20px) — nunca invade o conteúdo ao
- * lado porque o próprio switch é um elemento isolado, sem texto adjacente
- * dentro dele.
- */
-function ToggleSwitch({ checked, onChange, label }: { checked: boolean; onChange: (checked: boolean) => void; label: string }) {
-  return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={checked}
-      aria-label={`${checked ? "Desativar" : "Ativar"} ${label}`}
-      onClick={() => onChange(!checked)}
-      className={`inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40 focus:ring-offset-1 ${
-        checked ? "bg-brand-blue-600" : "bg-slate-200"
-      }`}
-    >
-      <span
-        aria-hidden
-        className={`ml-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${checked ? "translate-x-5" : "translate-x-0"}`}
-      />
-    </button>
-  );
-}
 
 function ButtonRow({ type }: { type: EditableButtonType }) {
   const config = useEditorStore((s) => s.config);
@@ -272,13 +246,63 @@ function WifiFields({ config, onChange }: { config: MiniSiteConfig; onChange: (p
   );
 }
 
-export function ActionButtonsEditor() {
+const SOCIAL_FIELDS: { key: keyof MiniSiteSocialLinks; label: string; placeholder: string }[] = [
+  { key: "instagram", label: "Instagram", placeholder: "https://instagram.com/seunegocio" },
+  { key: "facebook", label: "Facebook", placeholder: "https://facebook.com/seunegocio" },
+  { key: "tiktok", label: "Tiktok", placeholder: "https://tiktok.com/@seunegocio" },
+  { key: "youtube", label: "YouTube", placeholder: "https://youtube.com/@seunegocio" },
+  { key: "linkedin", label: "Linkedin", placeholder: "https://linkedin.com/company/seunegocio" },
+  { key: "kwai", label: "Kwai", placeholder: "https://kwai.com/@seunegocio" },
+];
+
+/**
+ * Módulo único de "Botões": ações (WhatsApp, Pix, Agendar...) e redes
+ * sociais (Instagram, Facebook...) no mesmo bloco — antes eram dois
+ * módulos/editores separados. Ambos usam o mesmo componente visual base
+ * no MiniSite público (ver ButtonsSection/MiniSiteButtonLink); aqui só
+ * unificamos onde são configurados.
+ */
+export function ButtonsEditor() {
+  const socialLinks = useEditorStore((s) => s.config.socialLinks);
+  const patchConfig = useEditorStore((s) => s.patchConfig);
+
+  function updateSocial(key: keyof MiniSiteSocialLinks, value: string) {
+    patchConfig({ socialLinks: { ...socialLinks, [key]: value || undefined } });
+  }
+
   return (
-    <EditorSection icon={<ZapIcon className="h-5 w-5" />} title="Botões de ação" subtitle="Escolha quais botões exibir no seu MiniSite. Você pode ativar ou desativar a qualquer momento.">
+    <EditorSection
+      icon={<ZapIcon className="h-5 w-5" />}
+      title="Botões"
+      subtitle="Ações e redes sociais em um único bloco. Ative ou preencha os que quiser exibir no seu MiniSite."
+    >
       <div className="flex flex-col gap-3">
         {EDITABLE_BUTTON_TYPES.map((type) => (
           <ButtonRow key={type} type={type} />
         ))}
+      </div>
+
+      <div className="mt-6 flex flex-col gap-4 border-t border-slate-100 pt-6">
+        <div>
+          <p className="text-sm font-bold text-brand-navy-900">Redes sociais</p>
+          <p className="mt-0.5 text-xs text-slate-400">Cole o link completo ou digite só o @perfil — aparecem como botões aqui e como ícones no rodapé.</p>
+        </div>
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          {SOCIAL_FIELDS.map(({ key, label, placeholder }) => {
+            const Icon = SOCIAL_ICONS[key];
+            return (
+              <TextField
+                key={key}
+                name={key}
+                label={label}
+                placeholder={placeholder}
+                icon={<Icon className="h-4 w-4" />}
+                value={socialLinks[key] ?? ""}
+                onChange={(e) => updateSocial(key, e.target.value)}
+              />
+            );
+          })}
+        </div>
       </div>
     </EditorSection>
   );

@@ -30,7 +30,31 @@ export function getButtonColors(config: MiniSiteConfig, button?: MiniSiteButton)
   };
 }
 
-/** Botão-pílula padrão: ícone à esquerda, texto centralizado com ele, mesma altura/raio/sombra em todo o MiniSite. */
+/**
+ * Classe única do botão-pílula em todo o MiniSite (ações + redes sociais,
+ * inclusive o `<summary>` do Pix/Wi-Fi) — sensação de profundidade/botão
+ * físico sutil, sem exagero: highlight interno superior, sombra interna
+ * inferior leve (dá volume ao próprio preenchimento colorido) e uma
+ * sombra externa suave que destaca o botão do fundo. No hover, o botão
+ * "levanta" 1px e brilha um pouco mais; no active, "afunda" 1px e a
+ * sombra reduz — simula pressão física sem transformar a cor nem o
+ * layout (mantém contraste/acessibilidade e a área de toque intactas).
+ */
+export function miniSiteButtonClassName(extra = ""): string {
+  return [
+    "relative flex items-center justify-center gap-2.5 rounded-2xl px-4 py-3.5 text-[15px] font-semibold",
+    "transition-all duration-150 ease-out",
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
+    "shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-2px_3px_rgba(0,0,0,0.15),0_3px_8px_rgba(0,0,0,0.22)]",
+    "hover:-translate-y-px hover:brightness-[1.04] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-2px_3px_rgba(0,0,0,0.15),0_5px_12px_rgba(0,0,0,0.26)]",
+    "active:translate-y-[1px] active:brightness-95 active:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_2px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.18)]",
+    extra,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+/** Botão-pílula padrão: ícone à esquerda, texto centralizado com ele, mesma altura/raio/profundidade em todo o MiniSite. */
 export function MiniSiteButtonLink({
   href,
   icon,
@@ -47,7 +71,7 @@ export function MiniSiteButtonLink({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="flex items-center justify-center gap-2.5 rounded-2xl px-4 py-3.5 text-[15px] font-semibold shadow-sm transition hover:opacity-90 active:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+      className={miniSiteButtonClassName()}
       style={{ backgroundColor: colors.background, color: colors.text }}
     >
       <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>

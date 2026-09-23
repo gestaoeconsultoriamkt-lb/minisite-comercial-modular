@@ -7,8 +7,7 @@ import { useAutosave, type SaveStatus } from "../editor/useAutosave";
 import { BasicInfoEditor } from "../editor/BasicInfoEditor";
 import { VisualIdentityEditor } from "../editor/VisualIdentityEditor";
 import { HeaderEditor } from "../editor/HeaderEditor";
-import { ActionButtonsEditor } from "../editor/ActionButtonsEditor";
-import { SocialLinksEditor } from "../editor/SocialLinksEditor";
+import { ButtonsEditor } from "../editor/ButtonsEditor";
 import { GalleryEditor } from "../editor/GalleryEditor";
 import { CatalogEditor } from "../editor/CatalogEditor";
 import { LocationEditor } from "../editor/LocationEditor";
@@ -128,8 +127,7 @@ export function MiniSiteEditorPage() {
             <BasicInfoEditor />
             <VisualIdentityEditor />
             <HeaderEditor />
-            <ActionButtonsEditor />
-            <SocialLinksEditor />
+            <ButtonsEditor />
             <GalleryEditor />
             <CatalogEditor />
             <LocationEditor />

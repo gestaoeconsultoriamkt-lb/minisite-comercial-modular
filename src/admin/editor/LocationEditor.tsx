@@ -1,5 +1,6 @@
 import { EditorSection } from "../components/EditorSection";
 import { TextField } from "../components/TextField";
+import { TextareaField } from "../components/TextareaField";
 import { MapPinIcon } from "../components/icons";
 import { useEditorStore } from "./editorStore";
 
@@ -30,13 +31,17 @@ export function LocationEditor() {
       />
       <p className="-mt-3 text-xs text-slate-400">Cole aqui o link correto do Google Maps.</p>
 
-      <TextField
+      <TextareaField
         name="mapEmbedUrl"
-        label="URL de embed do mapa (opcional)"
-        placeholder="https://www.google.com/maps/embed?..."
+        label="Mapa incorporado (opcional)"
+        rows={3}
+        placeholder="Cole a URL de embed (.../maps/embed?...) ou o código <iframe> completo do Google Maps"
         value={value.mapEmbedUrl ?? ""}
         onChange={(e) => update({ mapEmbedUrl: e.target.value })}
       />
+      <p className="-mt-3 text-xs text-slate-400">
+        No Google Maps, use "Compartilhar → Incorporar um mapa" e cole aqui a URL ou o código &lt;iframe&gt; inteiro — extraímos o link automaticamente.
+      </p>
     </EditorSection>
   );
 }

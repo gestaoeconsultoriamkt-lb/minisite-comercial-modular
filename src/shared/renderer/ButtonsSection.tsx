@@ -1,14 +1,15 @@
 import { useState, type MouseEvent, type ReactNode } from "react";
 import type { MiniSiteConfig } from "../schemas/miniSiteConfig";
-import { BUTTON_ICONS, CopyIcon, ExternalLinkIcon, PixIcon, WifiIcon } from "../icons";
+import { BUTTON_ICONS, CopyIcon, ExternalLinkIcon, PixIcon, SOCIAL_ICONS, WifiIcon } from "../icons";
 import { EDITABLE_BUTTON_TYPES, getButtonHref, getButtonLabel, isButtonReady } from "../actionButtons";
-import { getButtonColors, MiniSiteButtonLink, type MiniSiteButtonColors } from "./MiniSiteButton";
+import { SOCIAL_PLATFORM_LABELS, getFilledSocialEntries } from "../socialLinks";
+import { getButtonColors, miniSiteButtonClassName, MiniSiteButtonLink, type MiniSiteButtonColors } from "./MiniSiteButton";
 
 /**
  * Pix/Wi-Fi usam <details>/<summary> nativo para revelar/copiar — funciona
  * sem JS tanto no preview (React hidratado) quanto no HTML estático do SSR
- * público. O <summary> É o botão: mesmo padrão visual (altura, padding,
- * raio, ícone+texto, cor) dos demais — sem subtítulo, sem parecer um
+ * público. O <summary> É o botão: mesma classe/profundidade (ver
+ * miniSiteButtonClassName) dos demais — sem subtítulo, sem parecer um
  * componente diferente na lista. O valor revelado aparece como um painel
  * neutro separado abaixo, só quando aberto — não afeta a altura/aparência
  * do botão fechado.
@@ -45,10 +46,7 @@ function CopyableReveal({
 
   return (
     <details className="group">
-      <summary
-        className="flex cursor-pointer list-none items-center justify-center gap-2.5 rounded-2xl px-4 py-3.5 text-[15px] font-semibold shadow-sm transition hover:opacity-90 active:opacity-80"
-        style={{ backgroundColor: colors.background, color: colors.text }}
-      >
+      <summary className={miniSiteButtonClassName("cursor-pointer list-none")} style={{ backgroundColor: colors.background, color: colors.text }}>
         <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
         <span className="truncate">{label}</span>
       </summary>
@@ -63,12 +61,21 @@ function CopyableReveal({
   );
 }
 
+/**
+ * Módulo único de botões: ações (WhatsApp, Pix, Agendar...) e redes
+ * sociais (Instagram, Facebook...) no mesmo bloco visual, mesmo
+ * componente base — antes eram dois blocos separados no corpo da
+ * página. Os ícones do rodapé (Rodapé Social) continuam independentes.
+ */
 export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
   const readyButtons = EDITABLE_BUTTON_TYPES.map((type) => config.buttons.find((b) => b.type === type)).filter(
     (button): button is NonNullable<typeof button> => Boolean(button && isButtonReady(button, config)),
   );
+  const socialEntries = getFilledSocialEntries(config.socialLinks);
 
-  if (readyButtons.length === 0) return null;
+  if (readyButtons.length === 0 && socialEntries.length === 0) return null;
+
+  const socialColors = getButtonColors(config);
 
   return (
     <div className="mt-6 flex w-full flex-col gap-2.5">
@@ -97,6 +104,12 @@ export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
         if (!href) return null;
 
         return <MiniSiteButtonLink key={button.id} href={href} icon={<Icon className="h-4.5 w-4.5" />} label={label} colors={colors} />;
+      })}
+      {socialEntries.map(({ platform, href }) => {
+        const Icon = SOCIAL_ICONS[platform];
+        return (
+          <MiniSiteButtonLink key={platform} href={href} icon={<Icon className="h-4.5 w-4.5" />} label={SOCIAL_PLATFORM_LABELS[platform]} colors={socialColors} />
+        );
       })}
     </div>
   );

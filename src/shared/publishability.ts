@@ -1,6 +1,7 @@
 import type { MiniSiteConfig } from "./schemas/miniSiteConfig";
 import { isReservedSlug, isValidSlugFormat } from "./reservedSlugs";
 import { isButtonReady } from "./actionButtons";
+import { isCatalogSectionReady } from "./catalog";
 
 export interface ChecklistItem {
   key: string;
@@ -50,7 +51,7 @@ export function computePublishChecklist({ internalName, slug, config }: PublishC
       ok: Object.values(config.socialLinks).some((url) => Boolean(url)),
       blocking: false,
     },
-    { key: "catalog", label: "Catálogo", ok: config.sections.some((s) => s.cards.length > 0), blocking: false },
+    { key: "catalog", label: "Catálogo", ok: config.sections.some(isCatalogSectionReady), blocking: false },
     {
       key: "location",
       label: "Localização",

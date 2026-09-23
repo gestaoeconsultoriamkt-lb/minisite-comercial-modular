@@ -5,21 +5,25 @@ import { getFilledSocialEntries } from "./socialLinks";
 
 /**
  * Módulos públicos reordenáveis. Cabeçalho fica sempre no início e o
- * rodapé social sempre no final — não fazem parte desta lista. Os botões
- * de redes sociais no corpo (`socialButtons`) coexistem com os ícones do
- * rodapé: são duas saídas independentes para o mesmo `config.socialLinks`.
+ * rodapé social sempre no final — não fazem parte desta lista.
+ *
+ * `actionButtons` é o módulo único de botões (ações + redes sociais) —
+ * antes eram dois módulos separados (`actionButtons` + `socialButtons`);
+ * unificados num só bloco visual, mas a CHAVE do módulo continua
+ * `actionButtons` de propósito, para que uma ordem já salva por um
+ * usuário (`config.moduleOrder`) continue valendo sem precisar de
+ * migração — ver getOrderedModules().
  *
  * A ordem desta lista só vale como DEFAULT/fallback — para MiniSites sem
- * `module_order` personalizado ainda (ver getOrderedModules). Uma ordem já
- * salva pelo usuário na Tela de Layout nunca é sobrescrita por ela.
+ * `module_order` personalizado ainda. Uma ordem já salva pelo usuário na
+ * Tela de Layout nunca é sobrescrita por ela.
  */
-export const MODULE_KEYS = ["actionButtons", "gallery", "socialButtons", "catalog", "location"] as const;
+export const MODULE_KEYS = ["actionButtons", "gallery", "catalog", "location"] as const;
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 
 export const MODULE_INFO: Record<ModuleKey, { label: string; description: string }> = {
-  actionButtons: { label: "Botões de ação", description: "WhatsApp, Google, Site, PIX e outros" },
+  actionButtons: { label: "Botões", description: "WhatsApp, Google, Pix, Instagram e outros" },
   gallery: { label: "Galeria", description: "Imagens em destaque do seu negócio" },
-  socialButtons: { label: "Redes sociais", description: "Instagram, Facebook, TikTok e outras" },
   catalog: { label: "Catálogo / Seções", description: "Produtos, serviços ou categorias" },
   location: { label: "Como chegar", description: "Endereço e mapa" },
 };
@@ -28,11 +32,13 @@ function hasGallery(config: MiniSiteConfig): boolean {
   return config.gallery.length > 0;
 }
 
+/** Módulo único de botões: aparece com conteúdo de ações OU de redes sociais. */
 function hasActionButtons(config: MiniSiteConfig): boolean {
-  return EDITABLE_BUTTON_TYPES.some((type) => {
+  const hasAction = EDITABLE_BUTTON_TYPES.some((type) => {
     const button = config.buttons.find((b) => b.type === type);
     return button ? isButtonReady(button, config) : false;
   });
+  return hasAction || getFilledSocialEntries(config.socialLinks).length > 0;
 }
 
 function hasCatalog(config: MiniSiteConfig): boolean {
@@ -43,14 +49,9 @@ function hasLocation(config: MiniSiteConfig): boolean {
   return Boolean(config.location?.address || config.location?.mapsUrl);
 }
 
-function hasSocialButtons(config: MiniSiteConfig): boolean {
-  return getFilledSocialEntries(config.socialLinks).length > 0;
-}
-
 const PRESENCE_CHECK: Record<ModuleKey, (config: MiniSiteConfig) => boolean> = {
   gallery: hasGallery,
   actionButtons: hasActionButtons,
-  socialButtons: hasSocialButtons,
   catalog: hasCatalog,
   location: hasLocation,
 };
@@ -63,9 +64,11 @@ export function getVisibleModules(config: MiniSiteConfig): ModuleKey[] {
 /**
  * Módulos visíveis, na ordem escolhida pelo usuário (`config.moduleOrder`).
  * Normaliza automaticamente: ignora entradas de módulos sem conteúdo/
- * desconhecidos, e acrescenta ao final módulos visíveis que ainda não
- * estavam na lista (registros antigos ou módulos novos) — nunca some
- * conteúdo por causa de uma ordem desatualizada.
+ * desconhecidos (inclusive a antiga chave "socialButtons", de registros
+ * salvos antes da unificação — simplesmente descartada, sem erro), e
+ * acrescenta ao final módulos visíveis que ainda não estavam na lista
+ * (registros antigos ou módulos novos) — nunca some conteúdo por causa
+ * de uma ordem desatualizada.
  */
 export function getOrderedModules(config: MiniSiteConfig): ModuleKey[] {
   const visible = new Set(getVisibleModules(config));

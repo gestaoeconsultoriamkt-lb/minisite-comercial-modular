@@ -1,39 +1,46 @@
-import type { MiniSiteCard, MiniSiteSection } from "./schemas/miniSiteConfig";
+import type { MiniSiteSection } from "./schemas/miniSiteConfig";
+
+export interface CatalogImageItem {
+  id: string;
+  imageKey: string;
+  label?: string;
+  price?: number;
+}
 
 /**
- * Um item do catálogo "conta" no MiniSite só se tiver um título — mesma
- * lógica de "readiness" já usada para os botões de ação (ver
- * isButtonReady em actionButtons.ts): nunca renderizar um card vazio ou
- * quebrado, mas qualquer combinação de imagem/descrição/preço/CTA é
- * livre desde que haja um título.
+ * Imagens efetivas da seção, da geração mais nova para a mais antiga —
+ * nunca perde conteúdo já salvo:
+ *  1) `images` (atual — cada imagem com nome/preço opcionais);
+ *  2) `imageKeys` (rodada anterior — array de chaves, sem metadados);
+ *  3) `imageKey` (geração original — uma imagem só).
+ * A primeira edição feita pelo editor novo já escreve em `images`,
+ * carregando para lá o que existir das gerações anteriores (ver
+ * `SectionImagesField` em CatalogSectionEditor.tsx).
  */
-export function isCatalogCardReady(card: MiniSiteCard): boolean {
-  return Boolean(card.title?.trim());
-}
-
-/** Itens prontos de uma seção, na ordem configurada. */
-export function getReadyCards(section: MiniSiteSection): MiniSiteCard[] {
-  return [...section.cards].filter(isCatalogCardReady).sort((a, b) => a.position - b.position);
-}
-
-/**
- * Imagens efetivas da seção: prefere o novo array `imageKeys`; se vazio,
- * cai para o `imageKey` legado (registros antigos, uma imagem só) — sem
- * migração destrutiva, sem perda de dado ao ler configs pré-existentes.
- */
-export function getSectionImages(section: MiniSiteSection): string[] {
-  if (section.imageKeys.length > 0) return section.imageKeys;
-  return section.imageKey ? [section.imageKey] : [];
+export function getSectionImageItems(section: MiniSiteSection): CatalogImageItem[] {
+  if (section.images.length > 0) {
+    return [...section.images]
+      .sort((a, b) => a.position - b.position)
+      .map(({ id, imageKey, label, price }) => ({ id, imageKey, label, price }));
+  }
+  if (section.imageKeys.length > 0) {
+    return section.imageKeys.map((imageKey, index) => ({ id: `legacy-${index}`, imageKey }));
+  }
+  if (section.imageKey) {
+    return [{ id: "legacy-0", imageKey: section.imageKey }];
+  }
+  return [];
 }
 
 /**
- * Readiness da seção é independente da readiness dos itens: uma seção
- * aparece no MiniSite quando tem título e ao menos um conteúdo visual
- * válido — imagens da seção OU um item pronto. Uma seção com título +
- * imagem(ns) mas zero itens já é conteúdo real (ex.: "Pizzas e esfihas
- * tradicionais" com fotos, catálogo de itens ainda por vir) e não deve
- * depender de ter item nenhum para ser mostrada.
+ * A estrutura de Item (cards com descrição/CTA) foi removida do fluxo
+ * visual/editor — a imagem é a unidade principal da seção. Uma seção
+ * aparece no MiniSite quando tem título e ao menos uma imagem.
  */
 export function isCatalogSectionReady(section: MiniSiteSection): boolean {
-  return Boolean(section.title?.trim()) && (getSectionImages(section).length > 0 || section.cards.some(isCatalogCardReady));
+  return Boolean(section.title?.trim()) && getSectionImageItems(section).length > 0;
+}
+
+export function formatCatalogPrice(price: number): string {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(price);
 }

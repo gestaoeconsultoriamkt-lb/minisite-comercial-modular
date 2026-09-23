@@ -46,16 +46,30 @@ export const cardSchema = z.object({
   position: z.number().int().nonnegative(),
 });
 
+export const sectionImageSchema = z.object({
+  id: z.string(),
+  imageKey: z.string(),
+  /** Nome curto opcional (ex.: "Pizza de Chocolate"). */
+  label: z.string().optional(),
+  price: z.number().nonnegative().optional(),
+  position: z.number().int().nonnegative(),
+});
+
 export const sectionSchema = z.object({
   id: z.string(),
   title: z.string().min(1),
-  /** @deprecated Substituído por `imageKeys` (múltiplas imagens/carrossel). Mantido só para ler registros antigos — ver getSectionImages(). */
+  /** @deprecated Geração 1 (uma imagem só). Substituído por `images`. Só leitura — ver getSectionImageItems(). */
   imageKey: z.string().optional(),
+  /** @deprecated Geração 2 (array de chaves, sem metadados). Substituído por `images`. Só leitura — ver getSectionImageItems(). */
   imageKeys: z.array(z.string()).default([]),
-  /** Controla a exibição de preço/CTA para os itens desta seção; o dado do item é preservado de todo modo. */
+  /** Geração atual: imagens com metadados opcionais (nome/preço) — a unidade visual principal da seção. */
+  images: z.array(sectionImageSchema).default([]),
+  /** Controla a exibição do preço nas imagens desta seção. */
   showPrices: z.boolean().default(true),
+  /** @deprecated Estrutura de Item (cards com CTA) removida do fluxo visual/editor. Campo mantido só para não apagar dados antigos. */
   showCta: z.boolean().default(true),
   position: z.number().int().nonnegative(),
+  /** @deprecated Estrutura de Item (cards com imagem/descrição/CTA) removida do fluxo visual/editor. Campo mantido só para não apagar dados antigos. */
   cards: z.array(cardSchema).default([]),
 });
 
@@ -132,6 +146,14 @@ export const footerSchema = z
   })
   .default({ showSocialIcons: true });
 
+/** Cabeçalho opcional da Galeria — mesmo padrão visual (ícone + título + divisor) das seções do catálogo. */
+export const galleryHeadingSchema = z
+  .object({
+    title: z.string().default("Galeria"),
+    show: z.boolean().default(true),
+  })
+  .default({ title: "Galeria", show: true });
+
 export const headerSchema = z
   .object({
     variant: z.enum(["highlight", "compact"]).default("highlight"),
@@ -155,6 +177,7 @@ export const miniSiteConfigSchema = z.object({
   wifi: wifiSchema,
   location: locationSchema,
   gallery: z.array(galleryImageSchema).default([]),
+  galleryHeading: galleryHeadingSchema,
   sections: z.array(sectionSchema).default([]),
   footer: footerSchema,
   moduleOrder: z.array(z.string()).default([]),
@@ -163,7 +186,9 @@ export const miniSiteConfigSchema = z.object({
 export type MiniSiteConfig = z.infer<typeof miniSiteConfigSchema>;
 export type MiniSiteButton = z.infer<typeof buttonSchema>;
 export type MiniSiteSection = z.infer<typeof sectionSchema>;
+export type MiniSiteSectionImage = z.infer<typeof sectionImageSchema>;
 export type MiniSiteCard = z.infer<typeof cardSchema>;
+export type MiniSiteGalleryHeading = z.infer<typeof galleryHeadingSchema>;
 export type MiniSiteLocation = NonNullable<z.infer<typeof locationSchema>>;
 export type MiniSitePix = NonNullable<z.infer<typeof pixSchema>>;
 export type MiniSiteWifi = NonNullable<z.infer<typeof wifiSchema>>;
