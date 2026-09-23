@@ -45,7 +45,7 @@ export function getButtonColors(config: MiniSiteConfig, button?: MiniSiteButton)
  */
 export function miniSiteButtonClassName(extra = ""): string {
   return [
-    "relative isolate flex items-center justify-center gap-3 rounded-2xl px-5 py-[18px] text-base font-semibold",
+    "relative isolate flex items-center justify-center rounded-2xl px-5 py-[18px] text-base font-semibold",
     "ring-1 ring-inset ring-white/15",
     "transition-all duration-150 ease-out",
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
@@ -68,7 +68,12 @@ export function MiniSiteButtonSurface() {
   return <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/20 via-transparent to-black/15" />;
 }
 
-/** Botão-pílula padrão: ícone à esquerda, texto centralizado com ele, mesma altura/raio/profundidade em todo o MiniSite. */
+/**
+ * Botão-pílula padrão: ícone + texto formam UM bloco (`inline-flex`,
+ * `items-center`, `gap-2.5` = 10px) que é o que fica centralizado no
+ * botão — não o texto sozinho com o ícone plantado numa borda. Mesma
+ * altura/raio/profundidade em todo o MiniSite.
+ */
 export function MiniSiteButtonLink({
   href,
   icon,
@@ -89,8 +94,10 @@ export function MiniSiteButtonLink({
       style={{ backgroundColor: colors.background, color: colors.text }}
     >
       <MiniSiteButtonSurface />
-      <span className="relative z-10 flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
-      <span className="relative z-10 truncate">{label}</span>
+      <span className="relative z-10 inline-flex items-center justify-center gap-2.5">
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
+        <span className="truncate">{label}</span>
+      </span>
     </a>
   );
 }

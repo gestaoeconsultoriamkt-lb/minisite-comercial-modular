@@ -2,12 +2,32 @@ import { Hono } from "hono";
 import { and, desc, eq, ne } from "drizzle-orm";
 import { getDb } from "../db";
 import { minisites, type MiniSiteRow } from "../db/schema";
+import { ensurePublishedSnapshot } from "../db/publishedSnapshot";
 import { requireApiAuth } from "../middleware/authGuards";
 import { createMiniSiteInputSchema, patchMiniSiteInputSchema } from "../../shared/schemas/minisiteApi";
 import { createDefaultMiniSiteConfig, migrateMiniSiteConfig, serializeMiniSiteConfig } from "../../shared/schemas/migrateMiniSiteConfig";
 import { isReservedSlug, isValidSlugFormat } from "../../shared/reservedSlugs";
 import { computePublishChecklist } from "../../shared/publishability";
 import type { AppEnv } from "../types";
+
+/**
+ * `true` quando o draft (`config_json`) difere do snapshot publicado —
+ * a base da indicação "Alterações não publicadas" na Tela de Layout.
+ * MiniSites em `draft` (nunca publicados) não entram nessa conta: ainda
+ * não existe "publicado" para comparar, então o indicador ficaria confuso
+ * — o CTA natural ali já é simplesmente "Publicar".
+ */
+function computeHasUnpublishedChanges(row: MiniSiteRow): boolean {
+  if (row.status === "draft") return false;
+  if (row.publishedConfigJson === null || row.publishedConfigVersion === null) return true;
+  try {
+    const draft = migrateMiniSiteConfig(row.configJson, row.configVersion).config;
+    const published = migrateMiniSiteConfig(row.publishedConfigJson, row.publishedConfigVersion).config;
+    return JSON.stringify(draft) !== JSON.stringify(published);
+  } catch {
+    return true;
+  }
+}
 
 export const minisitesRoutes = new Hono<AppEnv>();
 // Todas as rotas deste router são /api/minisites*, então autenticar tudo aqui é suficiente.
@@ -34,6 +54,7 @@ function toListItem(row: MiniSiteRow) {
 }
 
 function toDetail(row: MiniSiteRow) {
+  // Editor/preview leem sempre o DRAFT — nunca o snapshot publicado.
   const { config } = migrateMiniSiteConfig(row.configJson, row.configVersion);
   return {
     id: row.id,
@@ -45,6 +66,7 @@ function toDetail(row: MiniSiteRow) {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
     publishedAt: row.publishedAt,
+    hasUnpublishedChanges: computeHasUnpublishedChanges(row),
   };
 }
 
@@ -93,14 +115,21 @@ minisitesRoutes.get("/minisites/:id", async (c) => {
   const db = getDb(c.env);
   const row = await findOwned(db, c.req.param("id"), c.get("userId"));
   if (!row) return c.json({ code: "NOT_FOUND", message: "MiniSite não encontrado." }, 404);
-  return c.json({ minisite: toDetail(row) });
+  const ensured = await ensurePublishedSnapshot(db, row);
+  return c.json({ minisite: toDetail(ensured) });
 });
 
-// PATCH /api/minisites/:id — autosave/edição. Só atualiza os campos enviados.
+// PATCH /api/minisites/:id — autosave/edição. Só atualiza os campos enviados,
+// e sempre no DRAFT (config_json) — nunca toca no snapshot publicado.
 minisitesRoutes.patch("/minisites/:id", async (c) => {
   const db = getDb(c.env);
-  const owned = await findOwned(db, c.req.param("id"), c.get("userId"));
+  let owned = await findOwned(db, c.req.param("id"), c.get("userId"));
   if (!owned) return c.json({ code: "NOT_FOUND", message: "MiniSite não encontrado." }, 404);
+  // Backfill ANTES de aplicar o patch: se este MiniSite ainda não tem
+  // snapshot, o snapshot formalizado aqui precisa ser o estado de ANTES
+  // desta edição (o que estava realmente no ar), nunca incluir a edição
+  // que está para ser salva.
+  owned = await ensurePublishedSnapshot(db, owned);
 
   const body = await c.req.json().catch(() => null);
   const parsed = patchMiniSiteInputSchema.safeParse(body);
@@ -217,7 +246,10 @@ minisitesRoutes.post("/minisites/:id/duplicate", async (c) => {
   return c.json({ minisite: toListItem(row as MiniSiteRow) }, 201);
 });
 
-// POST /api/minisites/:id/publish — draft/disabled -> active; já ativo = "atualizar publicação" (no-op de status).
+// POST /api/minisites/:id/publish — promove o DRAFT atual a snapshot
+// publicado; draft/disabled -> active. Ação explícita do usuário, é a
+// ÚNICA rota que escreve em published_config_json/published_config_version
+// (fora do backfill de compatibilidade — ver ensurePublishedSnapshot).
 minisitesRoutes.post("/minisites/:id/publish", async (c) => {
   const db = getDb(c.env);
   const owned = await findOwned(db, c.req.param("id"), c.get("userId"));
@@ -233,7 +265,12 @@ minisitesRoutes.post("/minisites/:id/publish", async (c) => {
   }
 
   const now = new Date().toISOString();
-  const patch: Partial<typeof minisites.$inferInsert> = { status: "active", updatedAt: now };
+  const patch: Partial<typeof minisites.$inferInsert> = {
+    status: "active",
+    updatedAt: now,
+    publishedConfigJson: owned.configJson,
+    publishedConfigVersion: owned.configVersion,
+  };
   if (!owned.publishedAt) patch.publishedAt = now; // preserva published_at original em republicações
 
   await db.update(minisites).set(patch).where(eq(minisites.id, owned.id));

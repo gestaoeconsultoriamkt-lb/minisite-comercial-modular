@@ -3,7 +3,6 @@ import type { MiniSiteConfig } from "../schemas/miniSiteConfig";
 import { getAssetUrl } from "../assetUrl";
 import { SOCIAL_ICONS } from "../icons";
 import { getFilledSocialEntries } from "../socialLinks";
-import { hexToRgba, mixHex } from "../colors";
 import { getOrderedModules, type ModuleKey } from "../moduleOrder";
 import { GallerySection } from "./GallerySection";
 import { ButtonsSection } from "./ButtonsSection";
@@ -42,7 +41,7 @@ function LogoPlate({
   size: "compact" | "normal" | "floating";
   treatment: "plate" | "none";
 }) {
-  const dimension = size === "compact" ? "h-20 w-20" : size === "floating" ? "h-24 w-24 sm:h-28 sm:w-28" : "h-28 w-28";
+  const dimension = size === "compact" ? "h-24 w-24" : size === "floating" ? "h-28 w-28 sm:h-32 sm:w-32" : "h-32 w-32";
 
   if (treatment === "none") {
     return (
@@ -108,11 +107,11 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
 
   const gradientCss = `linear-gradient(160deg, ${appearance.colorSecondary || "#0f1d45"}, ${appearance.colorPrimary || "#1d4ed8"})`;
 
-  // Estilo do fundo da página: sem imagem de fundo definida, cai sempre em
-  // sólido/gradiente — o modo "imagem" só faz sentido quando há imagem.
-  const effectiveBackgroundMode = appearance.backgroundKey ? appearance.backgroundMode : "solid";
-  const isBlurredBackground = effectiveBackgroundMode === "image_blurred";
-  const isSharpBackground = effectiveBackgroundMode === "image";
+  // V1: fundo da página é sempre imagem NÍTIDA quando há `backgroundKey` —
+  // sem seletor de estilo no editor (removido). Sem imagem, cai no
+  // gradiente da marca. `appearance.backgroundMode` não é mais lido aqui
+  // (deprecated no schema, mantido só para não descartar valor antigo).
+  const hasBackgroundImage = Boolean(appearance.backgroundKey);
 
   const floatingLogo = appearance.logoPosition === "floating";
   const hasLogo = Boolean(appearance.logoKey);
@@ -125,20 +124,8 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
   const heroShapeClass = appearance.heroShape === "curve" ? "rounded-b-[2.75rem]" : "";
   const heroShapeStyle = appearance.heroShape === "wave" ? { clipPath: `url(#${waveClipId})` } : undefined;
 
-  const isAcrylicBody = appearance.bodyStyle === "acrylic";
-  // Vidro tingido, não lavagem de cor: a cor da marca entra só como uma
-  // fração pequena (22%) misturada numa base neutra escura — uma marca
-  // vermelha/laranja/amarela não pode virar um retângulo colorido sólido.
-  // Blur mais leve (10px, não 24px) para o painel ainda deixar perceptível
-  // a diferença entre fundo em modo "nítido" e "desfocado" por trás dele.
-  const acrylicBase = mixHex("#0b1220", appearance.colorSecondary || appearance.colorPrimary || "#0f1d45", 0.22);
-  const acrylicTint = hexToRgba(acrylicBase, 0.5);
-
   return (
-    <div
-      className="minisite-root relative isolate min-h-full overflow-hidden"
-      style={effectiveBackgroundMode === "solid" ? { background: gradientCss } : undefined}
-    >
+    <div className="minisite-root relative isolate min-h-full overflow-hidden" style={!hasBackgroundImage ? { background: gradientCss } : undefined}>
       {appearance.heroShape === "wave" ? (
         <svg width="0" height="0" className="absolute" aria-hidden>
           <defs>
@@ -149,14 +136,8 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
         </svg>
       ) : null}
 
-      {isSharpBackground || isBlurredBackground ? (
-        <img
-          src={getAssetUrl(appearance.backgroundKey!)}
-          alt=""
-          aria-hidden
-          loading="eager"
-          className={`absolute inset-0 h-full w-full object-cover ${isBlurredBackground ? "scale-110 blur-xl" : ""}`}
-        />
+      {hasBackgroundImage ? (
+        <img src={getAssetUrl(appearance.backgroundKey!)} alt="" aria-hidden loading="eager" className="absolute inset-0 h-full w-full object-cover" />
       ) : null}
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black/70" aria-hidden />
 
@@ -194,10 +175,11 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
           ) : null}
         </div>
 
-        <div
-          className={`flex flex-col items-center px-5 pb-12 text-center ${isAcrylicBody ? "rounded-t-[28px] border-t border-white/10 pt-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[10px]" : "pt-2"}`}
-          style={isAcrylicBody ? { backgroundColor: acrylicTint } : undefined}
-        >
+        {/* V1: corpo é sempre sólido (sem seletor de estilo no editor) —
+            `appearance.bodyStyle` não é mais lido aqui (deprecated no
+            schema, "acrylic" removido). `pt-6` dá respiro consistente com
+            o restante da hero, sem depender de painel translúcido. */}
+        <div className="flex flex-col items-center px-5 pb-12 pt-6 text-center">
           {floatingLogo ? (
             <>
               {hasLogo ? (

@@ -17,7 +17,7 @@ export function FooterEditor() {
         <div className="flex items-center gap-3">
           <ToggleSwitch
             checked={footer.showSocialIcons}
-            onChange={(checked) => patchConfig({ footer: { ...footer, showSocialIcons: checked } })}
+            onChange={(checked) => patchConfig((config) => ({ footer: { ...config.footer, showSocialIcons: checked } }))}
             label="ícones no rodapé"
           />
           <span className="text-sm font-semibold text-brand-navy-900">Exibir ícones no rodapé</span>

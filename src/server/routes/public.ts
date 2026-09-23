@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { getDb } from "../db";
 import { minisites } from "../db/schema";
+import { ensurePublishedSnapshot } from "../db/publishedSnapshot";
 import { getSession } from "../auth/session";
 import { migrateMiniSiteConfig } from "../../shared/schemas/migrateMiniSiteConfig";
 import { isReservedSlug, isValidSlugFormat } from "../../shared/reservedSlugs";
@@ -40,7 +41,18 @@ publicRoutes.get("/:slug", async (c) => {
     }
   }
 
-  const { config } = migrateMiniSiteConfig(row.configJson, row.configVersion);
+  // Visitante público num MiniSite ativo vê o SNAPSHOT PUBLICADO — nunca o
+  // draft de trabalho; autosave nunca altera o que está no ar (ver
+  // src/server/db/publishedSnapshot.ts). O dono vendo seu próprio MiniSite
+  // ainda em draft/disabled continua vendo o draft atual (é a prévia dele).
+  // `ensurePublishedSnapshot` formaliza, sem apagar nada, o config atual
+  // como primeiro snapshot de MiniSites `active` antigos que nunca tiveram
+  // essa separação.
+  const ensuredRow = await ensurePublishedSnapshot(db, row);
+  const usePublished = ensuredRow.status === "active" && ensuredRow.publishedConfigJson !== null && ensuredRow.publishedConfigVersion !== null;
+  const { config } = usePublished
+    ? migrateMiniSiteConfig(ensuredRow.publishedConfigJson!, ensuredRow.publishedConfigVersion!)
+    : migrateMiniSiteConfig(ensuredRow.configJson, ensuredRow.configVersion);
   // Nome público na hero é opcional (sem fallback); <title>/og:title sempre
   // precisa de um valor, então esse sim cai no nome interno.
   const heroDisplayName = config.header.displayName ?? "";

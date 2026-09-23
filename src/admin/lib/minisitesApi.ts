@@ -32,10 +32,13 @@ export interface MiniSiteDetail {
   internalName: string;
   niche: string | null;
   status: MiniSiteStatus;
+  /** Sempre a versão de TRABALHO (draft) — o que o editor/preview usam. Nunca a versão pública. */
   config: MiniSiteConfig;
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
+  /** `true` quando o draft difere do snapshot publicado (ou quando o MiniSite está ativo/desativado e ainda não tem snapshot). */
+  hasUnpublishedChanges: boolean;
 }
 
 export interface PatchMiniSiteInput {

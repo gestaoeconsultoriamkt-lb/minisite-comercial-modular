@@ -13,25 +13,37 @@ export function CatalogEditor() {
   const sorted = [...sections].sort((a, b) => a.position - b.position);
 
   function addSection() {
-    const newSection: MiniSiteSection = {
-      id: crypto.randomUUID(),
-      title: "Nova seção",
-      imageKeys: [],
-      images: [],
-      showPrices: true,
-      showCta: true,
-      position: sections.length,
-      cards: [],
-    };
-    patchConfig({ sections: [...sections, newSection] });
+    patchConfig((config) => {
+      const newSection: MiniSiteSection = {
+        id: crypto.randomUUID(),
+        title: "Nova seção",
+        imageKeys: [],
+        images: [],
+        showPrices: true,
+        showCta: true,
+        position: config.sections.length,
+        cards: [],
+      };
+      return { sections: [...config.sections, newSection] };
+    });
   }
 
-  function updateSection(id: string, patch: Partial<MiniSiteSection>) {
-    patchConfig({ sections: sections.map((s) => (s.id === id ? { ...s, ...patch } : s)) });
+  /**
+   * `patch` pode ser um objeto OU uma função `(section) => patch` — a
+   * função recebe a seção FRESCA lida de dentro do `patchConfig`, mesmo
+   * motivo do `patchConfig` funcional em editorStore.ts: `SectionImagesField`
+   * escreve `images` a partir da lista atual, e duas escritas em sequência
+   * rápida (dois uploads, ou upload + edição de rótulo) não podem se basear
+   * numa cópia da seção capturada no props/render.
+   */
+  function updateSection(id: string, patch: Partial<MiniSiteSection> | ((section: MiniSiteSection) => Partial<MiniSiteSection>)) {
+    patchConfig((config) => ({
+      sections: config.sections.map((s) => (s.id === id ? { ...s, ...(typeof patch === "function" ? patch(s) : patch) } : s)),
+    }));
   }
 
   function removeSection(id: string) {
-    patchConfig({ sections: sections.filter((s) => s.id !== id).map((s, i) => ({ ...s, position: i })) });
+    patchConfig((config) => ({ sections: config.sections.filter((s) => s.id !== id).map((s, i) => ({ ...s, position: i })) }));
   }
 
   return (

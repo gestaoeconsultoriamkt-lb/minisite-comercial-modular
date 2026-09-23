@@ -6,7 +6,18 @@ import { user } from "./auth-schema";
  * consultado/indexado vira coluna. Toda a configuração modular (aparência,
  * header, botões, redes sociais, pix, wifi, localização, galeria, seções,
  * cards, ordem dos módulos) vive em `config_json`, validada por
- * `miniSiteConfigSchema` (ver src/shared/schemas). Autosave = um único UPDATE.
+ * `miniSiteConfigSchema` (ver src/shared/schemas).
+ *
+ * Draft × Published: `config_json`/`config_version` são a versão de
+ * TRABALHO — autosave grava só aqui, e é o que o editor/preview sempre lê.
+ * `published_config_json`/`published_config_version` são o SNAPSHOT
+ * público — só mudam quando o usuário clica em "Publicar" (ver
+ * POST /:id/publish). A página pública lê o snapshot publicado, nunca o
+ * draft — autosave nunca altera o que está no ar. As colunas de snapshot
+ * são nullable de propósito: registros antigos (ativos antes dessa
+ * separação existir) não têm snapshot ainda; `ensurePublishedSnapshot()`
+ * faz o backfill lógico (usa o config atual como primeiro snapshot) sem
+ * apagar nem exigir migração manual.
  */
 export const minisites = sqliteTable(
   "minisites",
@@ -24,6 +35,8 @@ export const minisites = sqliteTable(
 
     configJson: text("config_json").notNull(),
     configVersion: integer("config_version").notNull().default(1),
+    publishedConfigJson: text("published_config_json"),
+    publishedConfigVersion: integer("published_config_version"),
 
     createdAt: text("created_at").notNull(),
     updatedAt: text("updated_at").notNull(),

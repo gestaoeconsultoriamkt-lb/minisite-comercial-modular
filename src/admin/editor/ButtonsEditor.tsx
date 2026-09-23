@@ -14,7 +14,7 @@ import {
   isButtonReady,
 } from "../../shared/actionButtons";
 import { getButtonColors } from "../../shared/renderer/MiniSiteButton";
-import type { MiniSiteButton, MiniSiteConfig, MiniSiteSocialLinks } from "../../shared/schemas/miniSiteConfig";
+import type { MiniSiteButton, MiniSiteConfig, MiniSitePix, MiniSiteSocialLinks, MiniSiteWifi } from "../../shared/schemas/miniSiteConfig";
 import { useEditorStore } from "./editorStore";
 
 type EditableButtonType = (typeof EDITABLE_BUTTON_TYPES)[number];
@@ -31,21 +31,23 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
   const Icon = BUTTON_ICONS[type] ?? ZapIcon;
 
   function upsertButton(valuePatch: Record<string, unknown>) {
-    const existing = config.buttons.find((b) => b.type === type);
-    const newValue = { ...(existing?.value ?? {}), ...valuePatch };
-    const buttons: MiniSiteButton[] = existing
-      ? config.buttons.map((b) => (b.type === type ? { ...b, value: newValue } : b))
-      : [
-          ...config.buttons,
-          {
-            id: crypto.randomUUID(),
-            type,
-            label: BUTTON_TYPE_LABELS[type],
-            value: newValue,
-            position: EDITABLE_BUTTON_TYPES.indexOf(type),
-          },
-        ];
-    patchConfig({ buttons });
+    patchConfig((freshConfig) => {
+      const existing = freshConfig.buttons.find((b) => b.type === type);
+      const newValue = { ...(existing?.value ?? {}), ...valuePatch };
+      const buttons: MiniSiteButton[] = existing
+        ? freshConfig.buttons.map((b) => (b.type === type ? { ...b, value: newValue } : b))
+        : [
+            ...freshConfig.buttons,
+            {
+              id: crypto.randomUUID(),
+              type,
+              label: BUTTON_TYPE_LABELS[type],
+              value: newValue,
+              position: EDITABLE_BUTTON_TYPES.indexOf(type),
+            },
+          ];
+      return { buttons };
+    });
   }
 
   function toggle(next: boolean) {
@@ -53,8 +55,15 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
     if (next) setExpanded(true);
   }
 
-  function updatePixWifiOrConfig(patch: Partial<MiniSiteConfig>) {
-    patchConfig(patch);
+  const DEFAULT_PIX: MiniSitePix = { keyType: "aleatoria", key: "", holderName: "" };
+  const DEFAULT_WIFI: MiniSiteWifi = { ssid: "", password: "" };
+
+  function updatePix(patch: Partial<MiniSitePix>) {
+    patchConfig((freshConfig) => ({ pix: { ...(freshConfig.pix ?? DEFAULT_PIX), ...patch } }));
+  }
+
+  function updateWifi(patch: Partial<MiniSiteWifi>) {
+    patchConfig((freshConfig) => ({ wifi: { ...(freshConfig.wifi ?? DEFAULT_WIFI), ...patch } }));
   }
 
   const value = button?.value ?? {};
@@ -152,11 +161,11 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
           ) : null}
 
           {type === "pix" ? (
-            <PixFields config={config} onChange={updatePixWifiOrConfig} />
+            <PixFields config={config} onChange={updatePix} />
           ) : null}
 
           {type === "wifi" ? (
-            <WifiFields config={config} onChange={updatePixWifiOrConfig} />
+            <WifiFields config={config} onChange={updateWifi} />
           ) : null}
 
           <div className="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
@@ -212,7 +221,7 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
   );
 }
 
-function PixFields({ config, onChange }: { config: MiniSiteConfig; onChange: (patch: Partial<MiniSiteConfig>) => void }) {
+function PixFields({ config, onChange }: { config: MiniSiteConfig; onChange: (patch: Partial<MiniSitePix>) => void }) {
   const pix = config.pix ?? { keyType: "aleatoria" as const, key: "", holderName: "" };
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-3">
@@ -220,7 +229,7 @@ function PixFields({ config, onChange }: { config: MiniSiteConfig; onChange: (pa
         <label className="text-sm font-semibold text-brand-navy-900">Tipo da chave</label>
         <select
           value={pix.keyType}
-          onChange={(e) => onChange({ pix: { ...pix, keyType: e.target.value as typeof pix.keyType } })}
+          onChange={(e) => onChange({ keyType: e.target.value as typeof pix.keyType })}
           className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40"
         >
           <option value="cpf">CPF</option>
@@ -230,18 +239,18 @@ function PixFields({ config, onChange }: { config: MiniSiteConfig; onChange: (pa
           <option value="aleatoria">Chave aleatória</option>
         </select>
       </div>
-      <TextField name="pixKey" label="Chave Pix" value={pix.key} onChange={(e) => onChange({ pix: { ...pix, key: e.target.value } })} />
-      <TextField name="pixHolderName" label="Nome do recebedor" value={pix.holderName} onChange={(e) => onChange({ pix: { ...pix, holderName: e.target.value } })} />
+      <TextField name="pixKey" label="Chave Pix" value={pix.key} onChange={(e) => onChange({ key: e.target.value })} />
+      <TextField name="pixHolderName" label="Nome do recebedor" value={pix.holderName} onChange={(e) => onChange({ holderName: e.target.value })} />
     </div>
   );
 }
 
-function WifiFields({ config, onChange }: { config: MiniSiteConfig; onChange: (patch: Partial<MiniSiteConfig>) => void }) {
+function WifiFields({ config, onChange }: { config: MiniSiteConfig; onChange: (patch: Partial<MiniSiteWifi>) => void }) {
   const wifi = config.wifi ?? { ssid: "", password: "" };
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-3">
-      <TextField name="wifiSsid" label="Nome da rede (SSID)" value={wifi.ssid} onChange={(e) => onChange({ wifi: { ...wifi, ssid: e.target.value } })} />
-      <TextField name="wifiPassword" label="Senha" value={wifi.password ?? ""} onChange={(e) => onChange({ wifi: { ...wifi, password: e.target.value } })} />
+      <TextField name="wifiSsid" label="Nome da rede (SSID)" value={wifi.ssid} onChange={(e) => onChange({ ssid: e.target.value })} />
+      <TextField name="wifiPassword" label="Senha" value={wifi.password ?? ""} onChange={(e) => onChange({ password: e.target.value })} />
     </div>
   );
 }
@@ -267,7 +276,7 @@ export function ButtonsEditor() {
   const patchConfig = useEditorStore((s) => s.patchConfig);
 
   function updateSocial(key: keyof MiniSiteSocialLinks, value: string) {
-    patchConfig({ socialLinks: { ...socialLinks, [key]: value || undefined } });
+    patchConfig((config) => ({ socialLinks: { ...config.socialLinks, [key]: value || undefined } }));
   }
 
   return (

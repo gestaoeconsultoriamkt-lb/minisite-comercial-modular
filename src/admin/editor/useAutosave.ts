@@ -22,11 +22,20 @@ export function useAutosave(store: EditorStoreApi, ready: boolean) {
     const state = store.getState();
     setStatus("saving");
     try {
-      await patchMiniSite(state.minisiteId, {
+      const detail = await patchMiniSite(state.minisiteId, {
         internalName: state.internalName,
         niche: state.niche,
         slug: isValidSlugFormat(state.slug) ? state.slug : undefined,
         config: state.config,
+      });
+      // Só os metadados de publicação — nunca `config`: a resposta reflete o
+      // que foi enviado no INÍCIO deste request, e uma edição pode ter
+      // acontecido enquanto ele estava em voo. Sobrescrever `config` aqui
+      // reintroduziria a mesma corrida que o `patchConfig` funcional resolve.
+      store.getState().setPublishMeta({
+        status: detail.status,
+        publishedAt: detail.publishedAt,
+        hasUnpublishedChanges: detail.hasUnpublishedChanges,
       });
       setStatus("saved");
     } catch (err) {

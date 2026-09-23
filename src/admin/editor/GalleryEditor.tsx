@@ -20,13 +20,17 @@ export function GalleryEditor() {
   const { showToast } = useToast();
 
   function updateHeading(patch: Partial<typeof heading>) {
-    patchConfig({ galleryHeading: { ...heading, ...patch } });
+    patchConfig((config) => ({ galleryHeading: { ...config.galleryHeading, ...patch } }));
   }
 
   const sorted = [...gallery].sort((a, b) => a.position - b.position);
 
-  function saveOrder(images: typeof gallery) {
-    patchConfig({ gallery: images.map((img, index) => ({ ...img, position: index })) });
+  /** Recebe uma função sobre a galeria ATUAL (lida fresca dentro do patchConfig), nunca o array pré-computado do render. */
+  function updateGallery(compute: (current: typeof gallery) => typeof gallery) {
+    patchConfig((config) => {
+      const current = [...config.gallery].sort((a, b) => a.position - b.position);
+      return { gallery: compute(current).map((img, index) => ({ ...img, position: index })) };
+    });
   }
 
   async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
@@ -41,7 +45,7 @@ export function GalleryEditor() {
     try {
       const compressed = await compressImage(file, "gallery");
       const { key } = await uploadMedia(minisiteId, "gallery", compressed);
-      saveOrder([...sorted, { id: crypto.randomUUID(), imageKey: key, position: sorted.length }]);
+      updateGallery((current) => [...current, { id: crypto.randomUUID(), imageKey: key, position: current.length }]);
     } catch (err) {
       showToast(err instanceof MiniSiteApiError ? err.message : "Não foi possível enviar a imagem.", "error");
     } finally {
@@ -50,16 +54,18 @@ export function GalleryEditor() {
   }
 
   function remove(id: string) {
-    saveOrder(sorted.filter((img) => img.id !== id));
+    updateGallery((current) => current.filter((img) => img.id !== id));
   }
 
   function move(id: string, direction: -1 | 1) {
-    const index = sorted.findIndex((img) => img.id === id);
-    const targetIndex = index + direction;
-    if (targetIndex < 0 || targetIndex >= sorted.length) return;
-    const next = [...sorted];
-    [next[index], next[targetIndex]] = [next[targetIndex]!, next[index]!];
-    saveOrder(next);
+    updateGallery((current) => {
+      const index = current.findIndex((img) => img.id === id);
+      const targetIndex = index + direction;
+      if (index === -1 || targetIndex < 0 || targetIndex >= current.length) return current;
+      const next = [...current];
+      [next[index], next[targetIndex]] = [next[targetIndex]!, next[index]!];
+      return next;
+    });
   }
 
   return (

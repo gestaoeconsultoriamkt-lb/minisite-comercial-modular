@@ -9,7 +9,7 @@ export function HeaderEditor() {
   const patchConfig = useEditorStore((s) => s.patchConfig);
 
   function updateHeader(patch: Partial<typeof header>) {
-    patchConfig({ header: { ...header, ...patch } });
+    patchConfig((config) => ({ header: { ...config.header, ...patch } }));
   }
 
   return (

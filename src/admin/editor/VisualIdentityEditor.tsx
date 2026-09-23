@@ -3,13 +3,7 @@ import { EditorSection } from "../components/EditorSection";
 import { ImageUploadField } from "../components/ImageUploadField";
 import { ColorField } from "../components/ColorField";
 import { PaletteIcon } from "../components/icons";
-import type {
-  MiniSiteBackgroundMode,
-  MiniSiteBodyStyle,
-  MiniSiteHeroShape,
-  MiniSiteLogoPosition,
-  MiniSiteLogoTreatment,
-} from "../../shared/schemas/miniSiteConfig";
+import type { MiniSiteHeroShape, MiniSiteLogoPosition, MiniSiteLogoTreatment } from "../../shared/schemas/miniSiteConfig";
 import { useEditorStore } from "./editorStore";
 
 function AppearanceSelect<T extends string>({
@@ -55,7 +49,7 @@ export function VisualIdentityEditor() {
   const patchConfig = useEditorStore((s) => s.patchConfig);
 
   function updateAppearance(patch: Partial<typeof appearance>) {
-    patchConfig({ appearance: { ...appearance, ...patch } });
+    patchConfig((config) => ({ appearance: { ...config.appearance, ...patch } }));
   }
 
   return (
@@ -82,7 +76,7 @@ export function VisualIdentityEditor() {
 
       <ImageUploadField
         label="Imagem de fundo (opcional)"
-        hint="Fundo desfocado atrás de todo o conteúdo da página. Independente da capa — se não definir, o fundo usa um gradiente com as cores da marca."
+        hint="Aparece nítida atrás de todo o conteúdo da página. Independente da capa — se não definir, o fundo usa um gradiente com as cores da marca."
         minisiteId={minisiteId}
         purpose="background"
         shape="wide"
@@ -90,28 +84,16 @@ export function VisualIdentityEditor() {
         onChange={(key) => updateAppearance({ backgroundKey: key })}
       />
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-        <AppearanceSelect<MiniSiteBackgroundMode>
-          id="backgroundMode"
-          label="Estilo do fundo"
-          value={appearance.backgroundMode}
-          onChange={(value) => updateAppearance({ backgroundMode: value })}
-          options={[
-            { value: "solid", label: "Sólido / Gradiente" },
-            { value: "image", label: "Imagem nítida" },
-            { value: "image_blurred", label: "Imagem desfocada" },
-          ]}
-        />
-        <AppearanceSelect<MiniSiteBodyStyle>
-          id="bodyStyle"
-          label="Estilo do corpo"
-          value={appearance.bodyStyle}
-          onChange={(value) => updateAppearance({ bodyStyle: value })}
-          options={[
-            { value: "solid", label: "Sólido" },
-            { value: "acrylic", label: "Acrílico" },
-          ]}
-        />
+      {/*
+        V1: só "Posição da logo", "Formato da hero" e "Tratamento da logo"
+        ficam configuráveis. "Estilo do fundo" (sólido/nítido/desfocado) e
+        "Estilo do corpo" (sólido/acrílico) foram removidos da interface —
+        o comportamento efetivo agora é fixo (imagem nítida quando houver
+        imagem de fundo; corpo sempre sólido). Os campos continuam no
+        schema (ver miniSiteConfig.ts) só para não descartar valores já
+        salvos em configs antigos — o renderer não lê mais o valor deles.
+      */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
         <AppearanceSelect<MiniSiteLogoPosition>
           id="logoPosition"
           label="Posição da logo"
@@ -144,9 +126,6 @@ export function VisualIdentityEditor() {
           ]}
         />
       </div>
-      <p className="-mt-3 text-xs text-slate-400">
-        O estilo do fundo em modo imagem só se aplica quando há uma imagem de fundo enviada — sem imagem, usa sólido/gradiente automaticamente.
-      </p>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <ColorField label="Cor primária" value={appearance.colorPrimary ?? "#1d4ed8"} onChange={(hex) => updateAppearance({ colorPrimary: hex })} />

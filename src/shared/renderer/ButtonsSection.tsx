@@ -48,8 +48,10 @@ function CopyableReveal({
     <details className="group">
       <summary className={miniSiteButtonClassName("cursor-pointer list-none")} style={{ backgroundColor: colors.background, color: colors.text }}>
         <MiniSiteButtonSurface />
-        <span className="relative z-10 flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
-        <span className="relative z-10 truncate">{label}</span>
+        <span className="relative z-10 inline-flex items-center justify-center gap-2.5">
+          <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
+          <span className="truncate">{label}</span>
+        </span>
       </summary>
       <div className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
         <code className="truncate text-xs text-slate-700">{value}</code>

@@ -10,7 +10,7 @@ export function LocationEditor() {
   const value = location ?? {};
 
   function update(patch: Partial<typeof value>) {
-    patchConfig({ location: { ...value, ...patch } });
+    patchConfig((config) => ({ location: { ...config.location, ...patch } }));
   }
 
   return (

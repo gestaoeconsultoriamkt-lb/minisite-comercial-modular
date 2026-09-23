@@ -122,6 +122,7 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
   const slug = store((s) => s.slug);
   const status = store((s) => s.status);
   const config = store((s) => s.config);
+  const hasUnpublishedChanges = store((s) => s.hasUnpublishedChanges);
   const setSlug = store((s) => s.setSlug);
 
   const [slugError, setSlugError] = useState<string | null>(null);
@@ -179,12 +180,11 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
 
   async function handlePublish() {
     await flushNow();
-    const wasActive = store.getState().status === "active";
     setMutating("publish");
     try {
       const updated = await publishMiniSite(minisiteId);
       store.getState().loadFromDetail(updated);
-      showToast(wasActive ? "MiniSite atualizado com sucesso" : "MiniSite publicado com sucesso");
+      showToast("Publicado com sucesso");
     } catch (err) {
       showToast(err instanceof MiniSiteApiError ? err.message : "Não foi possível publicar.", "error");
     } finally {
@@ -225,7 +225,11 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
     status === "disabled"
       ? { label: "Reativar MiniSite", icon: RotateIcon, onClick: handleReactivate, loading: mutating === "reactivate", disabled: false }
       : {
-          label: status === "active" ? "Atualizar publicação" : "Publicar",
+          // Sempre "Publicar" — nunca "Atualizar publicação". O botão só
+          // promove o draft atual ao snapshot público; a indicação de que
+          // já existem mudanças pendentes vem do badge ao lado, não do
+          // texto do botão (ver hasUnpublishedChanges).
+          label: "Publicar",
           icon: SendIcon,
           onClick: handlePublish,
           loading: mutating === "publish",
@@ -250,6 +254,7 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
 
         <div className="flex flex-wrap items-center gap-3">
           <SaveStatusLabel status={saveStatus} />
+          {status !== "draft" ? <UnpublishedChangesBadge hasUnpublishedChanges={hasUnpublishedChanges} /> : null}
           <Button type="button" variant="secondary" fullWidth={false} icon={<SaveIcon className="h-4 w-4" />} onClick={handleSaveDraft}>
             Salvar rascunho
           </Button>
@@ -447,6 +452,24 @@ function SortableModuleRow({ moduleKey }: { moduleKey: ModuleKey }) {
       </div>
       <ChevronRightIcon className="h-4 w-4 shrink-0 text-slate-300" />
     </div>
+  );
+}
+
+/** Distingue draft (versão de trabalho, sempre salva pelo autosave) de published (snapshot público, só muda ao clicar Publicar) — ver src/server/db/publishedSnapshot.ts. */
+function UnpublishedChangesBadge({ hasUnpublishedChanges }: { hasUnpublishedChanges: boolean }) {
+  if (hasUnpublishedChanges) {
+    return (
+      <span className="flex items-center gap-1 text-xs font-semibold text-amber-600">
+        <AlertCircleIcon className="h-3.5 w-3.5" />
+        Alterações não publicadas
+      </span>
+    );
+  }
+  return (
+    <span className="flex items-center gap-1 text-xs font-semibold text-emerald-600">
+      <CheckCircleIcon className="h-3.5 w-3.5" />
+      Tudo publicado
+    </span>
   );
 }
 

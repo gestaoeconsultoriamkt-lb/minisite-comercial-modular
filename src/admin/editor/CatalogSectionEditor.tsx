@@ -23,22 +23,20 @@ function SectionImagesField({
 }: {
   minisiteId: string;
   section: MiniSiteSection;
-  onChange: (patch: Partial<MiniSiteSection>) => void;
+  onChange: (patch: Partial<MiniSiteSection> | ((section: MiniSiteSection) => Partial<MiniSiteSection>)) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const { showToast } = useToast();
   const items = getSectionImageItems(section);
 
-  function writeImages(next: CatalogImageItem[]) {
-    const images: MiniSiteSectionImage[] = next.map((it, index) => ({
-      id: it.id,
-      imageKey: it.imageKey,
-      label: it.label,
-      price: it.price,
-      position: index,
-    }));
-    onChange({ images });
+  function toStoredImages(next: CatalogImageItem[]): MiniSiteSectionImage[] {
+    return next.map((it, index) => ({ id: it.id, imageKey: it.imageKey, label: it.label, price: it.price, position: index }));
+  }
+
+  /** Computa a partir da seção FRESCA (lida dentro do patchConfig do CatalogEditor), nunca da prop `section`/`items` capturada no render. */
+  function writeImages(compute: (current: CatalogImageItem[]) => CatalogImageItem[]) {
+    onChange((freshSection) => ({ images: toStoredImages(compute(getSectionImageItems(freshSection))) }));
   }
 
   async function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
@@ -53,7 +51,7 @@ function SectionImagesField({
     try {
       const compressed = await compressImage(file, "section");
       const { key } = await uploadMedia(minisiteId, "section", compressed);
-      writeImages([...items, { id: crypto.randomUUID(), imageKey: key }]);
+      writeImages((current) => [...current, { id: crypto.randomUUID(), imageKey: key }]);
     } catch (err) {
       showToast(err instanceof MiniSiteApiError ? err.message : "Não foi possível enviar a imagem.", "error");
     } finally {
@@ -62,11 +60,11 @@ function SectionImagesField({
   }
 
   function remove(id: string) {
-    writeImages(items.filter((it) => it.id !== id));
+    writeImages((current) => current.filter((it) => it.id !== id));
   }
 
   function updateItem(id: string, patch: Partial<CatalogImageItem>) {
-    writeImages(items.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+    writeImages((current) => current.map((it) => (it.id === id ? { ...it, ...patch } : it)));
   }
 
   return (
@@ -131,7 +129,7 @@ function SectionImagesField({
 interface CatalogSectionEditorProps {
   minisiteId: string;
   section: MiniSiteSection;
-  onChange: (patch: Partial<MiniSiteSection>) => void;
+  onChange: (patch: Partial<MiniSiteSection> | ((section: MiniSiteSection) => Partial<MiniSiteSection>)) => void;
   onRemove: () => void;
 }
 

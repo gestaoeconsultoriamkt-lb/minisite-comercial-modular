@@ -128,22 +128,19 @@ export const locationSchema = z
   .optional();
 
 /**
- * `image_blurred` é o default de schema de propósito: reproduz exatamente o
- * comportamento antigo (único que sempre existiu) — imagem de fundo
- * desfocada quando `backgroundKey` está presente, gradiente quando não
- * está (ver fallback em MiniSiteRenderer). Por isso serve tanto para
- * registros antigos (sem este campo) quanto para MiniSites novos — não
- * precisa de um valor diferente por caminho de criação.
+ * @deprecated V1 simplificou para um único comportamento efetivo: imagem
+ * nítida quando há `backgroundKey`, gradiente da marca quando não há — ver
+ * `MiniSiteRenderer`, que não lê mais este campo (sem selector no editor).
+ * Mantido só para não descartar o valor de configs salvos antes dessa
+ * simplificação — nenhuma migração destrutiva.
  */
 export const backgroundModeSchema = z.enum(["solid", "image", "image_blurred"]);
 
 /**
- * `solid` é o default de schema (comportamento visual atual, sem painel
- * translúcido) — preserva a aparência de MiniSites já existentes.
- * MiniSites novos recebem `acrylic` explicitamente em
- * `createDefaultMiniSiteConfig()` (ver migrateMiniSiteConfig.ts) — os
- * dois defaults precisam divergir aqui, então não dá para resolver só
- * com `.default()` do schema.
+ * @deprecated V1 simplificou para um único comportamento efetivo: corpo
+ * sempre sólido — ver `MiniSiteRenderer`, que não lê mais este campo (sem
+ * selector no editor, modo "acrylic" removido da interface). Mantido só
+ * para não descartar o valor de configs salvos antes dessa simplificação.
  */
 export const bodyStyleSchema = z.enum(["solid", "acrylic"]);
 
