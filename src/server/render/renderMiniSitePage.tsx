@@ -1,6 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { MiniSiteRenderer } from "../../shared/renderer";
 import { getAssetUrl } from "../../shared/assetUrl";
+import { findButton, isButtonReady } from "../../shared/actionButtons";
+import { getFilledSocialEntries } from "../../shared/socialLinks";
 import type { MiniSiteConfig } from "../../shared/schemas/miniSiteConfig";
 // CSS do mesmo Tailwind usado no admin, embutida inline como string — o
 // renderer público é servido puro pelo Worker (sem o HTML/manifest do
@@ -24,6 +26,46 @@ function escapeHtml(value: string): string {
 }
 
 /**
+ * JSON-LD `LocalBusiness` só com dados reais/configurados — nunca inventa
+ * horário, avaliação, preço ou coordenada. Cada propriedade opcional só
+ * entra no objeto quando o dado correspondente realmente existe.
+ */
+function buildLocalBusinessJsonLd(config: MiniSiteConfig, name: string, pageUrl: string, image: string | null): Record<string, unknown> {
+  const jsonLd: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name,
+    url: pageUrl,
+  };
+  if (image) jsonLd.image = image;
+
+  const telefoneButton = findButton(config, "telefone");
+  const telephone =
+    telefoneButton && isButtonReady(telefoneButton, config) && typeof telefoneButton.value.phone === "string" ? telefoneButton.value.phone : null;
+  if (telephone) jsonLd.telephone = telephone;
+
+  const location = config.location;
+  if (location?.address) {
+    jsonLd.address = {
+      "@type": "PostalAddress",
+      streetAddress: location.address,
+      ...(location.city ? { addressLocality: location.city } : {}),
+      ...(location.state ? { addressRegion: location.state } : {}),
+    };
+  }
+
+  const sameAs = getFilledSocialEntries(config.socialLinks).map((entry) => entry.href);
+  if (sameAs.length > 0) jsonLd.sameAs = sameAs;
+
+  return jsonLd;
+}
+
+/** Serializa JSON-LD para dentro de uma <script> com segurança — escapa `<` para nunca fechar a tag prematuramente. */
+function serializeJsonLd(data: Record<string, unknown>): string {
+  return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
+/**
  * SSR real: renderiza o MESMO componente usado no preview do editor/layout
  * (LivePreview) com o `config` real de um MiniSite, mais SEO básico
  * (title/description/OG). Sem hidratação — HTML estático puro.
@@ -37,6 +79,7 @@ export function renderMiniSitePage({ heroDisplayName, seoTitle, config, slug, or
   const pageUrl = `${origin}/${slug}`;
   const title = escapeHtml(seoTitle);
   const safeDescription = escapeHtml(description);
+  const jsonLd = serializeJsonLd(buildLocalBusinessJsonLd(config, seoTitle, pageUrl, ogImage));
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -46,11 +89,13 @@ export function renderMiniSitePage({ heroDisplayName, seoTitle, config, slug, or
     <title>${title}</title>
     ${description ? `<meta name="description" content="${safeDescription}" />` : ""}
     ${noindex ? `<meta name="robots" content="noindex, nofollow" />` : ""}
+    <link rel="canonical" href="${escapeHtml(pageUrl)}" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="${title}" />
     ${description ? `<meta property="og:description" content="${safeDescription}" />` : ""}
     ${ogImage ? `<meta property="og:image" content="${escapeHtml(ogImage)}" />` : ""}
     <meta property="og:url" content="${escapeHtml(pageUrl)}" />
+    <script type="application/ld+json">${jsonLd}</script>
     <style>${publicStyles}</style>
   </head>
   <body>${body}</body>

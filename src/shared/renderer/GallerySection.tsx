@@ -34,6 +34,7 @@ export function GallerySection({ config }: { config: MiniSiteConfig }) {
               key={image.id}
               src={getAssetUrl(image.imageKey)}
               alt={image.alt ?? ""}
+              loading="lazy"
               className="h-40 w-40 shrink-0 snap-center rounded-2xl object-cover"
             />
           ))}

@@ -15,11 +15,11 @@ function CatalogImageCard({ id, item, showPrice }: { id: string; item: CatalogIm
 
   return (
     <div id={id} className="relative w-36 shrink-0 snap-start overflow-hidden rounded-2xl bg-white/10 sm:w-44">
-      <img src={getAssetUrl(item.imageKey)} alt={item.label ?? ""} className="aspect-[3/4] w-full object-cover" />
+      <img src={getAssetUrl(item.imageKey)} alt={item.label ?? ""} loading="lazy" className="aspect-[3/4] w-full object-cover" />
       {hasLabel || hasPrice ? (
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent px-2.5 pb-2 pt-6">
-          {hasLabel ? <p className="truncate text-xs font-semibold text-white">{item.label}</p> : null}
-          {hasPrice ? <p className="text-xs font-bold text-white">{formatCatalogPrice(item.price!)}</p> : null}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-2.5 pb-2.5 pt-7">
+          {hasLabel ? <p className="truncate text-[13px] font-semibold text-white">{item.label}</p> : null}
+          {hasPrice ? <p className="text-[13px] font-semibold text-white">{formatCatalogPrice(item.price!)}</p> : null}
         </div>
       ) : null}
     </div>

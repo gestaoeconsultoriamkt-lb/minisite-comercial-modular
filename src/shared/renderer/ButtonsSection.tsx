@@ -3,7 +3,7 @@ import type { MiniSiteConfig } from "../schemas/miniSiteConfig";
 import { BUTTON_ICONS, CopyIcon, ExternalLinkIcon, PixIcon, SOCIAL_ICONS, WifiIcon } from "../icons";
 import { EDITABLE_BUTTON_TYPES, getButtonHref, getButtonLabel, isButtonReady } from "../actionButtons";
 import { SOCIAL_PLATFORM_LABELS, getFilledSocialEntries } from "../socialLinks";
-import { getButtonColors, miniSiteButtonClassName, MiniSiteButtonLink, type MiniSiteButtonColors } from "./MiniSiteButton";
+import { getButtonColors, miniSiteButtonClassName, MiniSiteButtonLink, MiniSiteButtonSurface, type MiniSiteButtonColors } from "./MiniSiteButton";
 
 /**
  * Pix/Wi-Fi usam <details>/<summary> nativo para revelar/copiar — funciona
@@ -47,8 +47,9 @@ function CopyableReveal({
   return (
     <details className="group">
       <summary className={miniSiteButtonClassName("cursor-pointer list-none")} style={{ backgroundColor: colors.background, color: colors.text }}>
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
-        <span className="truncate">{label}</span>
+        <MiniSiteButtonSurface />
+        <span className="relative z-10 flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
+        <span className="relative z-10 truncate">{label}</span>
       </summary>
       <div className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
         <code className="truncate text-xs text-slate-700">{value}</code>
@@ -78,7 +79,7 @@ export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
   const socialColors = getButtonColors(config);
 
   return (
-    <div className="mt-6 flex w-full flex-col gap-2.5">
+    <div className="mt-8 flex w-full flex-col gap-3">
       {readyButtons.map((button) => {
         const Icon = BUTTON_ICONS[button.type] ?? ExternalLinkIcon;
         const label = getButtonLabel(button);
@@ -103,12 +104,12 @@ export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
         const href = getButtonHref(button);
         if (!href) return null;
 
-        return <MiniSiteButtonLink key={button.id} href={href} icon={<Icon className="h-4.5 w-4.5" />} label={label} colors={colors} />;
+        return <MiniSiteButtonLink key={button.id} href={href} icon={<Icon className="h-5 w-5" />} label={label} colors={colors} />;
       })}
       {socialEntries.map(({ platform, href }) => {
         const Icon = SOCIAL_ICONS[platform];
         return (
-          <MiniSiteButtonLink key={platform} href={href} icon={<Icon className="h-4.5 w-4.5" />} label={SOCIAL_PLATFORM_LABELS[platform]} colors={socialColors} />
+          <MiniSiteButtonLink key={platform} href={href} icon={<Icon className="h-5 w-5" />} label={SOCIAL_PLATFORM_LABELS[platform]} colors={socialColors} />
         );
       })}
     </div>

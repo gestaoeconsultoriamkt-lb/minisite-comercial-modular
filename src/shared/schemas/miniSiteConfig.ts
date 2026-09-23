@@ -127,6 +127,30 @@ export const locationSchema = z
   })
   .optional();
 
+/**
+ * `image_blurred` é o default de schema de propósito: reproduz exatamente o
+ * comportamento antigo (único que sempre existiu) — imagem de fundo
+ * desfocada quando `backgroundKey` está presente, gradiente quando não
+ * está (ver fallback em MiniSiteRenderer). Por isso serve tanto para
+ * registros antigos (sem este campo) quanto para MiniSites novos — não
+ * precisa de um valor diferente por caminho de criação.
+ */
+export const backgroundModeSchema = z.enum(["solid", "image", "image_blurred"]);
+
+/**
+ * `solid` é o default de schema (comportamento visual atual, sem painel
+ * translúcido) — preserva a aparência de MiniSites já existentes.
+ * MiniSites novos recebem `acrylic` explicitamente em
+ * `createDefaultMiniSiteConfig()` (ver migrateMiniSiteConfig.ts) — os
+ * dois defaults precisam divergir aqui, então não dá para resolver só
+ * com `.default()` do schema.
+ */
+export const bodyStyleSchema = z.enum(["solid", "acrylic"]);
+
+export const logoPositionSchema = z.enum(["over_cover", "floating"]);
+
+export const heroShapeSchema = z.enum(["straight", "curve", "wave"]);
+
 export const appearanceSchema = z
   .object({
     logoKey: z.string().optional(),
@@ -137,8 +161,12 @@ export const appearanceSchema = z
     /** Fundo de TODOS os botões (ação e redes sociais) — visual único da marca. */
     colorButtonBackground: hexColor.optional(),
     colorButtonText: hexColor.optional(),
+    backgroundMode: backgroundModeSchema.default("image_blurred"),
+    bodyStyle: bodyStyleSchema.default("solid"),
+    logoPosition: logoPositionSchema.default("over_cover"),
+    heroShape: heroShapeSchema.default("straight"),
   })
-  .default({});
+  .default({ backgroundMode: "image_blurred", bodyStyle: "solid", logoPosition: "over_cover", heroShape: "straight" });
 
 export const footerSchema = z
   .object({
@@ -194,3 +222,7 @@ export type MiniSitePix = NonNullable<z.infer<typeof pixSchema>>;
 export type MiniSiteWifi = NonNullable<z.infer<typeof wifiSchema>>;
 export type MiniSiteSocialLinks = z.infer<typeof socialLinksSchema>;
 export type MiniSiteButtonType = z.infer<typeof buttonTypeSchema>;
+export type MiniSiteBackgroundMode = z.infer<typeof backgroundModeSchema>;
+export type MiniSiteBodyStyle = z.infer<typeof bodyStyleSchema>;
+export type MiniSiteLogoPosition = z.infer<typeof logoPositionSchema>;
+export type MiniSiteHeroShape = z.infer<typeof heroShapeSchema>;

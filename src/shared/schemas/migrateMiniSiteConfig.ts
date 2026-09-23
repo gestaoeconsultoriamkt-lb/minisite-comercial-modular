@@ -35,8 +35,23 @@ export function migrateMiniSiteConfig(rawConfigJson: string, storedVersion: numb
   }
 }
 
+/**
+ * MiniSites NOVOS recebem um default mais premium do que o default de
+ * schema (que existe para preservar a aparência de registros antigos —
+ * ver comentário em `appearanceSchema.bodyStyle`). Só `bodyStyle` diverge
+ * de fato; os demais já usam o mesmo valor do schema, repetidos aqui só
+ * por clareza/robustez a uma futura mudança do default de schema.
+ */
 export function createDefaultMiniSiteConfig(): MiniSiteConfig {
-  return miniSiteConfigSchema.parse({});
+  const base = miniSiteConfigSchema.parse({});
+  return {
+    ...base,
+    appearance: {
+      ...base.appearance,
+      backgroundMode: "image_blurred",
+      bodyStyle: "acrylic",
+    },
+  };
 }
 
 export function serializeMiniSiteConfig(config: MiniSiteConfig): {

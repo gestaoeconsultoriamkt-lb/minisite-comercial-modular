@@ -107,7 +107,7 @@ function SectionImagesField({
                 placeholder="Nome (opcional)"
                 value={item.label ?? ""}
                 onChange={(e) => updateItem(item.id, { label: e.target.value || undefined })}
-                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-1 focus:ring-brand-blue-500/40"
+                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-1 focus:ring-brand-blue-500/40"
               />
               <input
                 type="number"
@@ -118,7 +118,7 @@ function SectionImagesField({
                 placeholder="Preço"
                 value={item.price ?? ""}
                 onChange={(e) => updateItem(item.id, { price: e.target.value === "" ? undefined : Number(e.target.value) })}
-                className="w-full rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-1 focus:ring-brand-blue-500/40"
+                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-1 focus:ring-brand-blue-500/40"
               />
             </div>
           ))}

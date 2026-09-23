@@ -32,26 +32,40 @@ export function getButtonColors(config: MiniSiteConfig, button?: MiniSiteButton)
 
 /**
  * Classe única do botão-pílula em todo o MiniSite (ações + redes sociais,
- * inclusive o `<summary>` do Pix/Wi-Fi) — sensação de profundidade/botão
- * físico sutil, sem exagero: highlight interno superior, sombra interna
- * inferior leve (dá volume ao próprio preenchimento colorido) e uma
- * sombra externa suave que destaca o botão do fundo. No hover, o botão
- * "levanta" 1px e brilha um pouco mais; no active, "afunda" 1px e a
- * sombra reduz — simula pressão física sem transformar a cor nem o
- * layout (mantém contraste/acessibilidade e a área de toque intactas).
+ * inclusive o `<summary>` do Pix/Wi-Fi) — profundidade de "botão físico"
+ * premium, mais evidente que um botão flat: sombra externa perceptível,
+ * highlight interno no topo, borda sutil (ring branco translúcido, lê bem
+ * sobre qualquer cor de fundo) e um leve gradiente vertical (aplicado por
+ * MiniSiteButtonSurface, já que a cor de fundo é dinâmica/inline — não dá
+ * pra expressar "baseado na cor do botão" com uma classe Tailwind fixa).
+ * Hover eleva ~2px e brilha um pouco mais; active desce ~1px e reduz a
+ * sombra — simula pressão física sem alterar a cor configurada nem o
+ * layout (contraste/foco/área de toque preservados). 52–56px de altura
+ * (py-4 + texto 15px), raio 16px, sem estética gamer/neon.
  */
 export function miniSiteButtonClassName(extra = ""): string {
   return [
-    "relative flex items-center justify-center gap-2.5 rounded-2xl px-4 py-3.5 text-[15px] font-semibold",
+    "relative isolate flex items-center justify-center gap-3 rounded-2xl px-5 py-4 text-[15px] font-semibold",
+    "ring-1 ring-inset ring-white/15",
     "transition-all duration-150 ease-out",
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
-    "shadow-[inset_0_1px_0_rgba(255,255,255,0.35),inset_0_-2px_3px_rgba(0,0,0,0.15),0_3px_8px_rgba(0,0,0,0.22)]",
-    "hover:-translate-y-px hover:brightness-[1.04] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-2px_3px_rgba(0,0,0,0.15),0_5px_12px_rgba(0,0,0,0.26)]",
-    "active:translate-y-[1px] active:brightness-95 active:shadow-[inset_0_1px_0_rgba(255,255,255,0.25),inset_0_-1px_2px_rgba(0,0,0,0.12),0_1px_3px_rgba(0,0,0,0.18)]",
+    "shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_4px_10px_rgba(0,0,0,0.28)]",
+    "hover:-translate-y-[2px] hover:brightness-[1.05] hover:shadow-[0_1px_0_rgba(255,255,255,0.45)_inset,0_8px_18px_rgba(0,0,0,0.32)]",
+    "active:translate-y-[1px] active:brightness-95 active:shadow-[0_1px_0_rgba(255,255,255,0.25)_inset,0_2px_4px_rgba(0,0,0,0.22)]",
     extra,
   ]
     .filter(Boolean)
     .join(" ");
+}
+
+/**
+ * Camada de gradiente vertical discreto sobre a cor do botão (highlight
+ * translúcido no topo → sombra translúcida na base) — funciona "baseado
+ * na cor" de qualquer botão porque modula a cor de fundo já aplicada,
+ * em vez de fixar uma cor própria. Decorativa, atrás do conteúdo.
+ */
+export function MiniSiteButtonSurface() {
+  return <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/20 via-transparent to-black/15" />;
 }
 
 /** Botão-pílula padrão: ícone à esquerda, texto centralizado com ele, mesma altura/raio/profundidade em todo o MiniSite. */
@@ -74,8 +88,9 @@ export function MiniSiteButtonLink({
       className={miniSiteButtonClassName()}
       style={{ backgroundColor: colors.background, color: colors.text }}
     >
-      <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
-      <span className="truncate">{label}</span>
+      <MiniSiteButtonSurface />
+      <span className="relative z-10 flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
+      <span className="relative z-10 truncate">{label}</span>
     </a>
   );
 }
