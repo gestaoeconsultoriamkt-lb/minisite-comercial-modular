@@ -151,6 +151,14 @@ export const logoPositionSchema = z.enum(["over_cover", "floating"]);
 
 export const heroShapeSchema = z.enum(["straight", "curve", "wave"]);
 
+/**
+ * `plate` (placa branca por trás da logo) é o comportamento visual que já
+ * existia — default seguro para configs antigas. `none` deixa a logo
+ * "solta" sobre a capa/fundo, sem placa — útil para logos que já têm fundo
+ * próprio (branco, circular, sólido) e não precisam de suporte.
+ */
+export const logoTreatmentSchema = z.enum(["plate", "none"]);
+
 export const appearanceSchema = z
   .object({
     logoKey: z.string().optional(),
@@ -165,8 +173,15 @@ export const appearanceSchema = z
     bodyStyle: bodyStyleSchema.default("solid"),
     logoPosition: logoPositionSchema.default("over_cover"),
     heroShape: heroShapeSchema.default("straight"),
+    logoTreatment: logoTreatmentSchema.default("plate"),
   })
-  .default({ backgroundMode: "image_blurred", bodyStyle: "solid", logoPosition: "over_cover", heroShape: "straight" });
+  .default({
+    backgroundMode: "image_blurred",
+    bodyStyle: "solid",
+    logoPosition: "over_cover",
+    heroShape: "straight",
+    logoTreatment: "plate",
+  });
 
 export const footerSchema = z
   .object({
@@ -226,3 +241,4 @@ export type MiniSiteBackgroundMode = z.infer<typeof backgroundModeSchema>;
 export type MiniSiteBodyStyle = z.infer<typeof bodyStyleSchema>;
 export type MiniSiteLogoPosition = z.infer<typeof logoPositionSchema>;
 export type MiniSiteHeroShape = z.infer<typeof heroShapeSchema>;
+export type MiniSiteLogoTreatment = z.infer<typeof logoTreatmentSchema>;

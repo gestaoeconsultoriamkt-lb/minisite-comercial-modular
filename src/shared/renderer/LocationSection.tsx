@@ -21,33 +21,36 @@ export function LocationSection({ config }: { config: MiniSiteConfig }) {
   const mapEmbedSrc = location?.mapEmbedUrl ? extractMapEmbedUrl(location.mapEmbedUrl) : null;
 
   return (
-    <section className="mt-8 w-full rounded-2xl bg-white/95 p-4 text-left text-slate-900">
+    <section className="mt-10 w-full rounded-2xl bg-white/95 p-5 text-left text-slate-900">
       <div className="flex items-center gap-2 text-sm font-bold">
         <MapPinIcon className="h-4 w-4" />
         Como chegar
       </div>
       {location?.address ? (
-        <p className="mt-1 text-sm text-slate-600">
+        <p className="mt-1.5 text-sm text-slate-600">
           {location.address}
           {location.city ? `, ${location.city}` : ""}
           {location.state ? ` - ${location.state}` : ""}
         </p>
       ) : null}
       {mapEmbedSrc ? (
-        <iframe
-          title="Mapa"
-          src={mapEmbedSrc}
-          className="mt-3 h-48 w-full rounded-xl border-0"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-        />
+        // O conteúdo interno do embed (inclusive qualquer rótulo/link que o
+        // próprio Google desenha dentro do iframe) é de outra origem — a
+        // página não tem acesso para remover ou estilizar nada lá dentro
+        // (restrição de segurança do navegador, não uma limitação nossa).
+        // A moldura arredondada com anel sutil é o "fallback premium"
+        // possível: cerca o mapa de forma intencional; a navegação real
+        // continua garantida pelo botão "Abrir no Google Maps" abaixo.
+        <div className="mt-3.5 overflow-hidden rounded-xl ring-1 ring-slate-200">
+          <iframe title="Mapa" src={mapEmbedSrc} className="h-52 w-full border-0" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+        </div>
       ) : null}
       {mapsHref ? (
         <a
           href={mapsHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
+          className="mt-3.5 flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white"
         >
           <ExternalLinkIcon className="h-4 w-4" />
           Abrir no Google Maps

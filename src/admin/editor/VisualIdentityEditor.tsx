@@ -8,6 +8,7 @@ import type {
   MiniSiteBodyStyle,
   MiniSiteHeroShape,
   MiniSiteLogoPosition,
+  MiniSiteLogoTreatment,
 } from "../../shared/schemas/miniSiteConfig";
 import { useEditorStore } from "./editorStore";
 
@@ -130,6 +131,16 @@ export function VisualIdentityEditor() {
             { value: "straight", label: "Reta" },
             { value: "curve", label: "Curva suave" },
             { value: "wave", label: "Onda" },
+          ]}
+        />
+        <AppearanceSelect<MiniSiteLogoTreatment>
+          id="logoTreatment"
+          label="Tratamento da logo"
+          value={appearance.logoTreatment}
+          onChange={(value) => updateAppearance({ logoTreatment: value })}
+          options={[
+            { value: "plate", label: "Com placa branca" },
+            { value: "none", label: "Sem placa (logo solta)" },
           ]}
         />
       </div>

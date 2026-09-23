@@ -40,12 +40,12 @@ export function getButtonColors(config: MiniSiteConfig, button?: MiniSiteButton)
  * pra expressar "baseado na cor do botão" com uma classe Tailwind fixa).
  * Hover eleva ~2px e brilha um pouco mais; active desce ~1px e reduz a
  * sombra — simula pressão física sem alterar a cor configurada nem o
- * layout (contraste/foco/área de toque preservados). 52–56px de altura
- * (py-4 + texto 15px), raio 16px, sem estética gamer/neon.
+ * layout (contraste/foco/área de toque preservados). ~56px de altura
+ * (py-[18px] + texto 16px), raio 16px, sem estética gamer/neon.
  */
 export function miniSiteButtonClassName(extra = ""): string {
   return [
-    "relative isolate flex items-center justify-center gap-3 rounded-2xl px-5 py-4 text-[15px] font-semibold",
+    "relative isolate flex items-center justify-center gap-3 rounded-2xl px-5 py-[18px] text-base font-semibold",
     "ring-1 ring-inset ring-white/15",
     "transition-all duration-150 ease-out",
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70",

@@ -3,7 +3,7 @@ import type { MiniSiteConfig } from "../schemas/miniSiteConfig";
 import { getAssetUrl } from "../assetUrl";
 import { SOCIAL_ICONS } from "../icons";
 import { getFilledSocialEntries } from "../socialLinks";
-import { hexToRgba } from "../colors";
+import { hexToRgba, mixHex } from "../colors";
 import { getOrderedModules, type ModuleKey } from "../moduleOrder";
 import { GallerySection } from "./GallerySection";
 import { ButtonsSection } from "./ButtonsSection";
@@ -23,12 +23,42 @@ const MODULE_COMPONENTS: Record<ModuleKey, (config: MiniSiteConfig) => ReactNode
   location: (config) => <LocationSection config={config} />,
 };
 
-/** Base branca com padding/sombra suave — legível para logos circulares, quadradas, transparentes ou retangulares, sem distorcer (object-contain). */
-function LogoPlate({ logoKey, alt, size }: { logoKey: string; alt: string; size: "compact" | "normal" | "floating" }) {
-  const dimension = size === "compact" ? "h-16 w-16" : size === "floating" ? "h-20 w-20 sm:h-24 sm:w-24" : "h-24 w-24";
+/**
+ * Placa branca por trás da logo (`logoTreatment: "plate"`, default) — dá
+ * legibilidade a qualquer logo (circular, quadrada, transparente,
+ * retangular) sem distorcer (object-contain). Um leve sheen/gradiente
+ * interno e um anel duplo (branco + sombra) fazem parecer uma "medalha"
+ * intencional, não um quadrado branco jogado atrás. `logoTreatment: "none"`
+ * pula a placa — para logos que já têm fundo/contexto próprio.
+ */
+function LogoPlate({
+  logoKey,
+  alt,
+  size,
+  treatment,
+}: {
+  logoKey: string;
+  alt: string;
+  size: "compact" | "normal" | "floating";
+  treatment: "plate" | "none";
+}) {
+  const dimension = size === "compact" ? "h-20 w-20" : size === "floating" ? "h-24 w-24 sm:h-28 sm:w-28" : "h-28 w-28";
+
+  if (treatment === "none") {
+    return (
+      <div className={`flex shrink-0 items-center justify-center drop-shadow-[0_4px_14px_rgba(0,0,0,0.35)] ${dimension}`}>
+        <img src={getAssetUrl(logoKey)} alt={alt} className="h-full w-full object-contain" />
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex shrink-0 items-center justify-center rounded-2xl bg-white p-2 shadow-[0_6px_18px_rgba(0,0,0,0.22)] ring-1 ring-white/70 ${dimension}`}>
-      <img src={getAssetUrl(logoKey)} alt={alt} className="h-full w-full object-contain" />
+    <div
+      className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2.5 shadow-[0_8px_20px_rgba(0,0,0,0.28)] ring-1 ring-black/5 ${dimension}`}
+    >
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white via-white to-slate-50" aria-hidden />
+      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white" aria-hidden />
+      <img src={getAssetUrl(logoKey)} alt={alt} className="relative z-10 h-full w-full object-contain" />
     </div>
   );
 }
@@ -50,8 +80,8 @@ function HeroTextBlock({
       {displayName ? (
         <h1 className={`font-extrabold leading-tight text-white ${isCompact ? "text-xl" : "text-[28px] sm:text-[32px]"}`}>{displayName}</h1>
       ) : null}
-      {headline ? <p className={`mt-1.5 font-semibold text-white/90 ${isCompact ? "text-sm" : "text-[15px] sm:text-base"}`}>{headline}</p> : null}
-      {shortDescription ? <p className="mt-1.5 text-[13px] font-medium leading-relaxed text-white/70 sm:text-sm">{shortDescription}</p> : null}
+      {headline ? <p className={`mt-2 font-semibold text-white/90 ${isCompact ? "text-sm" : "text-[15px] sm:text-base"}`}>{headline}</p> : null}
+      {shortDescription ? <p className="mt-2 text-[13px] font-medium leading-relaxed text-white/70 sm:text-sm">{shortDescription}</p> : null}
     </>
   );
 }
@@ -87,6 +117,7 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
   const floatingLogo = appearance.logoPosition === "floating";
   const hasLogo = Boolean(appearance.logoKey);
   const logoAlt = displayName || "Logo";
+  const logoTreatment = appearance.logoTreatment;
 
   // Formato da base da hero — "reta" não aplica nada; "curva" arredonda a
   // base; "onda" usa um clip-path SVG (objectBoundingBox — responsivo por
@@ -95,7 +126,13 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
   const heroShapeStyle = appearance.heroShape === "wave" ? { clipPath: `url(#${waveClipId})` } : undefined;
 
   const isAcrylicBody = appearance.bodyStyle === "acrylic";
-  const acrylicTint = hexToRgba(appearance.colorSecondary || appearance.colorPrimary || "#0f1d45", 0.55);
+  // Vidro tingido, não lavagem de cor: a cor da marca entra só como uma
+  // fração pequena (22%) misturada numa base neutra escura — uma marca
+  // vermelha/laranja/amarela não pode virar um retângulo colorido sólido.
+  // Blur mais leve (10px, não 24px) para o painel ainda deixar perceptível
+  // a diferença entre fundo em modo "nítido" e "desfocado" por trás dele.
+  const acrylicBase = mixHex("#0b1220", appearance.colorSecondary || appearance.colorPrimary || "#0f1d45", 0.22);
+  const acrylicTint = hexToRgba(acrylicBase, 0.5);
 
   return (
     <div
@@ -121,7 +158,7 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
           className={`absolute inset-0 h-full w-full object-cover ${isBlurredBackground ? "scale-110 blur-xl" : ""}`}
         />
       ) : null}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" aria-hidden />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/45 to-black/70" aria-hidden />
 
       <div className="relative z-10 mx-auto w-full max-w-md">
         {/* Hero: a capa (quando houver) fica só aqui, atrás do logo/nome/título
@@ -131,8 +168,9 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
             O recorte de formato (curva/onda) fica numa camada de fundo própria,
             separada do conteúdo — recortar o container inteiro cortaria texto
             junto quando a logo está "sobre a capa" (nome/headline moram dentro
-            da hero nesse modo). */}
-        <div className={`relative ${floatingLogo ? "h-44 sm:h-52" : ""}`}>
+            da hero nesse modo). Altura mínima garante uma capa com presença
+            mesmo com pouco texto (nome/headline curtos ou ausentes). */}
+        <div className={`relative ${floatingLogo ? "h-48 sm:h-56" : "min-h-[15rem] sm:min-h-[17rem]"}`}>
           <div className={`absolute inset-0 overflow-hidden ${heroShapeClass}`} style={heroShapeStyle} aria-hidden>
             {appearance.coverKey ? (
               <>
@@ -147,9 +185,9 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
           </div>
 
           {!floatingLogo ? (
-            <div className={`relative z-10 flex flex-col items-center px-5 pb-6 text-center ${isCompact ? "pt-8" : "pt-12"}`}>
-              {hasLogo ? <LogoPlate logoKey={appearance.logoKey!} alt={logoAlt} size={isCompact ? "compact" : "normal"} /> : null}
-              <div className={hasLogo ? "mt-4" : ""}>
+            <div className={`relative z-10 flex h-full flex-col items-center justify-center px-5 pb-6 text-center ${isCompact ? "pt-8" : "pt-12"}`}>
+              {hasLogo ? <LogoPlate logoKey={appearance.logoKey!} alt={logoAlt} size={isCompact ? "compact" : "normal"} treatment={logoTreatment} /> : null}
+              <div className={hasLogo ? "mt-5" : ""}>
                 <HeroTextBlock displayName={displayName} headline={header.headline} shortDescription={header.shortDescription} isCompact={isCompact} />
               </div>
             </div>
@@ -157,14 +195,14 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
         </div>
 
         <div
-          className={`flex flex-col items-center px-5 pb-10 text-center ${isAcrylicBody ? "rounded-t-[28px] border-t border-white/10 pt-8 backdrop-blur-xl" : ""}`}
+          className={`flex flex-col items-center px-5 pb-12 text-center ${isAcrylicBody ? "rounded-t-[28px] border-t border-white/10 pt-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] backdrop-blur-[10px]" : "pt-2"}`}
           style={isAcrylicBody ? { backgroundColor: acrylicTint } : undefined}
         >
           {floatingLogo ? (
             <>
               {hasLogo ? (
-                <div className="-mt-12 mb-3 flex justify-center sm:-mt-14">
-                  <LogoPlate logoKey={appearance.logoKey!} alt={logoAlt} size="floating" />
+                <div className="-mt-14 mb-3 flex justify-center sm:-mt-16">
+                  <LogoPlate logoKey={appearance.logoKey!} alt={logoAlt} size="floating" treatment={logoTreatment} />
                 </div>
               ) : null}
               {displayName || header.headline || header.shortDescription ? (
@@ -182,7 +220,7 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
           ))}
 
           {footer.showSocialIcons && socialEntries.length > 0 ? (
-            <div className="mt-8 flex items-center gap-4">
+            <div className="mt-10 flex items-center gap-4">
               {socialEntries.map(({ platform, href }) => {
                 const Icon = SOCIAL_ICONS[platform];
                 return (

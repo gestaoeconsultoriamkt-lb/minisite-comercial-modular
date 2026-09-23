@@ -79,7 +79,7 @@ export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
   const socialColors = getButtonColors(config);
 
   return (
-    <div className="mt-8 flex w-full flex-col gap-3">
+    <div className="mt-10 flex w-full flex-col gap-3.5">
       {readyButtons.map((button) => {
         const Icon = BUTTON_ICONS[button.type] ?? ExternalLinkIcon;
         const label = getButtonLabel(button);

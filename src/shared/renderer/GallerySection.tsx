@@ -17,7 +17,7 @@ export function GallerySection({ config }: { config: MiniSiteConfig }) {
   const showHeading = heading.show && Boolean(heading.title.trim());
 
   return (
-    <section className="mt-8 flex flex-col gap-4">
+    <section className="mt-10 flex flex-col gap-5">
       {showHeading ? (
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
@@ -35,7 +35,7 @@ export function GallerySection({ config }: { config: MiniSiteConfig }) {
               src={getAssetUrl(image.imageKey)}
               alt={image.alt ?? ""}
               loading="lazy"
-              className="h-40 w-40 shrink-0 snap-center rounded-2xl object-cover"
+              className="h-52 w-52 shrink-0 snap-center rounded-2xl object-cover"
             />
           ))}
         </div>
