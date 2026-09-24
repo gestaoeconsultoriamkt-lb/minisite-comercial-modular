@@ -32,6 +32,7 @@ function CopyableReveal({
   colors,
   style,
   tier,
+  insidePanel,
 }: {
   icon: ReactNode;
   label: string;
@@ -40,9 +41,10 @@ function CopyableReveal({
   colors: MiniSiteButtonColors;
   style: MiniSiteButtonStyle;
   tier: MiniSiteButtonTier;
+  insidePanel: boolean;
 }) {
   const [copied, setCopied] = useState(false);
-  const surface = resolveButtonSurface(style, tier, colors);
+  const surface = resolveButtonSurface(style, tier, colors, insidePanel);
 
   async function handleCopy(event: MouseEvent) {
     event.preventDefault();
@@ -62,14 +64,14 @@ function CopyableReveal({
   return (
     <details className="group">
       <summary
-        className={miniSiteButtonClassName(style, tier, "cursor-pointer list-none")}
+        className={miniSiteButtonClassName(style, tier, insidePanel, "cursor-pointer list-none")}
         style={{ backgroundColor: surface.backgroundColor, color: surface.color }}
       >
         <MiniSiteButtonSurface style={style} />
-        <MiniSiteButtonGlassSheen style={style} />
+        {!insidePanel ? <MiniSiteButtonGlassSheen style={style} /> : null}
         <span className="relative z-10 inline-flex items-center justify-center gap-2.5">
           <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
-          <span className="truncate">{label}</span>
+          <span className="truncate leading-none">{label}</span>
         </span>
       </summary>
       <div className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
@@ -88,8 +90,19 @@ function CopyableReveal({
  * sociais (Instagram, Facebook...) no mesmo bloco visual, mesmo
  * componente base — antes eram dois blocos separados no corpo da
  * página. Os ícones do rodapé (Rodapé Social) continuam independentes.
+ * `insidePanel` (renderizado dentro do HeroGlassPanel, hero "vitrine")
+ * troca a receita `glass` por uma sem `backdrop-blur` próprio — ver
+ * MiniSiteButton.tsx — pra não borrar o painel já borrado.
  */
-export function ButtonsSection({ config, spacingClassName = "mt-10" }: { config: MiniSiteConfig; spacingClassName?: string }) {
+export function ButtonsSection({
+  config,
+  spacingClassName = "mt-10",
+  insidePanel = false,
+}: {
+  config: MiniSiteConfig;
+  spacingClassName?: string;
+  insidePanel?: boolean;
+}) {
   const readyButtons = EDITABLE_BUTTON_TYPES.map((type) => config.buttons.find((b) => b.type === type)).filter(
     (button): button is NonNullable<typeof button> => Boolean(button && isButtonReady(button, config)),
   );
@@ -124,6 +137,7 @@ export function ButtonsSection({ config, spacingClassName = "mt-10" }: { config:
               colors={colors}
               style={style}
               tier={tier}
+              insidePanel={insidePanel}
             />
           );
         }
@@ -138,6 +152,7 @@ export function ButtonsSection({ config, spacingClassName = "mt-10" }: { config:
               colors={colors}
               style={style}
               tier={tier}
+              insidePanel={insidePanel}
             />
           );
         }
@@ -145,7 +160,18 @@ export function ButtonsSection({ config, spacingClassName = "mt-10" }: { config:
         const href = getButtonHref(button);
         if (!href) return null;
 
-        return <MiniSiteButtonLink key={button.id} href={href} icon={<Icon className="h-5 w-5" />} label={label} colors={colors} style={style} tier={tier} />;
+        return (
+          <MiniSiteButtonLink
+            key={button.id}
+            href={href}
+            icon={<Icon className="h-5 w-5" />}
+            label={label}
+            colors={colors}
+            style={style}
+            tier={tier}
+            insidePanel={insidePanel}
+          />
+        );
       })}
       {socialEntries.map(({ platform, href }, index) => {
         const Icon = SOCIAL_ICONS[platform];
@@ -159,6 +185,7 @@ export function ButtonsSection({ config, spacingClassName = "mt-10" }: { config:
             colors={socialColors}
             style={style}
             tier={tier}
+            insidePanel={insidePanel}
           />
         );
       })}

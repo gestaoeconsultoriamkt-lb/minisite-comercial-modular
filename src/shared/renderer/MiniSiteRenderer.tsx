@@ -257,6 +257,23 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
               // marca, mesmo que o fundo da página esteja em modo imagem.
               <div className="absolute inset-0" style={{ background: gradientCss }} />
             )}
+            {isVitrine ? (
+              // Glassmorphism só fica convincente quando há textura por
+              // trás pro blur "trabalhar" — um fundo chapado escuro (sem
+              // capa, ou capa já muito escurecida pelo overlay) deixa o
+              // painel parecendo só "card escuro", não vidro. Dois blobs
+              // de luz suaves (um neutro, um na cor da marca), desfocados
+              // no próprio elemento (não backdrop) — ambient glow por trás
+              // do painel, contido na mesma máscara de formato da hero.
+              <>
+                <div className="absolute -left-12 top-2 h-44 w-44 rounded-full bg-white/15 blur-3xl" aria-hidden />
+                <div
+                  className="absolute -right-10 bottom-0 h-56 w-56 rounded-full blur-3xl"
+                  style={{ backgroundColor: hexToRgba(vitrineTint, 0.4) }}
+                  aria-hidden
+                />
+              </>
+            ) : null}
           </div>
 
           {!floatingLogo ? (
@@ -276,7 +293,7 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
                     typography={typography}
                     boost={heroBoost}
                   />
-                  <ButtonsSection config={config} spacingClassName="mt-6" />
+                  <ButtonsSection config={config} spacingClassName="mt-6" insidePanel />
                 </HeroGlassPanel>
               ) : (
                 <>
@@ -331,7 +348,7 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
                           typography={typography}
                           boost={heroBoost}
                         />
-                        <ButtonsSection config={config} spacingClassName="mt-6" />
+                        <ButtonsSection config={config} spacingClassName="mt-6" insidePanel />
                       </div>
                     </HeroGlassPanel>
                   </div>

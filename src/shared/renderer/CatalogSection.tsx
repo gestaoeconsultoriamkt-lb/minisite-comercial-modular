@@ -62,7 +62,7 @@ export function CatalogSection({ config }: { config: MiniSiteConfig }) {
         const images = getSectionImageItems(section);
         return (
           <div key={section.id} className="flex flex-col gap-5">
-            <SectionHeading icon={<TagIcon className="h-3.5 w-3.5" />} title={section.title} />
+            <SectionHeading icon={<TagIcon className="h-3.5 w-3.5" />} title={section.title} visualStyle={visualStyle} />
             <div className="flex flex-col gap-2">
               {/* Sem hidratação no MiniSite público — swipe funciona nativamente via
                   scroll-snap (inclusive scroll horizontal por mouse/trackpad no

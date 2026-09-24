@@ -25,20 +25,32 @@ function readHex(value: unknown): string | undefined {
 }
 
 /**
+ * Verde oficial do WhatsApp (guia de marca da Meta) — default de fábrica
+ * para QUALQUER botão do tipo "whatsapp" em QUALQUER MiniSite, não uma cor
+ * fixa deste negócio: sem isso, o botão do WhatsApp herdava a cor global
+ * de botão como qualquer outro (ex.: creme/marrom numa pizzaria), o que
+ * nunca "parece" WhatsApp de fato. Continua 100% sobrescrevível por cor
+ * individual do botão, exatamente como antes.
+ */
+const WHATSAPP_GREEN = "#25D366";
+
+/**
  * Cor de fundo/texto de um botão — mesmo visual da marca por padrão, com
- * sobrescrita opcional por botão individual (ex.: WhatsApp com fundo
- * verde, mantendo os demais no padrão global). Cadeia de fallback:
- * cor individual do botão -> cor global de botão -> cor primária da
- * marca -> azul padrão. `button` é opcional porque botões de redes
- * sociais (sem personalização individual nesta fase) chamam sem ele.
+ * sobrescrita opcional por botão individual. Cadeia de fallback: cor
+ * individual do botão -> default de marca do tipo (só "whatsapp" hoje) ->
+ * cor global de botão -> cor primária da marca -> azul padrão. `button` é
+ * opcional porque botões de redes sociais (sem personalização individual
+ * nesta fase) chamam sem ele.
  */
 export function getButtonColors(config: MiniSiteConfig, button?: MiniSiteButton): MiniSiteButtonColors {
   const { appearance } = config;
   const individualBackground = button ? readHex(button.value.colorBackground) : undefined;
   const individualText = button ? readHex(button.value.colorText) : undefined;
+  const brandDefaultBackground = button?.type === "whatsapp" ? WHATSAPP_GREEN : undefined;
+  const brandDefaultText = button?.type === "whatsapp" ? "#ffffff" : undefined;
   return {
-    background: individualBackground || appearance.colorButtonBackground || appearance.colorPrimary || "#1d4ed8",
-    text: individualText || appearance.colorButtonText || "#ffffff",
+    background: individualBackground || brandDefaultBackground || appearance.colorButtonBackground || appearance.colorPrimary || "#1d4ed8",
+    text: individualText || brandDefaultText || appearance.colorButtonText || "#ffffff",
   };
 }
 
@@ -108,11 +120,37 @@ const GLASS_ALPHA_BY_TIER: Record<MiniSiteButtonTier, number> = {
   tertiary: 0.16,
 };
 
-export function miniSiteButtonClassName(style: MiniSiteButtonStyle, tier: MiniSiteButtonTier, extra = ""): string {
+/**
+ * `insidePanel` (botão renderizado dentro do HeroGlassPanel, hero
+ * "vitrine") precisa de uma receita PRÓPRIA para `glass`: `backdrop-blur`
+ * borra o que está atrás do elemento — dentro do painel, "atrás" já é o
+ * próprio painel translúcido/borrado, então o blur do botão borra um blur
+ * (efeito "sujo", sem definição, é o motivo real de "vitrine" parecer
+ * pior que "destaque" com o mesmo `buttonStyle: glass`). A correção não é
+ * aumentar o blur — é tirá-lo aqui e compensar com fundo mais opaco +
+ * anel/realce mais nítidos, pra o botão se destacar CONTRA o vidro do
+ * painel em vez de se misturar a ele.
+ */
+const GLASS_INSIDE_PANEL_RECIPES: Record<MiniSiteButtonTier, string> = {
+  primary:
+    "rounded-2xl ring-1 ring-inset ring-white/45 font-semibold transition-all duration-150 ease-out shadow-[0_1px_0_rgba(255,255,255,0.45)_inset,0_10px_22px_-6px_rgba(0,0,0,0.35)] hover:-translate-y-[2px] hover:brightness-110 active:translate-y-[1px] active:brightness-95",
+  secondary:
+    "rounded-2xl ring-1 ring-inset ring-white/30 font-medium transition-all duration-150 ease-out shadow-[0_1px_0_rgba(255,255,255,0.3)_inset,0_6px_14px_-6px_rgba(0,0,0,0.28)] hover:brightness-110 active:brightness-95",
+  tertiary:
+    "rounded-2xl ring-1 ring-white/20 font-medium transition-all duration-150 ease-out shadow-[0_1px_0_rgba(255,255,255,0.15)_inset] hover:brightness-110 active:brightness-95",
+};
+const GLASS_INSIDE_PANEL_ALPHA_BY_TIER: Record<MiniSiteButtonTier, number> = {
+  primary: 0.85,
+  secondary: 0.5,
+  tertiary: 0.28,
+};
+
+export function miniSiteButtonClassName(style: MiniSiteButtonStyle, tier: MiniSiteButtonTier, insidePanel: boolean, extra = ""): string {
+  const recipe = insidePanel && style === "glass" ? GLASS_INSIDE_PANEL_RECIPES[tier] : BUTTON_RECIPES[style][tier];
   return [
     "relative isolate flex items-center justify-center text-base",
     PADDING_BY_TIER[tier],
-    BUTTON_RECIPES[style][tier],
+    recipe,
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70",
     extra,
   ]
@@ -134,6 +172,7 @@ export function resolveButtonSurface(
   style: MiniSiteButtonStyle,
   tier: MiniSiteButtonTier,
   colors: MiniSiteButtonColors,
+  insidePanel = false,
 ): { backgroundColor: string; color: string } {
   // `primary` é o único tier com fundo substancialmente opaco — só aí faz
   // sentido confiar no par cor-de-fundo/cor-de-texto exatamente como o
@@ -145,15 +184,16 @@ export function resolveButtonSurface(
   // (ex.: fundo e texto de tons parecidos ficam quase invisíveis diluídos
   // sobre um fundo também escuro). Um branco translúcido fixo sempre lê
   // bem, porque o fundo por trás é sempre escuro nesse ponto da página.
+  const glassAlpha = insidePanel ? GLASS_INSIDE_PANEL_ALPHA_BY_TIER : GLASS_ALPHA_BY_TIER;
   if (tier === "primary") {
-    const backgroundColor = style === "glass" ? hexToRgba(colors.background, GLASS_ALPHA_BY_TIER.primary) : colors.background;
+    const backgroundColor = style === "glass" ? hexToRgba(colors.background, glassAlpha.primary) : colors.background;
     return { backgroundColor, color: colors.text };
   }
   if (tier === "secondary") {
-    const alpha = style === "glass" ? GLASS_ALPHA_BY_TIER.secondary : 0.22;
+    const alpha = style === "glass" ? glassAlpha.secondary : 0.22;
     return { backgroundColor: hexToRgba(colors.background, alpha), color: "rgba(255,255,255,0.92)" };
   }
-  const alpha = style === "glass" ? GLASS_ALPHA_BY_TIER.tertiary : 0;
+  const alpha = style === "glass" ? glassAlpha.tertiary : 0;
   return { backgroundColor: alpha > 0 ? hexToRgba(colors.background, alpha) : "transparent", color: "rgba(255,255,255,0.85)" };
 }
 
@@ -194,6 +234,7 @@ export function MiniSiteButtonLink({
   colors,
   style,
   tier,
+  insidePanel = false,
 }: {
   href: string;
   icon: ReactNode;
@@ -201,21 +242,27 @@ export function MiniSiteButtonLink({
   colors: MiniSiteButtonColors;
   style: MiniSiteButtonStyle;
   tier: MiniSiteButtonTier;
+  insidePanel?: boolean;
 }) {
-  const surface = resolveButtonSurface(style, tier, colors);
+  const surface = resolveButtonSurface(style, tier, colors, insidePanel);
   return (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className={miniSiteButtonClassName(style, tier)}
+      className={miniSiteButtonClassName(style, tier, insidePanel)}
       style={{ backgroundColor: surface.backgroundColor, color: surface.color }}
     >
       <MiniSiteButtonSurface style={style} />
-      <MiniSiteButtonGlassSheen style={style} />
+      {!insidePanel ? <MiniSiteButtonGlassSheen style={style} /> : null}
       <span className="relative z-10 inline-flex items-center justify-center gap-2.5">
+        {/* icon-box e texto compartilham a mesma linha de base óptica:
+            `leading-none` no texto elimina o excesso de altura de linha
+            (line-height padrão sobra mais espaço ABAIXO da letra do que
+            acima), que senão faz o ícone (centrado geometricamente na sua
+            caixa 20x20) parecer "alto" em relação ao texto ao lado. */}
         <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
-        <span className="truncate">{label}</span>
+        <span className="truncate leading-none">{label}</span>
       </span>
     </a>
   );

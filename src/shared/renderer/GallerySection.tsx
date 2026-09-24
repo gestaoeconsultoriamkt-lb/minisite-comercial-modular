@@ -27,7 +27,7 @@ export function GallerySection({ config }: { config: MiniSiteConfig }) {
 
   return (
     <section className="mt-10 flex flex-col gap-5">
-      {showHeading ? <SectionHeading icon={<TagIcon className="h-3.5 w-3.5" />} title={heading.title} /> : null}
+      {showHeading ? <SectionHeading icon={<TagIcon className="h-3.5 w-3.5" />} title={heading.title} visualStyle={config.appearance.visualStyle} /> : null}
       <div className="flex flex-col gap-2">
         <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {images.map((image) => (

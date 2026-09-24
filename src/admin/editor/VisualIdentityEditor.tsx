@@ -20,12 +20,14 @@ function AppearanceSelect<T extends string>({
   value,
   options,
   onChange,
+  hint,
 }: {
   id: string;
   label: string;
   value: T;
   options: { value: T; label: string }[];
   onChange: (value: T) => void;
+  hint?: string;
 }) {
   return (
     <div>
@@ -47,6 +49,7 @@ function AppearanceSelect<T extends string>({
         </select>
         <ChevronDownIcon className="pointer-events-none absolute inset-y-0 right-3 my-auto h-4 w-4 text-slate-400" />
       </div>
+      {hint ? <p className="mt-1.5 text-xs text-slate-400">{hint}</p> : null}
     </div>
   );
 }
@@ -114,6 +117,7 @@ export function VisualIdentityEditor() {
               { value: "premium", label: "Premium / Elegante" },
               { value: "glass", label: "Glass / Vitrine" },
             ]}
+            hint="Profundidade de Como chegar, Galeria e Catálogo. A hero usa Composição da hero; os botões usam Estilo dos botões."
           />
           <AppearanceSelect<MiniSiteHeroTreatment>
             id="heroTreatment"
