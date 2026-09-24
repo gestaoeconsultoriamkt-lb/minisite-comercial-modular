@@ -228,7 +228,7 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
 function PixFields({ config, onChange }: { config: MiniSiteConfig; onChange: (patch: Partial<MiniSitePix>) => void }) {
   const pix = config.pix ?? { keyType: "aleatoria" as const, key: "", holderName: "" };
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-3">
+    <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50/60 p-3.5">
       <div className="max-w-xs">
         <label className="text-sm font-semibold text-brand-navy-900">Tipo da chave</label>
         <select
@@ -252,7 +252,7 @@ function PixFields({ config, onChange }: { config: MiniSiteConfig; onChange: (pa
 function WifiFields({ config, onChange }: { config: MiniSiteConfig; onChange: (patch: Partial<MiniSiteWifi>) => void }) {
   const wifi = config.wifi ?? { ssid: "", password: "" };
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-slate-100 bg-white p-3">
+    <div className="flex flex-col gap-4 rounded-xl border border-slate-200 bg-slate-50/60 p-3.5">
       <TextField name="wifiSsid" label="Nome da rede (SSID)" value={wifi.ssid} onChange={(e) => onChange({ ssid: e.target.value })} />
       <TextField name="wifiPassword" label="Senha" value={wifi.password ?? ""} onChange={(e) => onChange({ password: e.target.value })} />
     </div>
@@ -295,7 +295,7 @@ export function ButtonsEditor() {
         ))}
       </div>
 
-      <div className="mt-6 flex flex-col gap-4 border-t border-slate-100 pt-6">
+      <div className="flex flex-col gap-4 border-t border-slate-100 pt-6">
         <div>
           <p className="text-sm font-bold text-brand-navy-900">Redes sociais</p>
           <p className="mt-0.5 text-xs text-slate-400">Cole o link completo ou digite só o @perfil — aparecem como botões aqui e como ícones no rodapé.</p>

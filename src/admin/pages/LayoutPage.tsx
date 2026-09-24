@@ -411,7 +411,7 @@ function SortableModuleRow({ moduleKey }: { moduleKey: ModuleKey }) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 rounded-xl border border-slate-100 bg-white px-3.5 py-3 shadow-sm transition ${
+      className={`flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3.5 py-3 shadow-sm transition hover:border-slate-300 hover:shadow ${
         isDragging ? "z-10 shadow-lg ring-2 ring-brand-blue-500/40" : ""
       }`}
     >
@@ -424,7 +424,7 @@ function SortableModuleRow({ moduleKey }: { moduleKey: ModuleKey }) {
       >
         <GripIcon className="h-4.5 w-4.5" />
       </button>
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50 text-brand-blue-600">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand-blue-50 text-brand-blue-600 ring-1 ring-inset ring-brand-blue-100">
         <Icon className="h-4.5 w-4.5" />
       </div>
       <div className="min-w-0 flex-1">

@@ -85,15 +85,17 @@ export function VisualIdentityEditor() {
         />
       </div>
 
-      <ImageUploadField
-        label="Imagem de fundo (opcional)"
-        hint="Aparece nítida atrás de todo o conteúdo da página. Independente da capa — se não definir, o fundo usa um gradiente com as cores da marca."
-        minisiteId={minisiteId}
-        purpose="background"
-        shape="wide"
-        imageKey={appearance.backgroundKey}
-        onChange={(key) => updateAppearance({ backgroundKey: key })}
-      />
+      <div className="border-t border-slate-100 pt-6">
+        <ImageUploadField
+          label="Imagem de fundo (opcional)"
+          hint="Aparece nítida atrás de todo o conteúdo da página. Independente da capa — se não definir, o fundo usa um gradiente com as cores da marca."
+          minisiteId={minisiteId}
+          purpose="background"
+          shape="wide"
+          imageKey={appearance.backgroundKey}
+          onChange={(key) => updateAppearance({ backgroundKey: key })}
+        />
+      </div>
 
       {/*
         Sistema de presets visuais (mini framework de estilização, ver
@@ -103,7 +105,7 @@ export function VisualIdentityEditor() {
         "Clássica"/"Padrão" reproduzem exatamente o visual anterior a este
         sistema).
       */}
-      <div>
+      <div className="border-t border-slate-100 pt-6">
         <h3 className="text-sm font-bold text-brand-navy-900">Estilo do Site</h3>
         <p className="mt-0.5 text-xs text-slate-400">Presets reutilizáveis — ajustam hero, botões e cards secundários juntos.</p>
         <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -165,57 +167,65 @@ export function VisualIdentityEditor() {
         schema (ver miniSiteConfig.ts) só para não descartar valores já
         salvos em configs antigos — o renderer não lê mais o valor deles.
       */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-        <AppearanceSelect<MiniSiteLogoPosition>
-          id="logoPosition"
-          label="Posição da logo"
-          value={appearance.logoPosition}
-          onChange={(value) => updateAppearance({ logoPosition: value })}
-          options={[
-            { value: "over_cover", label: "Sobre a capa" },
-            { value: "floating", label: "Flutuante na transição" },
-          ]}
-        />
-        <AppearanceSelect<MiniSiteHeroShape>
-          id="heroShape"
-          label="Formato da hero"
-          value={appearance.heroShape}
-          onChange={(value) => updateAppearance({ heroShape: value })}
-          options={[
-            { value: "straight", label: "Reta" },
-            { value: "curve", label: "Curva suave" },
-            { value: "wave", label: "Onda" },
-          ]}
-        />
-        <AppearanceSelect<MiniSiteLogoTreatment>
-          id="logoTreatment"
-          label="Tratamento da logo"
-          value={appearance.logoTreatment}
-          onChange={(value) => updateAppearance({ logoTreatment: value })}
-          options={[
-            { value: "plate", label: "Com placa branca" },
-            { value: "none", label: "Sem placa (logo solta)" },
-          ]}
-        />
+      <div className="border-t border-slate-100 pt-6">
+        <h3 className="text-sm font-bold text-brand-navy-900">Aparência da hero e da logo</h3>
+        <p className="mt-0.5 text-xs text-slate-400">Posição, formato e tratamento visual da capa e da logo.</p>
+        <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-3">
+          <AppearanceSelect<MiniSiteLogoPosition>
+            id="logoPosition"
+            label="Posição da logo"
+            value={appearance.logoPosition}
+            onChange={(value) => updateAppearance({ logoPosition: value })}
+            options={[
+              { value: "over_cover", label: "Sobre a capa" },
+              { value: "floating", label: "Flutuante na transição" },
+            ]}
+          />
+          <AppearanceSelect<MiniSiteHeroShape>
+            id="heroShape"
+            label="Formato da hero"
+            value={appearance.heroShape}
+            onChange={(value) => updateAppearance({ heroShape: value })}
+            options={[
+              { value: "straight", label: "Reta" },
+              { value: "curve", label: "Curva suave" },
+              { value: "wave", label: "Onda" },
+            ]}
+          />
+          <AppearanceSelect<MiniSiteLogoTreatment>
+            id="logoTreatment"
+            label="Tratamento da logo"
+            value={appearance.logoTreatment}
+            onChange={(value) => updateAppearance({ logoTreatment: value })}
+            options={[
+              { value: "plate", label: "Com placa branca" },
+              { value: "none", label: "Sem placa (logo solta)" },
+            ]}
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <ColorField label="Cor primária" value={appearance.colorPrimary ?? "#1d4ed8"} onChange={(hex) => updateAppearance({ colorPrimary: hex })} />
-        <ColorField label="Cor secundária" value={appearance.colorSecondary ?? "#0f1d45"} onChange={(hex) => updateAppearance({ colorSecondary: hex })} />
-        <ColorField
-          label="Cor de fundo dos botões"
-          value={appearance.colorButtonBackground ?? appearance.colorPrimary ?? "#1d4ed8"}
-          onChange={(hex) => updateAppearance({ colorButtonBackground: hex })}
-        />
-        <ColorField
-          label="Cor do texto dos botões"
-          value={appearance.colorButtonText ?? "#ffffff"}
-          onChange={(hex) => updateAppearance({ colorButtonText: hex })}
-        />
+      <div className="border-t border-slate-100 pt-6">
+        <h3 className="text-sm font-bold text-brand-navy-900">Cores da marca</h3>
+        <p className="mt-0.5 text-xs text-slate-400">Usadas nos botões, destaques e em todo o visual do site.</p>
+        <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <ColorField label="Cor primária" value={appearance.colorPrimary ?? "#1d4ed8"} onChange={(hex) => updateAppearance({ colorPrimary: hex })} />
+          <ColorField label="Cor secundária" value={appearance.colorSecondary ?? "#0f1d45"} onChange={(hex) => updateAppearance({ colorSecondary: hex })} />
+          <ColorField
+            label="Cor de fundo dos botões"
+            value={appearance.colorButtonBackground ?? appearance.colorPrimary ?? "#1d4ed8"}
+            onChange={(hex) => updateAppearance({ colorButtonBackground: hex })}
+          />
+          <ColorField
+            label="Cor do texto dos botões"
+            value={appearance.colorButtonText ?? "#ffffff"}
+            onChange={(hex) => updateAppearance({ colorButtonText: hex })}
+          />
+        </div>
+        <p className="mt-3 text-xs text-slate-400">
+          Todos os botões do site (ação e redes sociais) usam essas duas cores — visual único e consistente da marca.
+        </p>
       </div>
-      <p className="-mt-3 text-xs text-slate-400">
-        Todos os botões do site (ação e redes sociais) usam essas duas cores — visual único e consistente da marca.
-      </p>
     </EditorSection>
   );
 }

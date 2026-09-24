@@ -75,7 +75,7 @@ function SectionImagesField({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="rounded-lg border border-brand-blue-200 bg-brand-blue-50 px-3 py-1.5 text-xs font-semibold text-brand-blue-700 transition hover:bg-brand-blue-100 disabled:opacity-60"
+          className="rounded-lg border border-brand-blue-200 bg-brand-blue-50 px-3 py-1.5 text-xs font-semibold text-brand-blue-700 shadow-sm transition hover:border-brand-blue-300 hover:bg-brand-blue-100 disabled:opacity-60"
         >
           {uploading ? "Enviando..." : "Adicionar imagem"}
         </button>
@@ -105,7 +105,7 @@ function SectionImagesField({
                 placeholder="Nome (opcional)"
                 value={item.label ?? ""}
                 onChange={(e) => updateItem(item.id, { label: e.target.value || undefined })}
-                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-1 focus:ring-brand-blue-500/40"
+                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm text-slate-700 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-slate-300 focus:border-brand-blue-500 focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15"
               />
               <input
                 type="number"
@@ -116,7 +116,7 @@ function SectionImagesField({
                 placeholder="Preço"
                 value={item.price ?? ""}
                 onChange={(e) => updateItem(item.id, { price: e.target.value === "" ? undefined : Number(e.target.value) })}
-                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-1 focus:ring-brand-blue-500/40"
+                className="w-full rounded-lg border border-slate-200 px-2.5 py-1.5 text-sm text-slate-700 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-slate-300 focus:border-brand-blue-500 focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15"
               />
             </div>
           ))}
@@ -141,8 +141,10 @@ export function CatalogSectionEditor({ minisiteId, section, onChange, onRemove }
 
   return (
     // Card com borda/sombra próprias — visualmente claro onde a seção
-    // começa e termina, mesmo padrão do restante do editor.
-    <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+    // começa e termina, mesmo padrão do restante do editor. Sombra um
+    // degrau mais leve que o EditorSection que o envolve (ver
+    // EditorSection.tsx): mantém a hierarquia "módulo > seção aninhada".
+    <div className="overflow-hidden rounded-2xl border border-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_10px_22px_-14px_rgba(15,23,42,0.16)]">
       <div className="flex flex-col gap-3 bg-slate-50 px-4 py-3.5">
         <div className="flex items-center gap-3">
           <button
@@ -159,7 +161,7 @@ export function CatalogSectionEditor({ minisiteId, section, onChange, onRemove }
             value={section.title}
             onChange={(e) => onChange({ title: e.target.value })}
             placeholder="Título da seção"
-            className="min-w-[160px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-brand-navy-900 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40"
+            className="min-w-[160px] flex-1 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-bold text-brand-navy-900 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-slate-300 focus:border-brand-blue-500 focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15"
           />
           <button
             type="button"

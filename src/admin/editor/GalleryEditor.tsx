@@ -81,7 +81,7 @@ export function GalleryEditor() {
     >
       <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleFileSelected} />
 
-      <div className="flex flex-col gap-3 rounded-xl border border-slate-100 p-3">
+      <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
         <TextField
           name="galleryTitle"
           label="Título da galeria"

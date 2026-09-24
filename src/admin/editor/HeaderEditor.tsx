@@ -48,7 +48,7 @@ export function HeaderEditor() {
             id="headerVariant"
             value={header.variant}
             onChange={(e) => updateHeader({ variant: e.target.value as "highlight" | "compact" })}
-            className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-4 pr-9 text-sm font-medium text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40"
+            className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-4 pr-9 text-sm font-medium text-slate-700 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-slate-300 focus:border-brand-blue-500 focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15"
           >
             <option value="highlight">Destaque visual</option>
             <option value="compact">Compacto institucional</option>

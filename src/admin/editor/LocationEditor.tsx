@@ -31,17 +31,23 @@ export function LocationEditor() {
       />
       <p className="-mt-3 text-xs text-slate-400">Cole aqui o link correto do Google Maps.</p>
 
-      <TextareaField
-        name="mapEmbedUrl"
-        label="Mapa incorporado (opcional)"
-        rows={3}
-        placeholder="Cole a URL de embed (.../maps/embed?...) ou o código <iframe> completo do Google Maps"
-        value={value.mapEmbedUrl ?? ""}
-        onChange={(e) => update({ mapEmbedUrl: e.target.value })}
-      />
-      <p className="-mt-3 text-xs text-slate-400">
-        No Google Maps, use "Compartilhar → Incorporar um mapa" e cole aqui a URL ou o código &lt;iframe&gt; inteiro — extraímos o link automaticamente.
-      </p>
+      <div className="border-t border-slate-100 pt-6">
+        <h3 className="text-sm font-bold text-brand-navy-900">Mapa incorporado</h3>
+        <p className="mt-0.5 text-xs text-slate-400">Opcional — exibe um mapa interativo na página, além do link acima.</p>
+        <div className="mt-3">
+          <TextareaField
+            name="mapEmbedUrl"
+            label="URL ou código de embed"
+            rows={3}
+            placeholder="Cole a URL de embed (.../maps/embed?...) ou o código <iframe> completo do Google Maps"
+            value={value.mapEmbedUrl ?? ""}
+            onChange={(e) => update({ mapEmbedUrl: e.target.value })}
+          />
+        </div>
+        <p className="mt-2 text-xs text-slate-400">
+          No Google Maps, use "Compartilhar → Incorporar um mapa" e cole aqui a URL ou o código &lt;iframe&gt; inteiro — extraímos o link automaticamente.
+        </p>
+      </div>
     </EditorSection>
   );
 }

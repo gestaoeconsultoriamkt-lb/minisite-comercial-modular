@@ -13,7 +13,7 @@ export function FooterEditor() {
 
   return (
     <EditorSection icon={<ShareIcon className="h-5 w-5" />} title="Rodapé social" subtitle="Escolha se deseja exibir os ícones das redes sociais no rodapé do seu site.">
-      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 px-4 py-3">
+      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3.5">
         <div className="flex items-center gap-3">
           <ToggleSwitch
             checked={footer.showSocialIcons}
