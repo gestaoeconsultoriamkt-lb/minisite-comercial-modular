@@ -125,7 +125,11 @@ export function MiniSiteEditorPage() {
           </div>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
+        {/* Coluna do preview alargada (400px -> 460px) para caber o mockup
+            de celular maior (ver LivePreview) com respiro em volta — sem
+            isso o frame de 390px + borda ficaria colado nas bordas da
+            coluna. */}
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_460px]">
           <div className="flex min-w-0 flex-col gap-5">
             <BasicInfoEditor />
             <VisualIdentityEditor />

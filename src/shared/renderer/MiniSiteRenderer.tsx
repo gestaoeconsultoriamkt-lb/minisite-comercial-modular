@@ -21,16 +21,16 @@ export interface MiniSiteRendererProps {
  * Máscara vertical do fade da capa — GLOBAL: aplicada sempre que a hero
  * renderiza um fundo (capa OU o gradiente de marca de fallback), em
  * qualquer combinação de `logoPosition`/`heroTreatment`/preset visual.
- * Não é mais condicionada à logo "flutuante" — antes disso, "sobre a
- * capa"/"clássica"/"destaque" mantinham o corte reto original.
- * Curva com vários pontos de controle (em vez de um degradê linear
- * simples) para dissolver de forma convincente: mais da metade superior
- * intacta, início perceptível por volta de 60%, e a maior parte da queda
- * concentrada nos últimos ~25% — sem isso, um degrau linear "0% a 100%"
- * lê como escurecimento uniforme, não como a imagem de fato desaparecendo.
+ * Não é condicionada à logo "flutuante", nem a nenhuma outra composição —
+ * não há variação que deva manter o corte reto original.
+ * Curva mais longa e mais forte que a primeira versão: início da queda
+ * bem mais cedo (38%, era 50%) e cauda quase invisível bem antes do fim
+ * (6% de opacidade já em 92%) — a "fotografia" perde força de forma
+ * gradual ao longo de mais da metade da hero, em vez de ficar nítida até
+ * tarde e desaparecer de repente nos últimos pontos percentuais.
  */
 const HERO_COVER_FADE_MASK =
-  "linear-gradient(to bottom, #000 0%, #000 50%, rgba(0,0,0,0.92) 62%, rgba(0,0,0,0.62) 75%, rgba(0,0,0,0.22) 88%, transparent 100%)";
+  "linear-gradient(to bottom, #000 0%, #000 38%, rgba(0,0,0,0.88) 52%, rgba(0,0,0,0.55) 66%, rgba(0,0,0,0.24) 80%, rgba(0,0,0,0.06) 92%, transparent 100%)";
 
 const MODULE_COMPONENTS: Record<ModuleKey, (config: MiniSiteConfig) => ReactNode> = {
   gallery: (config) => <GallerySection config={config} />,
@@ -274,7 +274,7 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
               {appearance.coverKey ? (
                 <>
                   <img src={getAssetUrl(appearance.coverKey)} alt="" loading="eager" className="absolute inset-0 h-full w-full object-cover" />
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/35 to-black/65" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/45 to-black/85" />
                 </>
               ) : (
                 // B. Sem capa: nunca deixa a hero "quebrada" — cai no gradiente da
@@ -340,13 +340,6 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
             </div>
           ) : null}
         </div>
-
-        {/* Ponte visual hero -> corpo: sem isso a transição é seca (o fim da
-            capa/gradiente encontra o corpo com um corte abrupto). Uma faixa
-            de gradiente sobreposta suaviza a costura — fica FORA do
-            container recortado da hero (que tem overflow-hidden próprio),
-            então nunca é cortada pelo formato reto/curva/onda escolhido. */}
-        <div className="pointer-events-none relative -mt-16 h-16 bg-gradient-to-b from-transparent to-black/35" aria-hidden />
 
         {/* V1: corpo é sempre sólido (sem seletor de estilo no editor) —
             `appearance.bodyStyle` não é mais lido aqui (deprecated no
