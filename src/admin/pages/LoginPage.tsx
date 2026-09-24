@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 import { AuthLayout } from "../components/AuthLayout";
 import { AuthCard } from "../components/AuthCard";
@@ -11,7 +11,6 @@ import { Alert } from "../components/Alert";
 import { MailIcon, SendIcon, ShieldCheckIcon, UserPlusIcon } from "../components/icons";
 import { authClient } from "../lib/authClient";
 import { translateAuthError } from "../lib/authErrors";
-import { fetchBootstrapStatus } from "../lib/bootstrapStatus";
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -20,17 +19,6 @@ export function LoginPage() {
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [signupAvailable, setSignupAvailable] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchBootstrapStatus().then((status) => {
-      if (!cancelled) setSignupAvailable(status.signupAvailable);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -53,17 +41,15 @@ export function LoginPage() {
   return (
     <AuthLayout
       topRightSlot={
-        signupAvailable ? (
-          <div className="flex items-center gap-3 text-sm">
-            <span className="hidden text-slate-500 sm:inline">Ainda não tem uma conta?</span>
-            <Link
-              to="/cadastro"
-              className="rounded-full bg-brand-blue-50 px-4 py-2 font-semibold text-brand-blue-600 transition hover:bg-brand-blue-100"
-            >
-              Cadastrar agora
-            </Link>
-          </div>
-        ) : null
+        <div className="flex items-center gap-3 text-sm">
+          <span className="hidden text-slate-500 sm:inline">Ainda não tem uma conta?</span>
+          <Link
+            to="/cadastro"
+            className="rounded-full bg-brand-blue-50 px-4 py-2 font-semibold text-brand-blue-600 transition hover:bg-brand-blue-100"
+          >
+            Criar usuário
+          </Link>
+        </div>
       }
     >
       <AuthCard>
@@ -113,24 +99,18 @@ export function LoginPage() {
             Entrar
           </Button>
 
-          {signupAvailable ? (
-            <>
-              <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-slate-400">
-                <span className="h-px flex-1 bg-slate-200" />
-                ou
-                <span className="h-px flex-1 bg-slate-200" />
-              </div>
+          {/* Ação secundária — hierarquia deliberadamente mais discreta que
+              "Entrar" (variant="secondary", vem depois de um divisor "ou"),
+              para nunca competir com a ação principal da tela. */}
+          <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-slate-400">
+            <span className="h-px flex-1 bg-slate-200" />
+            ou
+            <span className="h-px flex-1 bg-slate-200" />
+          </div>
 
-              <Button
-                type="button"
-                variant="secondary"
-                icon={<UserPlusIcon className="h-4 w-4" />}
-                onClick={() => navigate("/cadastro")}
-              >
-                Cadastrar usuário
-              </Button>
-            </>
-          ) : null}
+          <Button type="button" variant="secondary" icon={<UserPlusIcon className="h-4 w-4" />} onClick={() => navigate("/cadastro")}>
+            Criar usuário
+          </Button>
         </form>
 
         <div className="mt-7 flex items-start gap-3 rounded-2xl bg-brand-blue-50 p-4">

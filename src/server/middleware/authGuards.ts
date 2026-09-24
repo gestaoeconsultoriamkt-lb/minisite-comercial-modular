@@ -1,7 +1,5 @@
 import type { Context, Next } from "hono";
 import { getSession } from "../auth/session";
-import { getDb } from "../db";
-import { hasAnyUser } from "../auth/bootstrap";
 import type { AppEnv } from "../types";
 
 /** `/app/*`: sem sessão válida, redireciona para `/login` antes de servir a SPA. */
@@ -13,20 +11,11 @@ export async function requireAuth(c: Context<AppEnv>, next: Next) {
   return next();
 }
 
-/** `/login`: já autenticado, redireciona direto para o painel. */
+/** `/login`, `/cadastro`: já autenticado, redireciona direto para o painel. */
 export async function redirectIfAuthenticated(c: Context<AppEnv>, next: Next) {
   const session = await getSession(c.env, c.req.raw);
   if (session) {
     return c.redirect("/app/minisites", 302);
-  }
-  return next();
-}
-
-/** `/cadastro`: só acessível enquanto nenhum usuário existir (bootstrap). */
-export async function requireBootstrapOpen(c: Context<AppEnv>, next: Next) {
-  const db = getDb(c.env);
-  if (await hasAnyUser(db)) {
-    return c.notFound();
   }
   return next();
 }

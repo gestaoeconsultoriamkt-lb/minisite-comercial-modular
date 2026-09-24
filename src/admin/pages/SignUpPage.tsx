@@ -10,11 +10,14 @@ import { Alert } from "../components/Alert";
 import { ArrowLeftIcon, MailIcon, UserPlusIcon } from "../components/icons";
 import { authClient } from "../lib/authClient";
 import { translateAuthError } from "../lib/authErrors";
+import { useToast } from "../lib/toast";
 
-const MIN_PASSWORD_LENGTH = 8;
+/** Regra de negócio do cadastro: senha com exatamente 8 dígitos numéricos. */
+const PASSWORD_PATTERN = /^\d{8}$/;
 
 export function SignUpPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,7 +27,7 @@ export function SignUpPage() {
 
   function validate(): string | null {
     if (name.trim().length < 2) return "Informe seu nome completo.";
-    if (password.length < MIN_PASSWORD_LENGTH) return `A senha precisa ter ao menos ${MIN_PASSWORD_LENGTH} caracteres.`;
+    if (!PASSWORD_PATTERN.test(password)) return "A senha deve conter exatamente 8 números.";
     if (password !== confirmPassword) return "As senhas não coincidem.";
     return null;
   }
@@ -50,6 +53,10 @@ export function SignUpPage() {
       return;
     }
 
+    // `autoSignIn: true` (ver server/auth/index.ts) já autentica a sessão
+    // aqui — entrar normalmente é só seguir direto para o painel, como o
+    // login já faz.
+    showToast("Usuário criado com sucesso.");
     navigate("/app/minisites", { replace: true });
   }
 
@@ -58,8 +65,8 @@ export function SignUpPage() {
       <AuthCard>
         <BrandLogo size={40} />
 
-        <h1 className="mt-8 text-3xl font-extrabold tracking-tight text-brand-navy-900">Cadastrar usuário</h1>
-        <p className="mt-1.5 text-sm text-slate-500">Crie o primeiro administrador do MiniSite Comercial Modular.</p>
+        <h1 className="mt-8 text-3xl font-extrabold tracking-tight text-brand-navy-900">Criar usuário</h1>
+        <p className="mt-1.5 text-sm text-slate-500">Crie sua conta para gerenciar seus MiniSites.</p>
 
         <form className="mt-7 flex flex-col gap-5" onSubmit={handleSubmit} noValidate>
           {error ? <Alert variant="error">{error}</Alert> : null}
@@ -87,16 +94,22 @@ export function SignUpPage() {
             required
           />
 
-          <PasswordField
-            label="Senha"
-            name="password"
-            autoComplete="new-password"
-            placeholder="Crie uma senha"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={MIN_PASSWORD_LENGTH}
-          />
+          <div>
+            <PasswordField
+              label="Senha"
+              name="password"
+              autoComplete="new-password"
+              placeholder="8 números"
+              value={password}
+              onChange={(e) => setPassword(e.target.value.replace(/\D/g, "").slice(0, 8))}
+              required
+              minLength={8}
+              maxLength={8}
+              inputMode="numeric"
+              pattern="\d{8}"
+            />
+            <p className="mt-1.5 text-xs text-slate-400">Exatamente 8 números, sem letras (ex.: 12345678).</p>
+          </div>
 
           <PasswordField
             label="Confirmar senha"
@@ -104,8 +117,11 @@ export function SignUpPage() {
             autoComplete="new-password"
             placeholder="Repita a senha"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) => setConfirmPassword(e.target.value.replace(/\D/g, "").slice(0, 8))}
             required
+            minLength={8}
+            maxLength={8}
+            inputMode="numeric"
           />
 
           <Button type="submit" loading={loading} icon={<UserPlusIcon className="h-4 w-4" />}>

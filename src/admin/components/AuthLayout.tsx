@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { BrandLogo } from "./BrandLogo";
+import smartBioBuilderLogo from "../assets/smart-bio-builder-logo.webp";
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -12,12 +12,21 @@ interface AuthLayoutProps {
  * reutilizado por Login, Cadastro, Esqueci minha senha e Redefinir senha.
  * Em telas pequenas o painel institucional vira um cabeçalho compacto para
  * não competir com o formulário nem gerar scroll horizontal.
+ *
+ * A identidade do painel institucional (logo Smart bio.builder + frase) é
+ * própria desta área — não usa o `BrandLogo` genérico ("MiniSite Comercial
+ * Modular"), que continua intacto no card do formulário (AuthCard) e no
+ * resto do admin (Sidebar). O arquivo do logo já vem com glow/sombra
+ * própria em PNG/WebP com alpha — combina bem direto sobre o navy, sem
+ * precisar de placa/fundo branco por trás (ao contrário do LogoPlate do
+ * MiniSite público, pensado para logos de clientes sem controle de fundo).
  */
 export function AuthLayout({ children, topRightSlot }: AuthLayoutProps) {
   return (
     <div className="min-h-dvh w-full bg-white md:flex">
-      <div className="flex items-center justify-center gap-3 bg-brand-navy-950 px-6 py-6 md:hidden">
-        <BrandLogo size={32} tone="light" />
+      <div className="flex items-center justify-center gap-2.5 bg-brand-navy-950 px-6 py-5 md:hidden">
+        <img src={smartBioBuilderLogo} alt="Smart bio.builder" className="h-10 w-10 object-contain" />
+        <span className="text-sm font-semibold tracking-wide text-white/90">Smart bio.builder</span>
       </div>
 
       <aside className="relative hidden overflow-hidden bg-brand-navy-950 md:flex md:w-[46%] md:flex-col md:items-center md:justify-center">
@@ -31,11 +40,9 @@ export function AuthLayout({ children, topRightSlot }: AuthLayoutProps) {
         />
 
         <div className="relative z-10 flex flex-col items-center px-10 text-center">
-          <BrandLogo size={56} tone="light" />
-          <div className="mt-6 h-[3px] w-12 rounded-full bg-gradient-to-r from-brand-cyan-400 to-brand-blue-500" />
-          <p className="mt-8 text-sm font-light leading-relaxed tracking-[0.18em] text-white/80">
-            COMUNICAÇÃO, PRATICIDADE
-            <br />E SOFISTICAÇÃO
+          <img src={smartBioBuilderLogo} alt="Smart bio.builder" className="h-44 w-44 object-contain" />
+          <p className="mt-9 text-[13px] font-medium uppercase leading-relaxed tracking-[0.32em] text-white/75">
+            Crie <span className="text-white/40">•</span> Publique <span className="text-white/40">•</span> Gerencie
           </p>
         </div>
       </aside>
