@@ -17,6 +17,15 @@ export interface MiniSiteRendererProps {
   config: MiniSiteConfig;
 }
 
+/**
+ * Máscara vertical do fade da capa (logo "flutuante" — ver `floatingLogo`
+ * em MiniSiteRenderer): 100% opaca até a metade da hero, depois dissolve
+ * progressivamente (curva não-linear — meio caminho ainda bem visível,
+ * acelera perto da base) até ficar transparente no fim. Generosa de propósito (cobre a
+ * metade inferior da hero) para não parecer um corte, só mais suave.
+ */
+const HERO_COVER_FADE_MASK = "linear-gradient(to bottom, #000 0%, #000 48%, rgba(0,0,0,0.55) 72%, transparent 100%)";
+
 const MODULE_COMPONENTS: Record<ModuleKey, (config: MiniSiteConfig) => ReactNode> = {
   gallery: (config) => <GallerySection config={config} />,
   actionButtons: (config) => <ButtonsSection config={config} />,
@@ -247,16 +256,26 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
             mesmo com pouco texto (nome/headline curtos ou ausentes). */}
         <div className={`relative ${floatingLogo ? "h-48 sm:h-56" : "min-h-[15rem] sm:min-h-[17rem]"}`}>
           <div className={`absolute inset-0 overflow-hidden ${heroShapeClass}`} style={heroShapeStyle} aria-hidden>
-            {appearance.coverKey ? (
-              <>
-                <img src={getAssetUrl(appearance.coverKey)} alt="" loading="eager" className="absolute inset-0 h-full w-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/35 to-black/65" />
-              </>
-            ) : (
-              // B. Sem capa: nunca deixa a hero "quebrada" — cai no gradiente da
-              // marca, mesmo que o fundo da página esteja em modo imagem.
-              <div className="absolute inset-0" style={{ background: gradientCss }} />
-            )}
+            {/* Logo "flutuante": a capa (imagem OU gradiente de marca) some
+                suavemente na base via `mask-image` — dissolve os PRÓPRIOS
+                pixels (imagem + seu escurecimento) em vez de pintar uma
+                tarja nova por cima, revelando o fundo real da página (que
+                já fica por trás, ver overlay/gradiente do `.minisite-root`)
+                sem criar uma faixa escura artificial. Com logo "sobre a
+                capa" o comportamento permanece idêntico ao atual (sem
+                mask). */}
+            <div className="absolute inset-0" style={floatingLogo ? { maskImage: HERO_COVER_FADE_MASK, WebkitMaskImage: HERO_COVER_FADE_MASK } : undefined}>
+              {appearance.coverKey ? (
+                <>
+                  <img src={getAssetUrl(appearance.coverKey)} alt="" loading="eager" className="absolute inset-0 h-full w-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/35 to-black/65" />
+                </>
+              ) : (
+                // B. Sem capa: nunca deixa a hero "quebrada" — cai no gradiente da
+                // marca, mesmo que o fundo da página esteja em modo imagem.
+                <div className="absolute inset-0" style={{ background: gradientCss }} />
+              )}
+            </div>
             {isVitrine ? (
               // Glassmorphism só fica convincente quando há textura por
               // trás pro blur "trabalhar" — um fundo chapado escuro (sem

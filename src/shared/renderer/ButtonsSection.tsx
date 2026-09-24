@@ -10,6 +10,7 @@ import {
   MiniSiteButtonLink,
   MiniSiteButtonSurface,
   MiniSiteButtonGlassSheen,
+  MiniSiteButtonContent,
   type MiniSiteButtonColors,
   type MiniSiteButtonTier,
 } from "./MiniSiteButton";
@@ -69,10 +70,7 @@ function CopyableReveal({
       >
         <MiniSiteButtonSurface style={style} />
         {!insidePanel ? <MiniSiteButtonGlassSheen style={style} /> : null}
-        <span className="relative z-10 inline-flex items-center justify-center gap-2.5">
-          <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
-          <span className="truncate leading-none">{label}</span>
-        </span>
+        <MiniSiteButtonContent icon={icon} label={label} />
       </summary>
       <div className="mt-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5">
         <code className="truncate text-xs text-slate-700">{value}</code>

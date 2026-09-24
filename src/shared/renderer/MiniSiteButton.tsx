@@ -221,11 +221,34 @@ export function MiniSiteButtonGlassSheen({ style }: { style: MiniSiteButtonStyle
 }
 
 /**
- * Botão-pílula padrão: ícone + texto formam UM bloco (`inline-flex`,
- * `items-center`, `gap-2.5` = 10px) que é o que fica centralizado no
- * botão — não o texto sozinho com o ícone plantado numa borda. Estilo e
- * tier (ver MiniSiteButtonTier) juntos decidem profundidade/peso/fundo;
- * altura/raio-base continuam consistentes em todo o MiniSite.
+ * Conteúdo (ícone + texto) do botão. O TEXTO ocupa o centro horizontal
+ * real do botão — um bloco de largura total com `text-center` — enquanto
+ * o ícone é posicionado de forma independente (`absolute`, ancorado à
+ * esquerda), sem participar do cálculo de centro. Antes, ícone+texto
+ * formavam um único bloco `inline-flex` centralizado como GRUPO: como o
+ * ícone soma largura à esquerda do texto, o grupo centralizado deixava o
+ * texto deslocado para a direita do centro real do botão (matematicamente
+ * correto para o bloco, visualmente errado para quem lê só o texto).
+ * `min-h-5` mantém a altura do conteúdo idêntica à anterior (antes, o
+ * ícone de 20px era o item mais alto da linha; agora ele saiu do fluxo).
+ * `px-7` no texto é a única concessão à presença do ícone — evita que um
+ * label longo (truncado) toque visualmente o ícone; como é simétrico dos
+ * dois lados, não desloca o ponto de centralização.
+ */
+export function MiniSiteButtonContent({ icon, label }: { icon: ReactNode; label: string }) {
+  return (
+    <span className="relative z-10 flex min-h-5 w-full items-center justify-center">
+      <span className="absolute left-0 top-1/2 flex h-5 w-5 -translate-y-1/2 shrink-0 items-center justify-center">{icon}</span>
+      <span className="w-full truncate px-7 text-center leading-none">{label}</span>
+    </span>
+  );
+}
+
+/**
+ * Botão-pílula padrão: ícone e texto (ver MiniSiteButtonContent) sobre a
+ * superfície do estilo/tier (ver MiniSiteButtonTier) juntos decidem
+ * profundidade/peso/fundo; altura/raio-base continuam consistentes em
+ * todo o MiniSite.
  */
 export function MiniSiteButtonLink({
   href,
@@ -255,15 +278,7 @@ export function MiniSiteButtonLink({
     >
       <MiniSiteButtonSurface style={style} />
       {!insidePanel ? <MiniSiteButtonGlassSheen style={style} /> : null}
-      <span className="relative z-10 inline-flex items-center justify-center gap-2.5">
-        {/* icon-box e texto compartilham a mesma linha de base óptica:
-            `leading-none` no texto elimina o excesso de altura de linha
-            (line-height padrão sobra mais espaço ABAIXO da letra do que
-            acima), que senão faz o ícone (centrado geometricamente na sua
-            caixa 20x20) parecer "alto" em relação ao texto ao lado. */}
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
-        <span className="truncate leading-none">{label}</span>
-      </span>
+      <MiniSiteButtonContent icon={icon} label={label} />
     </a>
   );
 }
