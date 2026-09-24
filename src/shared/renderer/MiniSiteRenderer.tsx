@@ -51,27 +51,32 @@ function LogoPlate({
 }) {
   const dimension = boost
     ? size === "compact"
-      ? "h-28 w-28"
+      ? "h-[7rem] w-[7rem]"
       : size === "floating"
-        ? "h-32 w-32 sm:h-36 sm:w-36"
-        : "h-36 w-36"
+        ? "h-[8.25rem] w-[8.25rem] sm:h-[9.5rem] sm:w-[9.5rem]"
+        : "h-[9.5rem] w-[9.5rem]"
     : size === "compact"
       ? "h-24 w-24"
       : size === "floating"
         ? "h-28 w-28 sm:h-32 sm:w-32"
         : "h-32 w-32";
 
+  const noneShadow = boost ? "drop-shadow-[0_10px_24px_rgba(0,0,0,0.45)]" : "drop-shadow-[0_4px_14px_rgba(0,0,0,0.35)]";
   if (treatment === "none") {
     return (
-      <div className={`flex shrink-0 items-center justify-center drop-shadow-[0_4px_14px_rgba(0,0,0,0.35)] ${dimension}`}>
+      <div className={`flex shrink-0 items-center justify-center ${noneShadow} ${dimension}`}>
         <img src={getAssetUrl(logoKey)} alt={alt} className="h-full w-full object-contain" />
       </div>
     );
   }
 
+  const plateShadow = boost
+    ? "shadow-[0_1px_0_rgba(255,255,255,0.7)_inset,0_16px_36px_-8px_rgba(0,0,0,0.5),0_4px_10px_rgba(0,0,0,0.25)]"
+    : "shadow-[0_8px_20px_rgba(0,0,0,0.28)]";
+
   return (
     <div
-      className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2.5 shadow-[0_8px_20px_rgba(0,0,0,0.28)] ring-1 ring-black/5 ${dimension}`}
+      className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-white p-2.5 ring-1 ring-black/5 ${plateShadow} ${dimension}`}
     >
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white via-white to-slate-50" aria-hidden />
       <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-white" aria-hidden />
@@ -107,7 +112,7 @@ function HeroTextBlock({
     <>
       {displayName ? (
         <h1
-          className={`leading-tight text-white ${nameSizeClass} ${typography.nameClassName} ${boost ? "drop-shadow-[0_2px_16px_rgba(0,0,0,0.45)]" : ""}`}
+          className={`text-white ${boost ? "leading-[1.12]" : "leading-tight"} ${nameSizeClass} ${typography.nameClassName} ${boost ? "drop-shadow-[0_2px_16px_rgba(0,0,0,0.45)]" : ""}`}
           style={{ fontFamily: typography.nameFontFamily }}
         >
           {displayName}
@@ -124,20 +129,36 @@ function HeroTextBlock({
 
 /**
  * Painel de vidro (heroTreatment "vitrine") — glassmorphism contido, só na
- * primeira dobra: blur alto, tinta neutra-escura levemente misturada com a
- * cor primária da marca (nunca a cor pura — mesma lição do corpo acrílico
- * removido: marca quente + alpha alto vira lavagem de cor, não vidro),
- * anel translúcido e sombra profunda para separar do fundo. `mixHex`/
- * `hexToRgba` — ver src/shared/colors.ts.
+ * primeira dobra: blur+saturate altos (o efeito precisa ser EVIDENTE, não
+ * só um fundo escuro semitransparente), tinta neutra-escura levemente
+ * misturada com a cor primária da marca (nunca a cor pura — mesma lição do
+ * corpo acrílico removido: marca quente + alpha alto vira lavagem de cor,
+ * não vidro). Três camadas dão a sensação de "objeto de vidro flutuante":
+ * o preenchimento translúcido em si (`style`), um highlight superior (luz
+ * "batendo" no topo do vidro) e um anel de duas cores (mais claro no topo,
+ * mais discreto embaixo) — sem eles, translúcido + blur sozinhos leem só
+ * como "escurecido", não como vidro de verdade. `mixHex`/`hexToRgba` — ver
+ * src/shared/colors.ts. Margem lateral no mobile vem do `max-w` + do `px-5`
+ * do container pai — nunca cola nas bordas da tela.
  */
 function HeroGlassPanel({ tintColor, children }: { tintColor: string; children: ReactNode }) {
-  const background = hexToRgba(mixHex("#0b1220", tintColor, 0.24), 0.45);
+  const background = hexToRgba(mixHex("#0b1220", tintColor, 0.28), 0.4);
   return (
     <div
-      className="w-full max-w-[22rem] rounded-[28px] px-6 py-7 text-center shadow-[0_1px_0_rgba(255,255,255,0.12)_inset,0_24px_60px_-18px_rgba(0,0,0,0.55)] ring-1 ring-inset ring-white/15 backdrop-blur-xl"
+      className="relative w-full max-w-[22rem] overflow-hidden rounded-[28px] ring-1 ring-inset ring-white/25 backdrop-blur-2xl backdrop-saturate-150 shadow-[0_28px_70px_-16px_rgba(0,0,0,0.6),0_8px_20px_-8px_rgba(0,0,0,0.35)]"
       style={{ backgroundColor: background }}
     >
-      {children}
+      {/* Highlight superior — luz "batendo" no topo do painel, o que mais
+          vende a sensação de vidro/acrílico físico em vez de só "escuro
+          translúcido". Não recebe pointer-events nem participa do layout. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/25 via-white/5 to-transparent"
+      />
+      {/* Anel externo levemente mais claro só na borda superior — reforça a
+          borda "de vidro" sem depender de um único ring plano. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 rounded-[28px] ring-1 ring-inset ring-white/10" />
+      <div className="relative px-6 py-7 text-center">{children}</div>
     </div>
   );
 }
@@ -182,6 +203,11 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
   const heroBoost = appearance.heroTreatment !== "classic";
   const isVitrine = appearance.heroTreatment === "vitrine";
   const vitrineTint = appearance.colorPrimary || "#1d4ed8";
+  // "Vitrine" é uma composição única (logo + nome + subtítulo + botões no
+  // MESMO painel de vidro) — os botões saem do fluxo normal de módulos e
+  // entram dentro do HeroGlassPanel; o resto (galeria/catálogo/local)
+  // mantém a ordem configurada normalmente.
+  const bodyModuleKeys = getOrderedModules(config).filter((key) => !isVitrine || key !== "actionButtons");
 
   // Formato da base da hero — "reta" não aplica nada; "curva" arredonda a
   // base; "onda" usa um clip-path SVG (objectBoundingBox — responsivo por
@@ -250,6 +276,7 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
                     typography={typography}
                     boost={heroBoost}
                   />
+                  <ButtonsSection config={config} spacingClassName="mt-6" />
                 </HeroGlassPanel>
               ) : (
                 <>
@@ -272,11 +299,18 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
           ) : null}
         </div>
 
+        {/* Ponte visual hero -> corpo: sem isso a transição é seca (o fim da
+            capa/gradiente encontra o corpo com um corte abrupto). Uma faixa
+            de gradiente sobreposta suaviza a costura — fica FORA do
+            container recortado da hero (que tem overflow-hidden próprio),
+            então nunca é cortada pelo formato reto/curva/onda escolhido. */}
+        <div className="pointer-events-none relative -mt-16 h-16 bg-gradient-to-b from-transparent to-black/35" aria-hidden />
+
         {/* V1: corpo é sempre sólido (sem seletor de estilo no editor) —
             `appearance.bodyStyle` não é mais lido aqui (deprecated no
             schema, "acrylic" removido). `pt-6` dá respiro consistente com
             o restante da hero, sem depender de painel translúcido. */}
-        <div className="flex flex-col items-center px-5 pb-12 pt-6 text-center">
+        <div className="relative flex flex-col items-center px-5 pb-12 pt-6 text-center">
           {floatingLogo ? (
             <>
               {hasLogo ? (
@@ -297,6 +331,7 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
                           typography={typography}
                           boost={heroBoost}
                         />
+                        <ButtonsSection config={config} spacingClassName="mt-6" />
                       </div>
                     </HeroGlassPanel>
                   </div>
@@ -316,7 +351,7 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
             </>
           ) : null}
 
-          {getOrderedModules(config).map((key) => (
+          {bodyModuleKeys.map((key) => (
             <div key={key} className="w-full">
               {MODULE_COMPONENTS[key](config)}
             </div>

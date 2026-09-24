@@ -1,7 +1,15 @@
 import { getAssetUrl } from "../assetUrl";
 import { formatCatalogPrice, getSectionImageItems, isCatalogSectionReady, type CatalogImageItem } from "../catalog";
 import { TagIcon } from "../icons";
-import type { MiniSiteConfig } from "../schemas/miniSiteConfig";
+import { SectionHeading } from "./SectionHeading";
+import type { MiniSiteConfig, MiniSiteVisualStyle } from "../schemas/miniSiteConfig";
+
+/** Moldura do card por `visualStyle` — `simple` é o card que já existia (sem regressão). */
+const CARD_FRAME: Record<MiniSiteVisualStyle, string> = {
+  simple: "rounded-2xl",
+  premium: "rounded-[20px] ring-1 ring-white/10 shadow-[0_10px_26px_-10px_rgba(0,0,0,0.45)]",
+  glass: "rounded-[20px] ring-1 ring-white/20 shadow-[0_14px_32px_-12px_rgba(0,0,0,0.5)]",
+};
 
 /**
  * A imagem é a unidade visual principal da seção — sem Item/CTA/descrição
@@ -9,13 +17,29 @@ import type { MiniSiteConfig } from "../schemas/miniSiteConfig";
  * mostrados numa faixa translúcida discreta sobre a base da foto, sem
  * aumentar a altura do card nem quebrar a proporção vertical.
  */
-function CatalogImageCard({ id, item, showPrice }: { id: string; item: CatalogImageItem; showPrice: boolean }) {
+function CatalogImageCard({
+  id,
+  item,
+  showPrice,
+  visualStyle,
+}: {
+  id: string;
+  item: CatalogImageItem;
+  showPrice: boolean;
+  visualStyle: MiniSiteVisualStyle;
+}) {
   const hasLabel = Boolean(item.label?.trim());
   const hasPrice = showPrice && typeof item.price === "number";
 
   return (
-    <div id={id} className="relative w-40 shrink-0 snap-start overflow-hidden rounded-2xl bg-white/10 sm:w-48">
+    <div id={id} className={`relative w-40 shrink-0 snap-start overflow-hidden bg-white/10 sm:w-48 ${CARD_FRAME[visualStyle]}`}>
       <img src={getAssetUrl(item.imageKey)} alt={item.label ?? ""} loading="lazy" className="aspect-[2/3] w-full object-cover" />
+      {visualStyle === "glass" ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/10 via-transparent to-transparent ring-1 ring-inset ring-white/10"
+        />
+      ) : null}
       {hasLabel || hasPrice ? (
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent px-2.5 pb-2.5 pt-7">
           {hasLabel ? <p className="truncate text-[13px] font-semibold text-white">{item.label}</p> : null}
@@ -30,19 +54,15 @@ export function CatalogSection({ config }: { config: MiniSiteConfig }) {
   const sections = [...config.sections].filter(isCatalogSectionReady).sort((a, b) => a.position - b.position);
   if (sections.length === 0) return null;
 
+  const visualStyle = config.appearance.visualStyle;
+
   return (
     <section className="mt-10 flex flex-col gap-10">
       {sections.map((section) => {
         const images = getSectionImageItems(section);
         return (
           <div key={section.id} className="flex flex-col gap-5">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <TagIcon className="h-4 w-4 shrink-0 text-white/70" />
-                <h3 className="text-sm font-bold uppercase tracking-wide text-white">{section.title}</h3>
-              </div>
-              <div className="h-px w-full bg-white/15" />
-            </div>
+            <SectionHeading icon={<TagIcon className="h-3.5 w-3.5" />} title={section.title} />
             <div className="flex flex-col gap-2">
               {/* Sem hidratação no MiniSite público — swipe funciona nativamente via
                   scroll-snap (inclusive scroll horizontal por mouse/trackpad no
@@ -54,7 +74,13 @@ export function CatalogSection({ config }: { config: MiniSiteConfig }) {
                   vez de ficarem todos idênticos. */}
               <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {images.map((item, index) => (
-                  <CatalogImageCard key={`${item.id}-${index}`} id={`cat-${section.id}-img-${index}`} item={item} showPrice={section.showPrices} />
+                  <CatalogImageCard
+                    key={`${item.id}-${index}`}
+                    id={`cat-${section.id}-img-${index}`}
+                    item={item}
+                    showPrice={section.showPrices}
+                    visualStyle={visualStyle}
+                  />
                 ))}
               </div>
               {images.length > 1 ? (

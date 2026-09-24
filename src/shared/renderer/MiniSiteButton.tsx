@@ -88,12 +88,16 @@ const BUTTON_RECIPES: Record<MiniSiteButtonStyle, Record<MiniSiteButtonTier, str
       "rounded-2xl ring-1 ring-white/15 font-semibold tracking-tight transition-all duration-150 ease-out hover:brightness-110 active:brightness-95",
   },
   glass: {
+    // 3 camadas por trás do texto (ver MiniSiteButtonSurface): preenchimento
+    // translúcido (`style`/resolveButtonSurface), anel + blur/saturate aqui,
+    // e o "sheen" diagonal (só glass). O `primary` usa blur mais forte —
+    // profundidade de campo reforça que ele está "na frente".
     primary:
-      "rounded-2xl ring-1 ring-inset ring-white/30 backdrop-blur-md font-semibold transition-all duration-150 ease-out shadow-[0_1px_0_rgba(255,255,255,0.3)_inset,0_8px_20px_rgba(0,0,0,0.22)] hover:-translate-y-[2px] hover:brightness-110 active:translate-y-[1px] active:brightness-95",
+      "rounded-2xl ring-1 ring-inset ring-white/35 backdrop-blur-xl backdrop-saturate-150 font-semibold transition-all duration-150 ease-out shadow-[0_1px_0_rgba(255,255,255,0.35)_inset,0_-1px_0_rgba(0,0,0,0.15)_inset,0_14px_32px_-8px_rgba(0,0,0,0.4),0_4px_10px_-2px_rgba(0,0,0,0.25)] hover:-translate-y-[2px] hover:brightness-110 hover:shadow-[0_1px_0_rgba(255,255,255,0.4)_inset,0_-1px_0_rgba(0,0,0,0.15)_inset,0_18px_38px_-8px_rgba(0,0,0,0.45),0_6px_14px_-2px_rgba(0,0,0,0.3)] active:translate-y-[1px] active:brightness-95",
     secondary:
-      "rounded-2xl ring-1 ring-inset ring-white/25 backdrop-blur-md font-medium transition-all duration-150 ease-out shadow-[0_1px_0_rgba(255,255,255,0.2)_inset,0_4px_12px_rgba(0,0,0,0.18)] hover:brightness-110 active:brightness-95",
+      "rounded-2xl ring-1 ring-inset ring-white/25 backdrop-blur-lg backdrop-saturate-125 font-medium transition-all duration-150 ease-out shadow-[0_1px_0_rgba(255,255,255,0.22)_inset,0_8px_18px_-6px_rgba(0,0,0,0.3)] hover:brightness-110 active:brightness-95",
     tertiary:
-      "rounded-2xl ring-1 ring-white/20 backdrop-blur-sm font-medium transition-all duration-150 ease-out hover:brightness-110 active:brightness-95",
+      "rounded-2xl ring-1 ring-white/15 backdrop-blur-md font-medium transition-all duration-150 ease-out shadow-[0_1px_0_rgba(255,255,255,0.12)_inset] hover:brightness-110 active:brightness-95",
   },
 };
 
@@ -156,12 +160,24 @@ export function resolveButtonSurface(
 /**
  * Camada de gradiente vertical discreto sobre a cor do botão — só nos
  * estilos com sensação de "objeto físico" (`elevated`/`premium`); `simple`
- * é propositalmente plano, e `glass` já tem sua própria luz via
- * `backdrop-blur` + ring, um gradiente por cima ficaria carregado.
+ * é propositalmente plano. `glass` usa `MiniSiteButtonGlassSheen` (luz
+ * diagonal) em vez desta, mais coerente com vidro do que um gradiente
+ * vertical liso.
  */
 export function MiniSiteButtonSurface({ style }: { style: MiniSiteButtonStyle }) {
   if (style === "simple" || style === "glass") return null;
   return <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/20 via-transparent to-black/15" />;
+}
+
+/** Sheen diagonal do botão `glass` — luz "escorregando" pelo vidro, em vez de um gradiente vertical plano. */
+export function MiniSiteButtonGlassSheen({ style }: { style: MiniSiteButtonStyle }) {
+  if (style !== "glass") return null;
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-br from-white/25 via-transparent to-transparent"
+    />
+  );
 }
 
 /**
@@ -196,6 +212,7 @@ export function MiniSiteButtonLink({
       style={{ backgroundColor: surface.backgroundColor, color: surface.color }}
     >
       <MiniSiteButtonSurface style={style} />
+      <MiniSiteButtonGlassSheen style={style} />
       <span className="relative z-10 inline-flex items-center justify-center gap-2.5">
         <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
         <span className="truncate">{label}</span>

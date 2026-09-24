@@ -14,31 +14,39 @@ function googleMapsSearchUrl(query: string): string {
  * claro; `glass` estende o vidro da hero "vitrine" aos cards secundários,
  * por isso troca para texto claro sobre fundo translúcido escuro.
  */
-const CARD_STYLE: Record<MiniSiteVisualStyle, { section: string; heading: string; address: string; mapRing: string; mapsButton: string }> = {
+const CARD_STYLE: Record<
+  MiniSiteVisualStyle,
+  { section: string; iconBadge: string; heading: string; address: string; mapRing: string; mapsButton: string }
+> = {
   simple: {
     section: "rounded-2xl bg-white/95 p-5 text-slate-900",
+    iconBadge: "bg-slate-100 text-slate-600",
     heading: "text-sm font-bold",
     address: "mt-1.5 text-sm text-slate-600",
     mapRing: "ring-1 ring-slate-200",
     mapsButton: "bg-slate-900 text-white",
   },
   premium: {
-    section: "rounded-[22px] bg-white p-5 text-slate-900 shadow-[0_16px_36px_-14px_rgba(0,0,0,0.3)] ring-1 ring-black/5",
-    heading: "text-sm font-bold",
+    section:
+      "rounded-[24px] bg-white p-6 text-slate-900 shadow-[0_1px_0_rgba(255,255,255,0.6)_inset,0_20px_44px_-16px_rgba(0,0,0,0.32)] ring-1 ring-black/[0.06]",
+    iconBadge: "bg-slate-900/5 text-slate-700 ring-1 ring-inset ring-black/5",
+    heading: "text-sm font-bold tracking-tight",
     address: "mt-1.5 text-sm text-slate-600",
-    mapRing: "ring-1 ring-black/10 shadow-[0_10px_24px_-10px_rgba(0,0,0,0.35)]",
-    mapsButton: "bg-slate-900 text-white shadow-[0_10px_20px_-8px_rgba(0,0,0,0.4)]",
+    mapRing: "ring-1 ring-black/10 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.4)]",
+    mapsButton: "bg-slate-900 text-white shadow-[0_1px_0_rgba(255,255,255,0.15)_inset,0_12px_24px_-8px_rgba(0,0,0,0.45)]",
   },
   glass: {
-    section: "rounded-[22px] p-5 text-white shadow-[0_20px_48px_-16px_rgba(0,0,0,0.5)] ring-1 ring-inset ring-white/15 backdrop-blur-xl",
-    heading: "text-sm font-bold text-white",
+    section:
+      "rounded-[24px] p-6 text-white shadow-[0_1px_0_rgba(255,255,255,0.15)_inset,0_24px_56px_-18px_rgba(0,0,0,0.55)] ring-1 ring-inset ring-white/15 backdrop-blur-xl backdrop-saturate-150",
+    iconBadge: "bg-white/10 text-white/85 ring-1 ring-inset ring-white/15",
+    heading: "text-sm font-bold tracking-tight text-white",
     address: "mt-1.5 text-sm text-white/70",
-    mapRing: "ring-1 ring-white/15",
-    mapsButton: "bg-white/15 text-white ring-1 ring-inset ring-white/25 backdrop-blur-md",
+    mapRing: "ring-1 ring-white/15 shadow-[0_14px_30px_-12px_rgba(0,0,0,0.5)]",
+    mapsButton: "bg-white/12 text-white ring-1 ring-inset ring-white/25 shadow-[0_1px_0_rgba(255,255,255,0.2)_inset] backdrop-blur-md",
   },
 };
 
-const GLASS_SECTION_BG = "rgba(15, 23, 42, 0.38)";
+const GLASS_SECTION_BG = "rgba(15, 23, 42, 0.4)";
 
 export function LocationSection({ config }: { config: MiniSiteConfig }) {
   const { location } = config;
@@ -56,10 +64,18 @@ export function LocationSection({ config }: { config: MiniSiteConfig }) {
   // extractMapEmbedUrl. Só aceita destinos do Google Maps.
   const mapEmbedSrc = location?.mapEmbedUrl ? extractMapEmbedUrl(location.mapEmbedUrl) : null;
 
+  const boosted = visualStyle !== "simple";
+
   return (
     <section className={`mt-10 w-full text-left ${cardStyle.section}`} style={visualStyle === "glass" ? { backgroundColor: GLASS_SECTION_BG } : undefined}>
-      <div className={`flex items-center gap-2 ${cardStyle.heading}`}>
-        <MapPinIcon className="h-4 w-4" />
+      <div className={`flex items-center gap-2.5 ${cardStyle.heading}`}>
+        {boosted ? (
+          <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${cardStyle.iconBadge}`}>
+            <MapPinIcon className="h-3.5 w-3.5" />
+          </span>
+        ) : (
+          <MapPinIcon className="h-4 w-4" />
+        )}
         Como chegar
       </div>
       {location?.address ? (
@@ -77,7 +93,7 @@ export function LocationSection({ config }: { config: MiniSiteConfig }) {
         // A moldura arredondada com anel sutil é o "fallback premium"
         // possível: cerca o mapa de forma intencional; a navegação real
         // continua garantida pelo botão "Abrir no Google Maps" abaixo.
-        <div className={`mt-3.5 overflow-hidden rounded-xl ${cardStyle.mapRing}`}>
+        <div className={`overflow-hidden rounded-xl ${boosted ? "mt-4" : "mt-3.5"} ${cardStyle.mapRing}`}>
           <iframe title="Mapa" src={mapEmbedSrc} className="h-52 w-full border-0" loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
         </div>
       ) : null}
@@ -86,7 +102,7 @@ export function LocationSection({ config }: { config: MiniSiteConfig }) {
           href={mapsHref}
           target="_blank"
           rel="noopener noreferrer"
-          className={`mt-3.5 flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold ${cardStyle.mapsButton}`}
+          className={`flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold ${boosted ? "mt-4" : "mt-3.5"} ${cardStyle.mapsButton}`}
         >
           <ExternalLinkIcon className="h-4 w-4" />
           Abrir no Google Maps

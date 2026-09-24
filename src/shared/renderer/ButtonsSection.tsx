@@ -9,6 +9,7 @@ import {
   resolveButtonSurface,
   MiniSiteButtonLink,
   MiniSiteButtonSurface,
+  MiniSiteButtonGlassSheen,
   type MiniSiteButtonColors,
   type MiniSiteButtonTier,
 } from "./MiniSiteButton";
@@ -65,6 +66,7 @@ function CopyableReveal({
         style={{ backgroundColor: surface.backgroundColor, color: surface.color }}
       >
         <MiniSiteButtonSurface style={style} />
+        <MiniSiteButtonGlassSheen style={style} />
         <span className="relative z-10 inline-flex items-center justify-center gap-2.5">
           <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
           <span className="truncate">{label}</span>
@@ -87,7 +89,7 @@ function CopyableReveal({
  * componente base — antes eram dois blocos separados no corpo da
  * página. Os ícones do rodapé (Rodapé Social) continuam independentes.
  */
-export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
+export function ButtonsSection({ config, spacingClassName = "mt-10" }: { config: MiniSiteConfig; spacingClassName?: string }) {
   const readyButtons = EDITABLE_BUTTON_TYPES.map((type) => config.buttons.find((b) => b.type === type)).filter(
     (button): button is NonNullable<typeof button> => Boolean(button && isButtonReady(button, config)),
   );
@@ -104,7 +106,7 @@ export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
   const hasActionButtons = readyButtons.length > 0;
 
   return (
-    <div className="mt-10 flex w-full flex-col gap-3.5">
+    <div className={`flex w-full flex-col gap-3.5 ${spacingClassName}`}>
       {readyButtons.map((button, index) => {
         const tier: MiniSiteButtonTier = index === 0 ? "primary" : "secondary";
         const Icon = BUTTON_ICONS[button.type] ?? ExternalLinkIcon;
