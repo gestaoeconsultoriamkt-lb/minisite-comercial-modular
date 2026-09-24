@@ -152,7 +152,7 @@ export function MiniSitesPage() {
 
   return (
     <div className="mx-auto max-w-7xl">
-      <h1 className="text-2xl font-extrabold tracking-tight text-brand-navy-900">Meus MiniSites</h1>
+      <h1 className="text-2xl font-extrabold tracking-tight text-brand-navy-900">Meus Sites</h1>
       <p className="mt-1 text-sm text-slate-500">Crie e gerencie de forma simples e rápida</p>
 
       <div className="mt-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -204,7 +204,7 @@ export function MiniSitesPage() {
           </div>
 
           <Button type="button" fullWidth={false} icon={<PlusIcon className="h-4 w-4" />} onClick={() => setModalOpen(true)}>
-            Novo MiniSite
+            Novo Site
           </Button>
         </div>
       </div>

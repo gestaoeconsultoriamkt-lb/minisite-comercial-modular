@@ -40,8 +40,8 @@ export function AuthLayout({ children, topRightSlot }: AuthLayoutProps) {
         />
 
         <div className="relative z-10 flex flex-col items-center px-10 text-center">
-          <img src={smartBioBuilderLogo} alt="Smart bio.builder" className="h-44 w-44 object-contain" />
-          <p className="mt-9 text-[13px] font-medium uppercase leading-relaxed tracking-[0.32em] text-white/75">
+          <img src={smartBioBuilderLogo} alt="Smart bio.builder" className="h-60 w-60 object-contain" />
+          <p className="mt-10 text-sm font-medium uppercase leading-relaxed tracking-[0.32em] text-white/75">
             Crie <span className="text-white/40">•</span> Publique <span className="text-white/40">•</span> Gerencie
           </p>
         </div>

@@ -1,10 +1,10 @@
 import { NavLink, useNavigate } from "react-router";
-import { BrandLogo, BrandMark } from "./BrandLogo";
 import { CrownIcon, ImageIcon, LayoutGridIcon, LogOutIcon, SettingsIcon } from "./icons";
 import { authClient } from "../lib/authClient";
+import smartBioBuilderLogo from "../assets/smart-bio-builder-logo.webp";
 
 const NAV_ITEMS = [
-  { to: "/app/minisites", label: "Meus MiniSites", icon: LayoutGridIcon },
+  { to: "/app/minisites", label: "Meus Sites", icon: LayoutGridIcon },
   { to: "/app/midia", label: "Mídia", icon: ImageIcon },
   { to: "/app/configuracoes", label: "Configurações", icon: SettingsIcon },
 ];
@@ -46,10 +46,7 @@ export function Sidebar() {
     <>
       {/* Mobile: barra superior compacta */}
       <nav className="flex items-center justify-between gap-3 bg-brand-navy-950 px-4 py-3 md:hidden">
-        <div className="flex items-center gap-2">
-          <BrandMark size={28} />
-          <span className="text-sm font-bold text-white">MiniSite</span>
-        </div>
+        <img src={smartBioBuilderLogo} alt="Smart bio.builder" className="h-10 w-10 object-contain" />
         <div className="flex items-center gap-1">
           {NAV_ITEMS.map(({ to, label, icon: Icon }) => (
             <NavLink key={to} to={to} className={({ isActive }) => navLinkClass(isActive)} aria-label={label}>
@@ -69,8 +66,12 @@ export function Sidebar() {
 
       {/* Desktop: coluna lateral completa */}
       <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col md:bg-brand-navy-950 md:px-4 md:py-6">
-        <div className="px-2">
-          <BrandLogo size={32} tone="light" />
+        {/* Identidade Smart bio.builder — asset com alpha própria, sem
+            precisar de texto ao lado (o wordmark já vem embutido na
+            imagem). Tamanho contido (h-16) para não dominar uma coluna de
+            256px; respiro lateral vem do px-2 + do px-4 do <aside>. */}
+        <div className="flex items-center justify-center px-2 py-1">
+          <img src={smartBioBuilderLogo} alt="Smart bio.builder" className="h-16 w-16 object-contain" />
         </div>
 
         <nav className="mt-10 flex flex-1 flex-col gap-1">
