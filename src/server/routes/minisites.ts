@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { and, desc, eq, ne } from "drizzle-orm";
 import { getDb } from "../db";
 import { minisites, type MiniSiteRow } from "../db/schema";
-import { ensurePublishedSnapshot } from "../db/publishedSnapshot";
+import { ensurePublishedSnapshot, hasPublishedSnapshot } from "../db/publishedSnapshot";
 import { requireApiAuth } from "../middleware/authGuards";
 import { createMiniSiteInputSchema, patchMiniSiteInputSchema } from "../../shared/schemas/minisiteApi";
 import { createDefaultMiniSiteConfig, migrateMiniSiteConfig, serializeMiniSiteConfig } from "../../shared/schemas/migrateMiniSiteConfig";
@@ -19,7 +19,7 @@ import type { AppEnv } from "../types";
  */
 function computeHasUnpublishedChanges(row: MiniSiteRow): boolean {
   if (row.status === "draft") return false;
-  if (row.publishedConfigJson === null || row.publishedConfigVersion === null) return true;
+  if (!hasPublishedSnapshot(row)) return true;
   try {
     const draft = migrateMiniSiteConfig(row.configJson, row.configVersion).config;
     const published = migrateMiniSiteConfig(row.publishedConfigJson, row.publishedConfigVersion).config;
