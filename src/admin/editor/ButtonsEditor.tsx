@@ -70,7 +70,7 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
   const canTestLink = type !== "pix" && type !== "wifi";
   const testHref = button ? getButtonHref(button) : null;
 
-  const statusText = !enabled ? "Desativado" : ready ? "Ativo no MiniSite" : "Ativo — preencha os campos abaixo";
+  const statusText = !enabled ? "Desativado" : ready ? "Ativo no site" : "Ativo — preencha os campos abaixo";
   const statusClassName = !enabled ? "text-slate-400" : ready ? "text-emerald-600" : "text-amber-600";
 
   // Cor efetiva (individual se houver, senão a global) — usada só para
@@ -80,11 +80,15 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
   const hasIndividualText = typeof value.colorText === "string";
 
   return (
-    <div className={`overflow-hidden rounded-xl border shadow-sm transition-colors ${enabled ? "border-brand-blue-100" : "border-slate-100"}`}>
-      <div className={`flex items-center gap-3 px-4 py-3.5 ${enabled ? "bg-brand-blue-50/40" : "bg-white"}`}>
+    <div
+      className={`overflow-hidden rounded-xl border shadow-sm transition-colors ${
+        enabled ? "border-brand-blue-200 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_6px_16px_-8px_rgba(29,78,216,0.18)]" : "border-slate-200"
+      }`}
+    >
+      <div className={`flex items-center gap-3 px-4 py-3.5 ${enabled ? "bg-brand-blue-50/50" : "bg-slate-50/70"}`}>
         <div
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg ${
-            enabled ? "bg-brand-blue-100 text-brand-blue-600" : "bg-slate-100 text-slate-400"
+            enabled ? "bg-brand-blue-100 text-brand-blue-600" : "bg-slate-200/70 text-slate-400"
           }`}
         >
           <Icon className="h-4.5 w-4.5" />
@@ -93,10 +97,10 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="flex min-w-0 flex-1 items-center justify-between gap-2 text-left"
+          className="flex min-w-0 flex-1 items-center justify-between gap-2 rounded-lg p-1 text-left transition hover:bg-white/70"
         >
           <span className="min-w-0">
-            <span className="block truncate text-sm font-bold text-brand-navy-900">{label}</span>
+            <span className={`block truncate text-sm font-bold ${enabled ? "text-brand-navy-900" : "text-slate-500"}`}>{label}</span>
             <span className={`mt-0.5 flex items-center gap-1 text-xs font-medium ${statusClassName}`}>
               {enabled && !ready ? <AlertCircleIcon className="h-3.5 w-3.5 shrink-0" /> : null}
               {statusText}
@@ -130,7 +134,7 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
               <TextField
                 name={`${type}-message`}
                 label="Mensagem inicial"
-                placeholder="Olá! Vim pelo MiniSite e gostaria de informações."
+                placeholder="Olá! Vim pelo site e gostaria de informações."
                 value={typeof value.message === "string" ? value.message : ""}
                 onChange={(e) => upsertButton({ message: e.target.value })}
               />
@@ -230,7 +234,7 @@ function PixFields({ config, onChange }: { config: MiniSiteConfig; onChange: (pa
         <select
           value={pix.keyType}
           onChange={(e) => onChange({ keyType: e.target.value as typeof pix.keyType })}
-          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40"
+          className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm text-slate-700 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-slate-300 focus:border-brand-blue-500 focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15"
         >
           <option value="cpf">CPF</option>
           <option value="cnpj">CNPJ</option>
@@ -283,7 +287,7 @@ export function ButtonsEditor() {
     <EditorSection
       icon={<ZapIcon className="h-5 w-5" />}
       title="Botões"
-      subtitle="Ações e redes sociais em um único bloco. Ative ou preencha os que quiser exibir no seu MiniSite."
+      subtitle="Ações e redes sociais em um único bloco. Ative ou preencha os que quiser exibir no seu site."
     >
       <div className="flex flex-col gap-3">
         {EDITABLE_BUTTON_TYPES.map((type) => (

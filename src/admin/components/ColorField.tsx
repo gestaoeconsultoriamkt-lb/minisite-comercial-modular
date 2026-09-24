@@ -39,7 +39,7 @@ export function ColorField({ label, value, onChange }: ColorFieldProps) {
           type="button"
           onClick={() => setOpen((o) => !o)}
           aria-label={`Escolher ${label.toLowerCase()}`}
-          className="h-10 w-10 shrink-0 rounded-lg border border-slate-200 shadow-sm"
+          className="h-10 w-10 shrink-0 rounded-xl border border-slate-200 shadow-sm transition hover:border-slate-300 hover:shadow-md focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15"
           style={{ backgroundColor: HEX_PATTERN.test(value) ? value : "#ffffff" }}
         />
         <input
@@ -54,7 +54,7 @@ export function ColorField({ label, value, onChange }: ColorFieldProps) {
             setText(HEX_PATTERN.test(value) ? value : text);
           }}
           placeholder="#000000"
-          className="w-28 rounded-lg border border-slate-200 px-2.5 py-2 text-sm uppercase text-slate-900 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40"
+          className="w-28 rounded-xl border border-slate-200 px-2.5 py-2 text-sm uppercase text-slate-900 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-slate-300 focus:border-brand-blue-500 focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15"
         />
       </div>
       {open ? (

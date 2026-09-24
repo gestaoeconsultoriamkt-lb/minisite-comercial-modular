@@ -12,7 +12,7 @@ export function FooterEditor() {
   const configuredSocials = (Object.keys(SOCIAL_ICONS) as (keyof typeof SOCIAL_ICONS)[]).filter((key) => socialLinks[key]);
 
   return (
-    <EditorSection icon={<ShareIcon className="h-5 w-5" />} title="Rodapé social" subtitle="Escolha se deseja exibir os ícones das redes sociais no rodapé do seu MiniSite.">
+    <EditorSection icon={<ShareIcon className="h-5 w-5" />} title="Rodapé social" subtitle="Escolha se deseja exibir os ícones das redes sociais no rodapé do seu site.">
       <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 px-4 py-3">
         <div className="flex items-center gap-3">
           <ToggleSwitch
@@ -33,7 +33,7 @@ export function FooterEditor() {
           )}
         </div>
       </div>
-      <p className="text-xs text-slate-400">Esses ícones aparecem no rodapé do seu MiniSite.</p>
+      <p className="text-xs text-slate-400">Esses ícones aparecem no rodapé do seu site.</p>
     </EditorSection>
   );
 }

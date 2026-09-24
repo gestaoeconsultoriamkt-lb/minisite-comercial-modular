@@ -82,7 +82,7 @@ function SectionImagesField({
       </div>
       <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleFileSelected} />
       {items.length === 0 ? (
-        <p className="text-xs text-slate-400">Nenhuma imagem ainda. A seção não aparece no MiniSite até ter ao menos uma foto.</p>
+        <p className="text-xs text-slate-400">Nenhuma imagem ainda. A seção não aparece no site até ter ao menos uma foto.</p>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {items.map((item) => (
@@ -179,8 +179,8 @@ export function CatalogSectionEditor({ minisiteId, section, onChange, onRemove }
           </label>
           <span className={`text-xs font-semibold sm:ml-auto ${sectionReady ? "text-emerald-600" : "text-slate-400"}`}>
             {!sectionReady
-              ? "Adicione ao menos uma imagem para esta seção aparecer no MiniSite"
-              : `${images.length} ${images.length === 1 ? "imagem" : "imagens"} no MiniSite`}
+              ? "Adicione ao menos uma imagem para esta seção aparecer no site"
+              : `${images.length} ${images.length === 1 ? "imagem" : "imagens"} no site`}
           </span>
         </div>
       </div>

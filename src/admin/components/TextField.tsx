@@ -33,8 +33,8 @@ export const TextField = forwardRef<HTMLInputElement, TextFieldProps>(function T
           aria-invalid={Boolean(error)}
           aria-describedby={errorId}
           className={[
-            "w-full rounded-xl border bg-white py-3 text-sm text-slate-900 placeholder:text-slate-400 transition",
-            "focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40 focus:border-brand-blue-500",
+            "w-full rounded-xl border bg-white py-3 text-sm text-slate-900 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] placeholder:text-slate-400 transition",
+            "hover:border-slate-300 focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15 focus:border-brand-blue-500",
             icon ? "pl-11" : "pl-4",
             rightSlot ? "pr-11" : "pr-4",
             error ? "border-red-400" : "border-slate-200",

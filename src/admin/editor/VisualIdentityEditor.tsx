@@ -39,7 +39,7 @@ function AppearanceSelect<T extends string>({
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value as T)}
-          className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-4 pr-9 text-sm font-medium text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40"
+          className="w-full appearance-none rounded-xl border border-slate-200 bg-white py-3 pl-4 pr-9 text-sm font-medium text-slate-700 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-slate-300 focus:border-brand-blue-500 focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15"
         >
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>
@@ -81,7 +81,7 @@ export function VisualIdentityEditor() {
           shape="wide"
           imageKey={appearance.coverKey}
           onChange={(key) => updateAppearance({ coverKey: key })}
-          hint="Aparece no topo do MiniSite, atrás do logo e do nome. Recomendado 1200x630."
+          hint="Aparece no topo do site, atrás do logo e do nome. Recomendado 1200x630."
         />
       </div>
 
@@ -104,7 +104,7 @@ export function VisualIdentityEditor() {
         sistema).
       */}
       <div>
-        <h3 className="text-sm font-bold text-brand-navy-900">Estilo do MiniSite</h3>
+        <h3 className="text-sm font-bold text-brand-navy-900">Estilo do Site</h3>
         <p className="mt-0.5 text-xs text-slate-400">Presets reutilizáveis — ajustam hero, botões e cards secundários juntos.</p>
         <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <AppearanceSelect<MiniSiteVisualStyle>
@@ -214,7 +214,7 @@ export function VisualIdentityEditor() {
         />
       </div>
       <p className="-mt-3 text-xs text-slate-400">
-        Todos os botões do MiniSite (ação e redes sociais) usam essas duas cores — visual único e consistente da marca.
+        Todos os botões do site (ação e redes sociais) usam essas duas cores — visual único e consistente da marca.
       </p>
     </EditorSection>
   );

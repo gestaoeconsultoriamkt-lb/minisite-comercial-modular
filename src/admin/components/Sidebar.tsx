@@ -64,8 +64,14 @@ export function Sidebar() {
         </div>
       </nav>
 
-      {/* Desktop: coluna lateral completa */}
-      <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col md:bg-brand-navy-950 md:px-4 md:py-6">
+      {/* Desktop: coluna lateral completa — `sticky top-0 h-dvh` prende a
+          coluna ao viewport enquanto o conteúdo principal rola (sem isso
+          era só um item flex normal, que rolava junto com a página e
+          desaparecia ao descer). `self-start` evita que o `align-items:
+          stretch` padrão do flex pai force uma altura diferente da
+          explícita; `overflow-y-auto` só entra em jogo em telas muito
+          baixas, sem cortar itens. */}
+      <aside className="hidden md:sticky md:top-0 md:flex md:h-dvh md:w-64 md:shrink-0 md:flex-col md:self-start md:overflow-y-auto md:bg-brand-navy-950 md:px-4 md:py-6">
         {/* Identidade Smart bio.builder — asset com alpha própria, sem
             precisar de texto ao lado (o wordmark já vem embutido na
             imagem). h-20 dá mais presença sem dominar a coluna de 256px;

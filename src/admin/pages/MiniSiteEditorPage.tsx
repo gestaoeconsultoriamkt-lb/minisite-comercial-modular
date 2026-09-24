@@ -72,10 +72,10 @@ export function MiniSiteEditorPage() {
       <div className="mx-auto max-w-3xl">
         <Link to="/app/minisites" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-blue-600 hover:underline">
           <ArrowLeftIcon className="h-4 w-4" />
-          Voltar para Meus MiniSites
+          Voltar para Meus Sites
         </Link>
         <div className="mt-6 rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center">
-          <p className="text-base font-semibold text-brand-navy-900">MiniSite não encontrado</p>
+          <p className="text-base font-semibold text-brand-navy-900">Site não encontrado</p>
           <p className="mt-1.5 text-sm text-slate-500">{loadError}</p>
         </div>
       </div>
@@ -87,21 +87,26 @@ export function MiniSiteEditorPage() {
       <div className="mx-auto max-w-[1400px]">
         <Link to="/app/minisites" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-blue-600 hover:underline">
           <ArrowLeftIcon className="h-4 w-4" />
-          Voltar para Meus MiniSites
+          Voltar para Meus Sites
         </Link>
 
         <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold tracking-tight text-brand-navy-900">Editor do MiniSite</h1>
-            <p className="mt-1 text-sm text-slate-500">Monte seu mini site de forma simples e rápida.</p>
+            <h1 className="text-2xl font-extrabold tracking-tight text-brand-navy-900">Editor do Site</h1>
+            <p className="mt-1 text-sm text-slate-500">Monte seu site de forma simples e rápida.</p>
           </div>
 
-          <div className="flex items-center gap-3">
+          {/* `flex-wrap` + `shrink-0 whitespace-nowrap` em cada botão: em
+              telas estreitas, os botões quebram para a linha de baixo
+              como blocos inteiros — nunca o texto quebrando dentro de um
+              botão (problema real com o CTA mais longo, "Conferir e
+              publicar", em 390px). */}
+          <div className="flex flex-wrap items-center gap-3">
             <SaveStatusLabel status={saveStatus} />
             <button
               type="button"
               onClick={handleSaveDraft}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-brand-navy-900 transition hover:bg-slate-50"
+              className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-brand-navy-900 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:shadow"
             >
               <SaveIcon className="h-4 w-4" />
               Salvar rascunho
@@ -109,7 +114,7 @@ export function MiniSiteEditorPage() {
             <button
               type="button"
               onClick={handlePreview}
-              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-brand-navy-900 transition hover:bg-slate-50"
+              className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold text-brand-navy-900 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:shadow"
             >
               <EyeIcon className="h-4 w-4" />
               Pré-visualizar
@@ -117,10 +122,10 @@ export function MiniSiteEditorPage() {
             <button
               type="button"
               onClick={handlePublish}
-              className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-brand-blue-500 to-brand-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-blue-600/25 transition hover:from-brand-blue-600 hover:to-brand-blue-600"
+              className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-xl bg-gradient-to-r from-brand-blue-500 to-brand-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-brand-blue-600/25 transition hover:from-brand-blue-600 hover:to-brand-blue-600 hover:shadow-xl hover:shadow-brand-blue-600/30"
             >
               <SendIcon className="h-4 w-4" />
-              Publicar
+              Conferir e publicar
             </button>
           </div>
         </div>

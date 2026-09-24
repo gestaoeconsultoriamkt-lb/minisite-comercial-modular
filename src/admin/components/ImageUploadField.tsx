@@ -48,7 +48,7 @@ export function ImageUploadField({ label, hint, minisiteId, purpose, imageKey, o
     <div className="flex flex-col gap-2">
       <p className="text-sm font-semibold text-brand-navy-900">{label}</p>
       <div className="flex items-center gap-3">
-        <div className={`flex shrink-0 items-center justify-center overflow-hidden border border-slate-200 bg-slate-50 ${previewBox}`}>
+        <div className={`flex shrink-0 items-center justify-center overflow-hidden border border-slate-200 bg-slate-50 shadow-[inset_0_1px_2px_rgba(15,23,42,0.04)] ${previewBox}`}>
           {imageKey ? (
             <img src={getAssetUrl(imageKey)} alt="" className="h-full w-full object-cover" />
           ) : (
@@ -61,7 +61,7 @@ export function ImageUploadField({ label, hint, minisiteId, purpose, imageKey, o
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="rounded-lg border border-brand-blue-200 bg-brand-blue-50 px-3 py-1.5 text-xs font-semibold text-brand-blue-700 transition hover:bg-brand-blue-100 disabled:opacity-60"
+              className="rounded-lg border border-brand-blue-200 bg-brand-blue-50 px-3 py-1.5 text-xs font-semibold text-brand-blue-700 shadow-sm transition hover:border-brand-blue-300 hover:bg-brand-blue-100 disabled:opacity-60"
             >
               {uploading ? "Enviando..." : imageKey ? "Alterar" : "Enviar imagem"}
             </button>
@@ -70,7 +70,7 @@ export function ImageUploadField({ label, hint, minisiteId, purpose, imageKey, o
                 type="button"
                 onClick={() => onChange(undefined)}
                 disabled={uploading}
-                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500 transition hover:bg-slate-50"
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-500 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
               >
                 Remover
               </button>

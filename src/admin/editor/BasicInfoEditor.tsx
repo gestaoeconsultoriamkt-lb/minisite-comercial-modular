@@ -21,14 +21,14 @@ export function BasicInfoEditor() {
   function handleSlugChange(raw: string) {
     const value = slugify(raw);
     setSlug(value);
-    if (!value) setSlugError("Informe o endereço do MiniSite");
+    if (!value) setSlugError("Informe o endereço do site");
     else if (!isValidSlugFormat(value)) setSlugError("Use apenas letras minúsculas, números e hífen (3–50 caracteres)");
     else if (isReservedSlug(value)) setSlugError("Esse endereço não pode ser usado.");
     else setSlugError(null);
   }
 
   return (
-    <EditorSection icon={<ClipboardIcon className="h-5 w-5" />} title="Informações básicas" subtitle="Defina as informações principais do seu mini site.">
+    <EditorSection icon={<ClipboardIcon className="h-5 w-5" />} title="Informações básicas" subtitle="Defina as informações principais do seu site.">
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
         <TextField name="internalName" label="Nome interno" value={internalName} onChange={(e) => setInternalName(e.target.value)} required />
 

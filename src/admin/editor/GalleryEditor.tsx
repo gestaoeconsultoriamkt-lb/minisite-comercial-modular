@@ -96,7 +96,7 @@ export function GalleryEditor() {
       </div>
 
       {sorted.length === 0 ? (
-        <p className="text-sm text-slate-400">Nenhuma imagem adicionada ainda. A galeria não aparece no MiniSite até ter ao menos uma foto.</p>
+        <p className="text-sm text-slate-400">Nenhuma imagem adicionada ainda. A galeria não aparece no site até ter ao menos uma foto.</p>
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {sorted.map((image, index) => (

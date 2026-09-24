@@ -29,6 +29,7 @@ import { StatusBadge } from "../components/StatusBadge";
 import { Button } from "../components/Button";
 import { TextField } from "../components/TextField";
 import { ConfirmDialog } from "../components/ConfirmDialog";
+import { EditorSection } from "../components/EditorSection";
 import { getOrderedModules, MODULE_INFO, type ModuleKey } from "../../shared/moduleOrder";
 import { computePublishChecklist } from "../../shared/publishability";
 import { isReservedSlug, isValidSlugFormat } from "../../shared/reservedSlugs";
@@ -97,10 +98,10 @@ export function LayoutPage() {
       <div className="mx-auto max-w-3xl">
         <Link to="/app/minisites" className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-blue-600 hover:underline">
           <ArrowLeftIcon className="h-4 w-4" />
-          Voltar para Meus MiniSites
+          Voltar para Meus Sites
         </Link>
         <div className="mt-6 rounded-3xl border border-dashed border-slate-200 bg-white px-6 py-16 text-center">
-          <p className="text-base font-semibold text-brand-navy-900">MiniSite não encontrado</p>
+          <p className="text-base font-semibold text-brand-navy-900">Site não encontrado</p>
           <p className="mt-1.5 text-sm text-slate-500">{loadError}</p>
         </div>
       </div>
@@ -151,7 +152,7 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
   function handleSlugChange(raw: string) {
     const value = slugify(raw);
     setSlug(value);
-    if (!value) setSlugError("Informe o endereço do MiniSite");
+    if (!value) setSlugError("Informe o endereço do site");
     else if (!isValidSlugFormat(value)) setSlugError("Use apenas letras minúsculas, números e hífen (3–50 caracteres)");
     else if (isReservedSlug(value)) setSlugError("Esse endereço não pode ser usado.");
     else setSlugError(null);
@@ -200,7 +201,7 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
     try {
       const updated = await disableMiniSite(minisiteId);
       store.getState().loadFromDetail(updated);
-      showToast("MiniSite desativado");
+      showToast("Site desativado");
       setConfirmDisableOpen(false);
     } catch (err) {
       showToast(err instanceof MiniSiteApiError ? err.message : "Não foi possível desativar.", "error");
@@ -214,7 +215,7 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
     try {
       const updated = await reactivateMiniSite(minisiteId);
       store.getState().loadFromDetail(updated);
-      showToast("MiniSite reativado");
+      showToast("Site reativado");
     } catch (err) {
       showToast(err instanceof MiniSiteApiError ? err.message : "Não foi possível reativar.", "error");
     } finally {
@@ -226,7 +227,7 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
 
   const primaryAction =
     status === "disabled"
-      ? { label: "Reativar MiniSite", icon: RotateIcon, onClick: handleReactivate, loading: mutating === "reactivate", disabled: false }
+      ? { label: "Reativar Site", icon: RotateIcon, onClick: handleReactivate, loading: mutating === "reactivate", disabled: false }
       : {
           // Sempre "Publicar" — nunca "Atualizar publicação". O botão só
           // promove o draft atual ao snapshot público; a indicação de que
@@ -252,7 +253,7 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
       <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-brand-navy-900">Layout e Publicação</h1>
-          <p className="mt-1 text-sm text-slate-500">Organize os módulos e confira seu MiniSite antes de publicar.</p>
+          <p className="mt-1 text-sm text-slate-500">Organize os módulos e confira seu site antes de publicar.</p>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
@@ -278,65 +279,50 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
+      {/* Coluna do preview alargada (400px -> 460px), igual ao Editor —
+          mesmo mockup de celular (ver LivePreview), mesma largura de
+          coluna, para as duas telas lerem como o mesmo produto. */}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_460px]">
         <div className="flex min-w-0 flex-col gap-5">
-          <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue-50 text-brand-blue-600">
-                <ListIcon className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-brand-navy-900">Módulos públicos</h2>
-                <p className="mt-0.5 text-sm text-slate-500">Arraste para reorganizar a ordem em que aparecem no MiniSite.</p>
-              </div>
-            </div>
+          <EditorSection icon={<ListIcon className="h-5 w-5" />} title="Módulos públicos" subtitle="Arraste para reorganizar a ordem em que aparecem no site.">
+            {orderedModules.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
+                Nenhum módulo com conteúdo ainda. Volte ao editor para configurar galeria, botões, catálogo ou localização.
+              </p>
+            ) : (
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={orderedModules} strategy={verticalListSortingStrategy}>
+                  <div className="flex flex-col gap-2.5">
+                    {orderedModules.map((key) => (
+                      <SortableModuleRow key={key} moduleKey={key} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
+          </EditorSection>
 
-            <div className="mt-5">
-              {orderedModules.length === 0 ? (
-                <p className="rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500">
-                  Nenhum módulo com conteúdo ainda. Volte ao editor para configurar galeria, botões, catálogo ou localização.
-                </p>
-              ) : (
-                <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                  <SortableContext items={orderedModules} strategy={verticalListSortingStrategy}>
-                    <div className="flex flex-col gap-2.5">
-                      {orderedModules.map((key) => (
-                        <SortableModuleRow key={key} moduleKey={key} />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              )}
-            </div>
-          </section>
-
-          <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue-50 text-brand-blue-600">
-                  <SendIcon className="h-5 w-5" />
-                </div>
-                <div>
-                  <h2 className="text-base font-bold text-brand-navy-900">Publicação</h2>
-                  <p className="mt-0.5 text-sm text-slate-500">Configure as informações de publicação do seu MiniSite.</p>
-                </div>
-              </div>
-              {status === "active" ? (
+          <EditorSection
+            icon={<SendIcon className="h-5 w-5" />}
+            title="Publicação"
+            subtitle="Configure as informações de publicação do seu site."
+            action={
+              status === "active" ? (
                 <button
                   type="button"
                   onClick={() => setConfirmDisableOpen(true)}
-                  className="flex items-center gap-1.5 text-sm font-semibold text-red-600 transition hover:text-red-700"
+                  className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold text-red-600 transition hover:bg-red-50 hover:text-red-700"
                 >
                   <PowerIcon className="h-4 w-4" />
-                  Desativar MiniSite
+                  Desativar Site
                 </button>
-              ) : null}
-            </div>
-
-            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+              ) : undefined
+            }
+          >
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <p className="text-sm font-semibold text-brand-navy-900">Status</p>
-                <div className="flex h-[46px] items-center rounded-xl border border-slate-200 bg-slate-50 px-4">
+                <div className="flex h-[46px] items-center rounded-xl border border-slate-200 bg-slate-50 px-4 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)]">
                   <StatusBadge status={status} />
                 </div>
               </div>
@@ -350,37 +336,29 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
               />
             </div>
 
-            <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:items-end">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-brand-navy-900">URL pública</p>
-                <div className="mt-1.5 truncate rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">{displayUrl}</div>
+                <div className="mt-1.5 truncate rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)]">
+                  {displayUrl}
+                </div>
               </div>
               <Button type="button" variant="secondary" fullWidth={false} icon={<CopyIcon className="h-4 w-4" />} onClick={handleCopyUrl}>
                 Copiar URL
               </Button>
             </div>
-            {copied ? <p className="mt-2 text-xs font-medium text-emerald-600">Link copiado</p> : null}
-          </section>
+            {copied ? <p className="-mt-2 text-xs font-medium text-emerald-600">Link copiado</p> : null}
+          </EditorSection>
 
-          <section className="rounded-2xl border border-slate-100 bg-white p-5 shadow-sm sm:p-6">
-            <div className="flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-blue-50 text-brand-blue-600">
-                <CheckCircleIcon className="h-5 w-5" />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-brand-navy-900">Checklist</h2>
-                <p className="mt-0.5 text-sm text-slate-500">Verifique se tudo está pronto para publicar seu MiniSite.</p>
-              </div>
-            </div>
-
+          <EditorSection icon={<CheckCircleIcon className="h-5 w-5" />} title="Checklist" subtitle="Verifique se tudo está pronto para publicar seu site.">
             {!checklist.canPublish ? (
-              <p className="mt-4 flex items-center gap-1.5 rounded-xl bg-amber-50 px-3.5 py-2.5 text-xs font-semibold text-amber-700">
+              <p className="-mt-1 flex items-center gap-1.5 rounded-xl bg-amber-50 px-3.5 py-2.5 text-xs font-semibold text-amber-700">
                 <AlertCircleIcon className="h-4 w-4 shrink-0" />
                 Antes de publicar: {checklist.blockers.join(", ")}.
               </p>
             ) : null}
 
-            <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-3">
               {checklist.items.map((item) => (
                 <div key={item.key} className="flex items-center gap-2">
                   {item.ok ? (
@@ -397,13 +375,13 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
                 </div>
               ))}
             </div>
-          </section>
+          </EditorSection>
         </div>
 
         <div>
           <div className="mb-3 flex items-center gap-2 text-sm font-bold text-brand-navy-900">
             <EyeIcon className="h-4.5 w-4.5 text-brand-blue-600" />
-            Pré-visualização do MiniSite
+            Pré-visualização do Site
           </div>
           <LivePreview />
         </div>
@@ -411,8 +389,8 @@ function LayoutContent({ store, minisiteId }: { store: EditorStoreApi; minisiteI
 
       <ConfirmDialog
         open={confirmDisableOpen}
-        title="Desativar MiniSite"
-        description="Visitantes não conseguirão mais acessar este MiniSite publicamente até que você o reative. O conteúdo e o histórico de publicação são preservados."
+        title="Desativar Site"
+        description="Visitantes não conseguirão mais acessar este site publicamente até que você o reative. O conteúdo e o histórico de publicação são preservados."
         confirmLabel="Desativar"
         loading={mutating === "disable"}
         onCancel={() => setConfirmDisableOpen(false)}

@@ -21,8 +21,8 @@ export const TextareaField = forwardRef<HTMLTextAreaElement, TextareaFieldProps>
         name={name}
         rows={rows}
         className={[
-          "w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition",
-          "focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40 focus:border-brand-blue-500",
+          "w-full resize-y rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] placeholder:text-slate-400 transition",
+          "hover:border-slate-300 focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15 focus:border-brand-blue-500",
           className ?? "",
         ].join(" ")}
         {...rest}
