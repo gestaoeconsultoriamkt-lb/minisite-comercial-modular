@@ -53,7 +53,7 @@ export function LoginPage() {
       }
     >
       <AuthCard>
-        <BrandLogo size={40} />
+        <BrandLogo size={40} title="Smart" subtitle="Bio Builder" />
 
         <h1 className="mt-8 text-3xl font-extrabold tracking-tight text-brand-navy-900">Entrar</h1>
         <p className="mt-1.5 text-sm text-slate-500">Acesse sua conta para gerenciar seus MiniSites.</p>

@@ -41,10 +41,13 @@ interface BrandLogoProps {
   size?: number;
   tone?: "light" | "dark";
   className?: string;
+  /** Override do texto (ver LoginPage) — default preserva "MiniSite" / "Comercial Modular" em todo o resto do admin. */
+  title?: string;
+  subtitle?: string;
 }
 
-/** Símbolo + wordmark ("MiniSite" / "Comercial Modular") lado a lado. */
-export function BrandLogo({ size = 40, tone = "dark", className }: BrandLogoProps) {
+/** Símbolo + wordmark ("MiniSite" / "Comercial Modular", por padrão) lado a lado. */
+export function BrandLogo({ size = 40, tone = "dark", className, title = "MiniSite", subtitle = "Comercial Modular" }: BrandLogoProps) {
   const titleColor = tone === "light" ? "text-white" : "text-brand-navy-900";
   const subtitleColor = tone === "light" ? "text-white/70" : "text-slate-500";
 
@@ -52,8 +55,8 @@ export function BrandLogo({ size = 40, tone = "dark", className }: BrandLogoProp
     <div className={`flex items-center gap-3 ${className ?? ""}`}>
       <BrandMark size={size} />
       <div className="leading-tight">
-        <p className={`text-xl font-extrabold tracking-tight ${titleColor}`}>MiniSite</p>
-        <p className={`text-sm font-medium ${subtitleColor}`}>Comercial Modular</p>
+        <p className={`text-xl font-extrabold tracking-tight ${titleColor}`}>{title}</p>
+        <p className={`text-sm font-medium ${subtitleColor}`}>{subtitle}</p>
       </div>
     </div>
   );
