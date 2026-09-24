@@ -18,13 +18,19 @@ export interface MiniSiteRendererProps {
 }
 
 /**
- * Máscara vertical do fade da capa (logo "flutuante" — ver `floatingLogo`
- * em MiniSiteRenderer): 100% opaca até a metade da hero, depois dissolve
- * progressivamente (curva não-linear — meio caminho ainda bem visível,
- * acelera perto da base) até ficar transparente no fim. Generosa de propósito (cobre a
- * metade inferior da hero) para não parecer um corte, só mais suave.
+ * Máscara vertical do fade da capa — GLOBAL: aplicada sempre que a hero
+ * renderiza um fundo (capa OU o gradiente de marca de fallback), em
+ * qualquer combinação de `logoPosition`/`heroTreatment`/preset visual.
+ * Não é mais condicionada à logo "flutuante" — antes disso, "sobre a
+ * capa"/"clássica"/"destaque" mantinham o corte reto original.
+ * Curva com vários pontos de controle (em vez de um degradê linear
+ * simples) para dissolver de forma convincente: mais da metade superior
+ * intacta, início perceptível por volta de 60%, e a maior parte da queda
+ * concentrada nos últimos ~25% — sem isso, um degrau linear "0% a 100%"
+ * lê como escurecimento uniforme, não como a imagem de fato desaparecendo.
  */
-const HERO_COVER_FADE_MASK = "linear-gradient(to bottom, #000 0%, #000 48%, rgba(0,0,0,0.55) 72%, transparent 100%)";
+const HERO_COVER_FADE_MASK =
+  "linear-gradient(to bottom, #000 0%, #000 50%, rgba(0,0,0,0.92) 62%, rgba(0,0,0,0.62) 75%, rgba(0,0,0,0.22) 88%, transparent 100%)";
 
 const MODULE_COMPONENTS: Record<ModuleKey, (config: MiniSiteConfig) => ReactNode> = {
   gallery: (config) => <GallerySection config={config} />,
@@ -256,15 +262,15 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
             mesmo com pouco texto (nome/headline curtos ou ausentes). */}
         <div className={`relative ${floatingLogo ? "h-48 sm:h-56" : "min-h-[15rem] sm:min-h-[17rem]"}`}>
           <div className={`absolute inset-0 overflow-hidden ${heroShapeClass}`} style={heroShapeStyle} aria-hidden>
-            {/* Logo "flutuante": a capa (imagem OU gradiente de marca) some
-                suavemente na base via `mask-image` — dissolve os PRÓPRIOS
-                pixels (imagem + seu escurecimento) em vez de pintar uma
-                tarja nova por cima, revelando o fundo real da página (que
-                já fica por trás, ver overlay/gradiente do `.minisite-root`)
-                sem criar uma faixa escura artificial. Com logo "sobre a
-                capa" o comportamento permanece idêntico ao atual (sem
-                mask). */}
-            <div className="absolute inset-0" style={floatingLogo ? { maskImage: HERO_COVER_FADE_MASK, WebkitMaskImage: HERO_COVER_FADE_MASK } : undefined}>
+            {/* Fade global da capa (ver HERO_COVER_FADE_MASK): a capa (imagem
+                OU gradiente de marca) some suavemente na base via
+                `mask-image` — dissolve os PRÓPRIOS pixels (imagem + seu
+                escurecimento) em vez de pintar uma tarja nova por cima,
+                revelando o fundo real da página (que já fica por trás, ver
+                overlay/gradiente do `.minisite-root`). Sempre ativo,
+                independente de logoPosition/heroTreatment/preset — não há
+                composição que deva manter o corte reto original. */}
+            <div className="absolute inset-0" style={{ maskImage: HERO_COVER_FADE_MASK, WebkitMaskImage: HERO_COVER_FADE_MASK }}>
               {appearance.coverKey ? (
                 <>
                   <img src={getAssetUrl(appearance.coverKey)} alt="" loading="eager" className="absolute inset-0 h-full w-full object-cover" />
