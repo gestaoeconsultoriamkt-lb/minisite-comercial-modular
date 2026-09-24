@@ -3,7 +3,16 @@ import type { MiniSiteConfig } from "../schemas/miniSiteConfig";
 import { BUTTON_ICONS, CopyIcon, ExternalLinkIcon, PixIcon, SOCIAL_ICONS, WifiIcon } from "../icons";
 import { EDITABLE_BUTTON_TYPES, getButtonHref, getButtonLabel, isButtonReady } from "../actionButtons";
 import { SOCIAL_PLATFORM_LABELS, getFilledSocialEntries } from "../socialLinks";
-import { getButtonColors, miniSiteButtonClassName, MiniSiteButtonLink, MiniSiteButtonSurface, type MiniSiteButtonColors } from "./MiniSiteButton";
+import {
+  getButtonColors,
+  miniSiteButtonClassName,
+  resolveButtonSurface,
+  MiniSiteButtonLink,
+  MiniSiteButtonSurface,
+  type MiniSiteButtonColors,
+  type MiniSiteButtonTier,
+} from "./MiniSiteButton";
+import type { MiniSiteButtonStyle } from "../schemas/miniSiteConfig";
 
 /**
  * Pix/Wi-Fi usam <details>/<summary> nativo para revelar/copiar — funciona
@@ -20,14 +29,19 @@ function CopyableReveal({
   value,
   hint,
   colors,
+  style,
+  tier,
 }: {
   icon: ReactNode;
   label: string;
   value: string;
   hint?: string;
   colors: MiniSiteButtonColors;
+  style: MiniSiteButtonStyle;
+  tier: MiniSiteButtonTier;
 }) {
   const [copied, setCopied] = useState(false);
+  const surface = resolveButtonSurface(style, tier, colors);
 
   async function handleCopy(event: MouseEvent) {
     event.preventDefault();
@@ -46,8 +60,11 @@ function CopyableReveal({
 
   return (
     <details className="group">
-      <summary className={miniSiteButtonClassName("cursor-pointer list-none")} style={{ backgroundColor: colors.background, color: colors.text }}>
-        <MiniSiteButtonSurface />
+      <summary
+        className={miniSiteButtonClassName(style, tier, "cursor-pointer list-none")}
+        style={{ backgroundColor: surface.backgroundColor, color: surface.color }}
+      >
+        <MiniSiteButtonSurface style={style} />
         <span className="relative z-10 inline-flex items-center justify-center gap-2.5">
           <span className="flex h-5 w-5 shrink-0 items-center justify-center">{icon}</span>
           <span className="truncate">{label}</span>
@@ -79,16 +96,34 @@ export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
   if (readyButtons.length === 0 && socialEntries.length === 0) return null;
 
   const socialColors = getButtonColors(config);
+  const style = config.appearance.buttonStyle;
+  // Hierarquia: o 1º botão de ação pronto é `primary`, os demais `secondary`.
+  // Redes sociais são `tertiary` — a menos que não haja NENHUM botão de
+  // ação, aí o 1º link social vira `primary` (sempre existe um CTA
+  // principal quando há pelo menos um item na lista).
+  const hasActionButtons = readyButtons.length > 0;
 
   return (
     <div className="mt-10 flex w-full flex-col gap-3.5">
-      {readyButtons.map((button) => {
+      {readyButtons.map((button, index) => {
+        const tier: MiniSiteButtonTier = index === 0 ? "primary" : "secondary";
         const Icon = BUTTON_ICONS[button.type] ?? ExternalLinkIcon;
         const label = getButtonLabel(button);
         const colors = getButtonColors(config, button);
 
         if (button.type === "pix" && config.pix) {
-          return <CopyableReveal key={button.id} icon={<PixIcon className="h-5 w-5" />} label={label} value={config.pix.key} hint={config.pix.holderName} colors={colors} />;
+          return (
+            <CopyableReveal
+              key={button.id}
+              icon={<PixIcon className="h-5 w-5" />}
+              label={label}
+              value={config.pix.key}
+              hint={config.pix.holderName}
+              colors={colors}
+              style={style}
+              tier={tier}
+            />
+          );
         }
         if (button.type === "wifi" && config.wifi) {
           return (
@@ -99,6 +134,8 @@ export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
               value={config.wifi.password ? `${config.wifi.ssid} / ${config.wifi.password}` : config.wifi.ssid}
               hint="Rede / senha"
               colors={colors}
+              style={style}
+              tier={tier}
             />
           );
         }
@@ -106,12 +143,21 @@ export function ButtonsSection({ config }: { config: MiniSiteConfig }) {
         const href = getButtonHref(button);
         if (!href) return null;
 
-        return <MiniSiteButtonLink key={button.id} href={href} icon={<Icon className="h-5 w-5" />} label={label} colors={colors} />;
+        return <MiniSiteButtonLink key={button.id} href={href} icon={<Icon className="h-5 w-5" />} label={label} colors={colors} style={style} tier={tier} />;
       })}
-      {socialEntries.map(({ platform, href }) => {
+      {socialEntries.map(({ platform, href }, index) => {
         const Icon = SOCIAL_ICONS[platform];
+        const tier: MiniSiteButtonTier = !hasActionButtons && index === 0 ? "primary" : "tertiary";
         return (
-          <MiniSiteButtonLink key={platform} href={href} icon={<Icon className="h-5 w-5" />} label={SOCIAL_PLATFORM_LABELS[platform]} colors={socialColors} />
+          <MiniSiteButtonLink
+            key={platform}
+            href={href}
+            icon={<Icon className="h-5 w-5" />}
+            label={SOCIAL_PLATFORM_LABELS[platform]}
+            colors={socialColors}
+            style={style}
+            tier={tier}
+          />
         );
       })}
     </div>

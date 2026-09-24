@@ -4,6 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MiniSite Comercial Modular — Admin</title>
+    <!-- As 3 famílias dos presets de tipografia (ver src/shared/typography.ts),
+         carregadas de uma vez aqui: o mockup lateral (LivePreview) renderiza o
+         MiniSite ao vivo no cliente e precisa refletir qualquer preset que o
+         usuário escolher sem esperar um <link> ser injetado dinamicamente. Na
+         página pública (SSR), só a família do preset realmente usado é
+         carregada — ver renderMiniSitePage.tsx. -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap"
+    />
   </head>
   <body>
     <div id="root"></div>

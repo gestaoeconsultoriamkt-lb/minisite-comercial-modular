@@ -1,6 +1,8 @@
 import { useId, type ReactNode } from "react";
 import type { MiniSiteConfig } from "../schemas/miniSiteConfig";
 import { getAssetUrl } from "../assetUrl";
+import { hexToRgba, mixHex } from "../colors";
+import { getTypographyTokens, type TypographyTokens } from "../typography";
 import { SOCIAL_ICONS } from "../icons";
 import { getFilledSocialEntries } from "../socialLinks";
 import { getOrderedModules, type ModuleKey } from "../moduleOrder";
@@ -29,19 +31,35 @@ const MODULE_COMPONENTS: Record<ModuleKey, (config: MiniSiteConfig) => ReactNode
  * interno e um anel duplo (branco + sombra) fazem parecer uma "medalha"
  * intencional, não um quadrado branco jogado atrás. `logoTreatment: "none"`
  * pula a placa — para logos que já têm fundo/contexto próprio.
+ *
+ * `boost` (heroTreatment "destaque"/"vitrine") aumenta a dimensão mais um
+ * degrau — "classic" nunca usa `boost`, então nenhum MiniSite existente
+ * muda de tamanho de logo.
  */
 function LogoPlate({
   logoKey,
   alt,
   size,
   treatment,
+  boost,
 }: {
   logoKey: string;
   alt: string;
   size: "compact" | "normal" | "floating";
   treatment: "plate" | "none";
+  boost: boolean;
 }) {
-  const dimension = size === "compact" ? "h-24 w-24" : size === "floating" ? "h-28 w-28 sm:h-32 sm:w-32" : "h-32 w-32";
+  const dimension = boost
+    ? size === "compact"
+      ? "h-28 w-28"
+      : size === "floating"
+        ? "h-32 w-32 sm:h-36 sm:w-36"
+        : "h-36 w-36"
+    : size === "compact"
+      ? "h-24 w-24"
+      : size === "floating"
+        ? "h-28 w-28 sm:h-32 sm:w-32"
+        : "h-32 w-32";
 
   if (treatment === "none") {
     return (
@@ -62,26 +80,65 @@ function LogoPlate({
   );
 }
 
-/** Nome/headline/descrição — mesmo bloco de texto usado tanto com a logo "sobre a capa" quanto "flutuante" (ver logoPosition). */
+/**
+ * Nome/headline/descrição — mesmo bloco de texto usado tanto com a logo
+ * "sobre a capa" quanto "flutuante" (ver logoPosition). `typography` traz
+ * a família/peso/tracking do preset tipográfico (ver src/shared/typography.ts);
+ * `boost` (heroTreatment "destaque"/"vitrine") aumenta a escala do nome e
+ * adiciona um pequeno acento decorativo — nunca ativo em "classic".
+ */
 function HeroTextBlock({
   displayName,
   headline,
   shortDescription,
   isCompact,
+  typography,
+  boost,
 }: {
   displayName: string;
   headline?: string;
   shortDescription?: string;
   isCompact: boolean;
+  typography: TypographyTokens;
+  boost: boolean;
 }) {
+  const nameSizeClass = isCompact ? "text-xl" : boost ? "text-[30px] sm:text-[36px]" : "text-[28px] sm:text-[32px]";
   return (
     <>
       {displayName ? (
-        <h1 className={`font-extrabold leading-tight text-white ${isCompact ? "text-xl" : "text-[28px] sm:text-[32px]"}`}>{displayName}</h1>
+        <h1
+          className={`leading-tight text-white ${nameSizeClass} ${typography.nameClassName} ${boost ? "drop-shadow-[0_2px_16px_rgba(0,0,0,0.45)]" : ""}`}
+          style={{ fontFamily: typography.nameFontFamily }}
+        >
+          {displayName}
+        </h1>
       ) : null}
-      {headline ? <p className={`mt-2 font-semibold text-white/90 ${isCompact ? "text-sm" : "text-[15px] sm:text-base"}`}>{headline}</p> : null}
+      {boost && displayName ? <div className="mx-auto mt-3 h-[3px] w-10 rounded-full bg-white/50" aria-hidden /> : null}
+      {headline ? (
+        <p className={`mt-2 text-white/90 ${isCompact ? "text-sm" : "text-[15px] sm:text-base"} ${typography.headlineClassName}`}>{headline}</p>
+      ) : null}
       {shortDescription ? <p className="mt-2 text-[13px] font-medium leading-relaxed text-white/70 sm:text-sm">{shortDescription}</p> : null}
     </>
+  );
+}
+
+/**
+ * Painel de vidro (heroTreatment "vitrine") — glassmorphism contido, só na
+ * primeira dobra: blur alto, tinta neutra-escura levemente misturada com a
+ * cor primária da marca (nunca a cor pura — mesma lição do corpo acrílico
+ * removido: marca quente + alpha alto vira lavagem de cor, não vidro),
+ * anel translúcido e sombra profunda para separar do fundo. `mixHex`/
+ * `hexToRgba` — ver src/shared/colors.ts.
+ */
+function HeroGlassPanel({ tintColor, children }: { tintColor: string; children: ReactNode }) {
+  const background = hexToRgba(mixHex("#0b1220", tintColor, 0.24), 0.45);
+  return (
+    <div
+      className="w-full max-w-[22rem] rounded-[28px] px-6 py-7 text-center shadow-[0_1px_0_rgba(255,255,255,0.12)_inset,0_24px_60px_-18px_rgba(0,0,0,0.55)] ring-1 ring-inset ring-white/15 backdrop-blur-xl"
+      style={{ backgroundColor: background }}
+    >
+      {children}
+    </div>
   );
 }
 
@@ -118,6 +175,14 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
   const logoAlt = displayName || "Logo";
   const logoTreatment = appearance.logoTreatment;
 
+  // Sistema de estilo (ver §1 do briefing "mini framework de estilização"):
+  // tipografia sempre lida do preset; hero "destaque"/"vitrine" aumentam
+  // presença de logo/nome; "vitrine" adiciona o painel de vidro.
+  const typography = getTypographyTokens(appearance.typographyPreset);
+  const heroBoost = appearance.heroTreatment !== "classic";
+  const isVitrine = appearance.heroTreatment === "vitrine";
+  const vitrineTint = appearance.colorPrimary || "#1d4ed8";
+
   // Formato da base da hero — "reta" não aplica nada; "curva" arredonda a
   // base; "onda" usa um clip-path SVG (objectBoundingBox — responsivo por
   // natureza, sem depender de pixels fixos) para um divisor orgânico leve.
@@ -125,7 +190,10 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
   const heroShapeStyle = appearance.heroShape === "wave" ? { clipPath: `url(#${waveClipId})` } : undefined;
 
   return (
-    <div className="minisite-root relative isolate min-h-full overflow-hidden" style={!hasBackgroundImage ? { background: gradientCss } : undefined}>
+    <div
+      className="minisite-root relative isolate min-h-full overflow-hidden"
+      style={{ fontFamily: typography.bodyFontFamily, ...(!hasBackgroundImage ? { background: gradientCss } : {}) }}
+    >
       {appearance.heroShape === "wave" ? (
         <svg width="0" height="0" className="absolute" aria-hidden>
           <defs>
@@ -167,10 +235,39 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
 
           {!floatingLogo ? (
             <div className={`relative z-10 flex h-full flex-col items-center justify-center px-5 pb-6 text-center ${isCompact ? "pt-8" : "pt-12"}`}>
-              {hasLogo ? <LogoPlate logoKey={appearance.logoKey!} alt={logoAlt} size={isCompact ? "compact" : "normal"} treatment={logoTreatment} /> : null}
-              <div className={hasLogo ? "mt-5" : ""}>
-                <HeroTextBlock displayName={displayName} headline={header.headline} shortDescription={header.shortDescription} isCompact={isCompact} />
-              </div>
+              {isVitrine ? (
+                <HeroGlassPanel tintColor={vitrineTint}>
+                  {hasLogo ? (
+                    <div className="mb-5 flex justify-center">
+                      <LogoPlate logoKey={appearance.logoKey!} alt={logoAlt} size={isCompact ? "compact" : "normal"} treatment={logoTreatment} boost={heroBoost} />
+                    </div>
+                  ) : null}
+                  <HeroTextBlock
+                    displayName={displayName}
+                    headline={header.headline}
+                    shortDescription={header.shortDescription}
+                    isCompact={isCompact}
+                    typography={typography}
+                    boost={heroBoost}
+                  />
+                </HeroGlassPanel>
+              ) : (
+                <>
+                  {hasLogo ? (
+                    <LogoPlate logoKey={appearance.logoKey!} alt={logoAlt} size={isCompact ? "compact" : "normal"} treatment={logoTreatment} boost={heroBoost} />
+                  ) : null}
+                  <div className={hasLogo ? "mt-5" : ""}>
+                    <HeroTextBlock
+                      displayName={displayName}
+                      headline={header.headline}
+                      shortDescription={header.shortDescription}
+                      isCompact={isCompact}
+                      typography={typography}
+                      boost={heroBoost}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           ) : null}
         </div>
@@ -183,14 +280,38 @@ export function MiniSiteRenderer({ displayName, config }: MiniSiteRendererProps)
           {floatingLogo ? (
             <>
               {hasLogo ? (
-                <div className="-mt-14 mb-3 flex justify-center sm:-mt-16">
-                  <LogoPlate logoKey={appearance.logoKey!} alt={logoAlt} size="floating" treatment={logoTreatment} />
+                <div className={`relative z-10 mb-3 flex justify-center ${isVitrine ? "-mt-16 sm:-mt-20" : "-mt-14 sm:-mt-16"}`}>
+                  <LogoPlate logoKey={appearance.logoKey!} alt={logoAlt} size="floating" treatment={logoTreatment} boost={heroBoost} />
                 </div>
               ) : null}
               {displayName || header.headline || header.shortDescription ? (
-                <div className="mb-6">
-                  <HeroTextBlock displayName={displayName} headline={header.headline} shortDescription={header.shortDescription} isCompact={isCompact} />
-                </div>
+                isVitrine ? (
+                  <div className={`mb-6 flex justify-center ${hasLogo ? "-mt-8" : ""}`}>
+                    <HeroGlassPanel tintColor={vitrineTint}>
+                      <div className={hasLogo ? "pt-6" : ""}>
+                        <HeroTextBlock
+                          displayName={displayName}
+                          headline={header.headline}
+                          shortDescription={header.shortDescription}
+                          isCompact={isCompact}
+                          typography={typography}
+                          boost={heroBoost}
+                        />
+                      </div>
+                    </HeroGlassPanel>
+                  </div>
+                ) : (
+                  <div className="mb-6">
+                    <HeroTextBlock
+                      displayName={displayName}
+                      headline={header.headline}
+                      shortDescription={header.shortDescription}
+                      isCompact={isCompact}
+                      typography={typography}
+                      boost={heroBoost}
+                    />
+                  </div>
+                )
               ) : null}
             </>
           ) : null}

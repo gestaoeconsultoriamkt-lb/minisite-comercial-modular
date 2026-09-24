@@ -3,6 +3,7 @@ import { MiniSiteRenderer } from "../../shared/renderer";
 import { getAssetUrl } from "../../shared/assetUrl";
 import { findButton, isButtonReady } from "../../shared/actionButtons";
 import { getFilledSocialEntries } from "../../shared/socialLinks";
+import { TYPOGRAPHY_FONT_LINK_HREF } from "../../shared/typography";
 import type { MiniSiteConfig } from "../../shared/schemas/miniSiteConfig";
 // CSS do mesmo Tailwind usado no admin, embutida inline como string — o
 // renderer público é servido puro pelo Worker (sem o HTML/manifest do
@@ -80,6 +81,9 @@ export function renderMiniSitePage({ heroDisplayName, seoTitle, config, slug, or
   const title = escapeHtml(seoTitle);
   const safeDescription = escapeHtml(description);
   const jsonLd = serializeJsonLd(buildLocalBusinessJsonLd(config, seoTitle, pageUrl, ogImage));
+  // Só a família do preset tipográfico escolhido (ver src/shared/typography.ts)
+  // — diferente do admin, que pré-carrega as 3 de uma vez para o LivePreview.
+  const fontHref = TYPOGRAPHY_FONT_LINK_HREF[config.appearance.typographyPreset];
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -96,6 +100,9 @@ export function renderMiniSitePage({ heroDisplayName, seoTitle, config, slug, or
     ${ogImage ? `<meta property="og:image" content="${escapeHtml(ogImage)}" />` : ""}
     <meta property="og:url" content="${escapeHtml(pageUrl)}" />
     <script type="application/ld+json">${jsonLd}</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="${fontHref}" />
     <style>${publicStyles}</style>
   </head>
   <body>${body}</body>

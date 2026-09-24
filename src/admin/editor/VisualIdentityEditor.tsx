@@ -3,7 +3,15 @@ import { EditorSection } from "../components/EditorSection";
 import { ImageUploadField } from "../components/ImageUploadField";
 import { ColorField } from "../components/ColorField";
 import { PaletteIcon } from "../components/icons";
-import type { MiniSiteHeroShape, MiniSiteLogoPosition, MiniSiteLogoTreatment } from "../../shared/schemas/miniSiteConfig";
+import type {
+  MiniSiteButtonStyle,
+  MiniSiteHeroShape,
+  MiniSiteHeroTreatment,
+  MiniSiteLogoPosition,
+  MiniSiteLogoTreatment,
+  MiniSiteTypographyPreset,
+  MiniSiteVisualStyle,
+} from "../../shared/schemas/miniSiteConfig";
 import { useEditorStore } from "./editorStore";
 
 function AppearanceSelect<T extends string>({
@@ -85,8 +93,68 @@ export function VisualIdentityEditor() {
       />
 
       {/*
+        Sistema de presets visuais (mini framework de estilização, ver
+        MiniSiteRenderer/MiniSiteButton/LocationSection): 4 escolhas de
+        alto nível, reutilizáveis em qualquer nicho — nenhuma delas muda a
+        aparência de um MiniSite existente por padrão ("Simples"/"Elevado"/
+        "Clássica"/"Padrão" reproduzem exatamente o visual anterior a este
+        sistema).
+      */}
+      <div>
+        <h3 className="text-sm font-bold text-brand-navy-900">Estilo do MiniSite</h3>
+        <p className="mt-0.5 text-xs text-slate-400">Presets reutilizáveis — ajustam hero, botões e cards secundários juntos.</p>
+        <div className="mt-3 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <AppearanceSelect<MiniSiteVisualStyle>
+            id="visualStyle"
+            label="Estilo visual geral"
+            value={appearance.visualStyle}
+            onChange={(value) => updateAppearance({ visualStyle: value })}
+            options={[
+              { value: "simple", label: "Simples / Clean" },
+              { value: "premium", label: "Premium / Elegante" },
+              { value: "glass", label: "Glass / Vitrine" },
+            ]}
+          />
+          <AppearanceSelect<MiniSiteHeroTreatment>
+            id="heroTreatment"
+            label="Composição da hero"
+            value={appearance.heroTreatment}
+            onChange={(value) => updateAppearance({ heroTreatment: value })}
+            options={[
+              { value: "classic", label: "Clássica" },
+              { value: "destaque", label: "Destaque" },
+              { value: "vitrine", label: "Vitrine (vidro)" },
+            ]}
+          />
+          <AppearanceSelect<MiniSiteButtonStyle>
+            id="buttonStyle"
+            label="Estilo dos botões"
+            value={appearance.buttonStyle}
+            onChange={(value) => updateAppearance({ buttonStyle: value })}
+            options={[
+              { value: "simple", label: "Simples" },
+              { value: "elevated", label: "Elevado" },
+              { value: "premium", label: "Premium" },
+              { value: "glass", label: "Vidro" },
+            ]}
+          />
+          <AppearanceSelect<MiniSiteTypographyPreset>
+            id="typographyPreset"
+            label="Tipografia"
+            value={appearance.typographyPreset}
+            onChange={(value) => updateAppearance({ typographyPreset: value })}
+            options={[
+              { value: "padrao", label: "Padrão" },
+              { value: "elegante", label: "Elegante" },
+              { value: "premium", label: "Premium" },
+            ]}
+          />
+        </div>
+      </div>
+
+      {/*
         V1: só "Posição da logo", "Formato da hero" e "Tratamento da logo"
-        ficam configuráveis. "Estilo do fundo" (sólido/nítido/desfocado) e
+        ficam configuráveis aqui. "Estilo do fundo" (sólido/nítido/desfocado) e
         "Estilo do corpo" (sólido/acrílico) foram removidos da interface —
         o comportamento efetivo agora é fixo (imagem nítida quando houver
         imagem de fundo; corpo sempre sólido). Os campos continuam no

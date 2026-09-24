@@ -156,6 +156,41 @@ export const heroShapeSchema = z.enum(["straight", "curve", "wave"]);
  */
 export const logoTreatmentSchema = z.enum(["plate", "none"]);
 
+/**
+ * Preset visual geral do MiniSite — governa a camada de "chrome" que não é
+ * específica de hero/botão/tipografia: profundidade dos cards secundários
+ * (Como chegar) e refinamentos gerais de página. `simple` reproduz
+ * exatamente o visual anterior a este sistema (default, sem regressão para
+ * MiniSites existentes). `premium` aumenta sombra/anel/raio com elegância.
+ * `glass` estende o tratamento "vitrine" (ver heroTreatmentSchema) aos
+ * cards secundários, para coerência visual em toda a página.
+ */
+export const visualStyleSchema = z.enum(["simple", "premium", "glass"]);
+
+/**
+ * `elevated` é o comportamento de botão que já existia (ring + sombra +
+ * gradiente sutil + hover/active) — default seguro para configs antigas.
+ * `simple` é mais reto/plano (opção "Clean"); `premium` aumenta
+ * profundidade/tipografia; `glass` usa frosted glass com a cor do botão.
+ */
+export const buttonStyleSchema = z.enum(["simple", "elevated", "premium", "glass"]);
+
+/**
+ * Composição da primeira dobra. `classic` reproduz exatamente a estrutura
+ * atual (default). `destaque` refina hierarquia/contraste/profundidade sem
+ * glass. `vitrine` envolve logo+nome+subtítulo num painel de vidro sobre a
+ * capa — a opção "glassmorphism" pedida para a primeira dobra.
+ */
+export const heroTreatmentSchema = z.enum(["classic", "destaque", "vitrine"]);
+
+/**
+ * Preset tipográfico do sistema (ver src/shared/typography.ts para os
+ * tokens reais de fonte/peso/tracking). `padrao` é Inter em todo o
+ * MiniSite — mesma família já referenciada no admin, agora efetivamente
+ * carregada via Google Fonts também na página pública.
+ */
+export const typographyPresetSchema = z.enum(["padrao", "elegante", "premium"]);
+
 export const appearanceSchema = z
   .object({
     logoKey: z.string().optional(),
@@ -171,6 +206,10 @@ export const appearanceSchema = z
     logoPosition: logoPositionSchema.default("over_cover"),
     heroShape: heroShapeSchema.default("straight"),
     logoTreatment: logoTreatmentSchema.default("plate"),
+    visualStyle: visualStyleSchema.default("simple"),
+    buttonStyle: buttonStyleSchema.default("elevated"),
+    heroTreatment: heroTreatmentSchema.default("classic"),
+    typographyPreset: typographyPresetSchema.default("padrao"),
   })
   .default({
     backgroundMode: "image_blurred",
@@ -178,6 +217,10 @@ export const appearanceSchema = z
     logoPosition: "over_cover",
     heroShape: "straight",
     logoTreatment: "plate",
+    visualStyle: "simple",
+    buttonStyle: "elevated",
+    heroTreatment: "classic",
+    typographyPreset: "padrao",
   });
 
 export const footerSchema = z
@@ -239,3 +282,7 @@ export type MiniSiteBodyStyle = z.infer<typeof bodyStyleSchema>;
 export type MiniSiteLogoPosition = z.infer<typeof logoPositionSchema>;
 export type MiniSiteHeroShape = z.infer<typeof heroShapeSchema>;
 export type MiniSiteLogoTreatment = z.infer<typeof logoTreatmentSchema>;
+export type MiniSiteVisualStyle = z.infer<typeof visualStyleSchema>;
+export type MiniSiteButtonStyle = z.infer<typeof buttonStyleSchema>;
+export type MiniSiteHeroTreatment = z.infer<typeof heroTreatmentSchema>;
+export type MiniSiteTypographyPreset = z.infer<typeof typographyPresetSchema>;
