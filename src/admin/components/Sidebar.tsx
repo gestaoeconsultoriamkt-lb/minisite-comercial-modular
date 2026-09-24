@@ -68,10 +68,10 @@ export function Sidebar() {
       <aside className="hidden md:flex md:w-64 md:shrink-0 md:flex-col md:bg-brand-navy-950 md:px-4 md:py-6">
         {/* Identidade Smart bio.builder — asset com alpha própria, sem
             precisar de texto ao lado (o wordmark já vem embutido na
-            imagem). Tamanho contido (h-16) para não dominar uma coluna de
-            256px; respiro lateral vem do px-2 + do px-4 do <aside>. */}
+            imagem). h-20 dá mais presença sem dominar a coluna de 256px;
+            respiro lateral vem do px-2 + do px-4 do <aside>. */}
         <div className="flex items-center justify-center px-2 py-1">
-          <img src={smartBioBuilderLogo} alt="Smart bio.builder" className="h-16 w-16 object-contain" />
+          <img src={smartBioBuilderLogo} alt="Smart bio.builder" className="h-20 w-20 object-contain" />
         </div>
 
         <nav className="mt-10 flex flex-1 flex-col gap-1">

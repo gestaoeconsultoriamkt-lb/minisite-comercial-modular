@@ -186,13 +186,14 @@ export function MiniSitesPage() {
             ))}
           </div>
 
-          <div className="relative">
+          <div className="relative" title={filtered.length <= 1 ? "Ordenar não tem efeito visível com só 1 site nesta lista — crie ou mostre mais sites para reordenar." : undefined}>
             <SortIcon className="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-slate-400" />
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
               aria-label="Ordenar"
-              className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-8 text-sm font-medium text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40"
+              disabled={filtered.length <= 1}
+              className="appearance-none rounded-xl border border-slate-200 bg-white py-2.5 pl-9 pr-8 text-sm font-medium text-slate-700 focus:border-brand-blue-500 focus:outline-none focus:ring-2 focus:ring-brand-blue-500/40 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {SORT_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
