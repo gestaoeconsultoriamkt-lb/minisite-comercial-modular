@@ -84,15 +84,22 @@ const SOCIAL_PLATFORM_BRAND_COLORS: Record<SocialPlatform, MiniSiteButtonColors>
  * Cor de fundo/texto de um botão de AÇÃO (WhatsApp, Agendar, Pix...) —
  * mesmo visual da marca por padrão, com sobrescrita opcional por botão
  * individual. Cadeia de fallback: cor individual do botão -> default de
- * marca do tipo (só "whatsapp", e só fora do modo "Padronizado" — ver
- * `appearance.socialColorMode`) -> cor global de botão -> cor primária da
+ * marca do tipo (só "whatsapp") -> cor global de botão -> cor primária da
  * marca -> azul padrão. `button` é opcional porque botões de redes sociais
  * usam `getSocialLinkColors` abaixo, não este.
+ *
+ * Regra definitiva: o botão de WhatsApp é SEMPRE verde da marca,
+ * independentemente de `appearance.socialColorMode` (que só decide a cor
+ * dos links de rede social — Instagram/Facebook/etc., ver
+ * getSocialLinkColors), da paleta do site ou de qualquer outra cor global.
+ * Único jeito de mudar essa cor continua sendo a sobrescrita individual do
+ * próprio botão (`colorBackground`), uma ação explícita do admin nesse
+ * botão específico, não uma configuração global.
  */
 export function getButtonColors(config: MiniSiteConfig, button?: MiniSiteButton): MiniSiteButtonColors {
   const { appearance } = config;
   const isWhatsapp = button?.type === "whatsapp";
-  const useWhatsappBrand = isWhatsapp && appearance.socialColorMode !== "brand";
+  const useWhatsappBrand = isWhatsapp;
   const individualBackground = button ? readHex(button.value.colorBackground) : undefined;
   const individualText = button ? readHex(button.value.colorText) : undefined;
   const brandDefaultBackground = useWhatsappBrand ? WHATSAPP_GREEN : undefined;

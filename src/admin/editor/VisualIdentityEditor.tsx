@@ -239,7 +239,7 @@ export function VisualIdentityEditor() {
               { value: "whatsapp", label: "WhatsApp destacado" },
               { value: "platforms", label: "Cores das plataformas" },
             ]}
-            hint="Padronizado: todos seguem a cor da marca. WhatsApp destacado: só o WhatsApp usa o verde oficial (padrão). Cores das plataformas: cada rede usa sua cor reconhecível."
+            hint="O WhatsApp sempre usa o verde oficial da marca, em qualquer opção abaixo. Padronizado/WhatsApp destacado: as redes sociais seguem a cor da marca. Cores das plataformas: cada rede social usa sua cor reconhecível."
           />
         </div>
       </div>
