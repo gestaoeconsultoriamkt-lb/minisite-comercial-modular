@@ -15,6 +15,13 @@
       "when": 1790194499753,
       "tag": "0001_tricky_lockheed",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1790712259442,
+      "tag": "0002_normal_shatterstar",
+      "breakpoints": true
     }
   ]
 }

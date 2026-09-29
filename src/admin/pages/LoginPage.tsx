@@ -8,7 +8,7 @@ import { PasswordField } from "../components/PasswordField";
 import { Checkbox } from "../components/Checkbox";
 import { Button } from "../components/Button";
 import { Alert } from "../components/Alert";
-import { MailIcon, SendIcon, ShieldCheckIcon, UserPlusIcon } from "../components/icons";
+import { MailIcon, SendIcon, ShieldCheckIcon } from "../components/icons";
 import { authClient } from "../lib/authClient";
 import { translateAuthError } from "../lib/authErrors";
 
@@ -27,7 +27,7 @@ export function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error: signInError } = await authClient.signIn.email({ email, password, rememberMe });
+    const { data, error: signInError } = await authClient.signIn.email({ email, password, rememberMe });
 
     if (signInError) {
       setError(translateAuthError(signInError));
@@ -35,23 +35,14 @@ export function LoginPage() {
       return;
     }
 
-    navigate("/app/minisites", { replace: true });
+    // Usuário criado pelo administrador com senha temporária (ver
+    // Configurações > Usuários) — nunca cai direto no painel antes de
+    // trocar a senha.
+    navigate(data?.user.mustChangePassword ? "/definir-senha" : "/app/minisites", { replace: true });
   }
 
   return (
-    <AuthLayout
-      topRightSlot={
-        <div className="flex items-center gap-3 text-sm">
-          <span className="hidden text-slate-500 sm:inline">Ainda não tem uma conta?</span>
-          <Link
-            to="/cadastro"
-            className="rounded-full bg-brand-blue-50 px-4 py-2 font-semibold text-brand-blue-600 transition hover:bg-brand-blue-100"
-          >
-            Criar usuário
-          </Link>
-        </div>
-      }
-    >
+    <AuthLayout>
       <AuthCard>
         <BrandLogo size={40} title="Smart" subtitle="Bio Builder" />
 
@@ -97,19 +88,6 @@ export function LoginPage() {
 
           <Button type="submit" loading={loading} icon={<SendIcon className="h-4 w-4" />}>
             Entrar
-          </Button>
-
-          {/* Ação secundária — hierarquia deliberadamente mais discreta que
-              "Entrar" (variant="secondary", vem depois de um divisor "ou"),
-              para nunca competir com a ação principal da tela. */}
-          <div className="flex items-center gap-3 text-xs font-medium uppercase tracking-wide text-slate-400">
-            <span className="h-px flex-1 bg-slate-200" />
-            ou
-            <span className="h-px flex-1 bg-slate-200" />
-          </div>
-
-          <Button type="button" variant="secondary" icon={<UserPlusIcon className="h-4 w-4" />} onClick={() => navigate("/cadastro")}>
-            Criar usuário
           </Button>
         </form>
 

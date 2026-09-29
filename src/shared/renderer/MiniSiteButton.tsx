@@ -42,6 +42,14 @@ function readHex(value: unknown): string | undefined {
  * individual do botão, exatamente como antes.
  */
 const WHATSAPP_GREEN = "#25D366";
+/**
+ * Gradiente vertical sutil (topo #25D366 -> base #128C7E) — mesmas duas
+ * cores do ícone oficial do WhatsApp, dá profundidade ao botão sem perder
+ * o reconhecimento imediato da marca. Só entra quando o verde padrão da
+ * marca está ativo (nunca quando o usuário sobrescreveu a cor do botão
+ * individualmente) — ver getButtonColors.
+ */
+const WHATSAPP_GRADIENT = "linear-gradient(to bottom, #25D366, #128C7E)";
 
 /**
  * Gradiente diagonal do Instagram — roxo/violeta -> magenta/pink -> laranja
@@ -91,6 +99,9 @@ export function getButtonColors(config: MiniSiteConfig, button?: MiniSiteButton)
   const brandDefaultText = useWhatsappBrand ? "#ffffff" : undefined;
   return {
     background: individualBackground || brandDefaultBackground || appearance.colorButtonBackground || appearance.colorPrimary || "#1d4ed8",
+    // Gradiente só quando o verde padrão de fato está em uso (nunca sobre
+    // cor individual ou cor global da marca, que não são "o WhatsApp").
+    backgroundImage: useWhatsappBrand && !individualBackground ? WHATSAPP_GRADIENT : undefined,
     text: individualText || brandDefaultText || appearance.colorButtonText || "#ffffff",
   };
 }

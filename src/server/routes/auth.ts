@@ -2,16 +2,19 @@ import { Hono } from "hono";
 import { createAuth } from "../auth";
 import type { AppEnv } from "../types";
 
-/** Senha exigida: exatamente 8 dígitos numéricos (ver briefing de cadastro). */
-const PASSWORD_PATTERN = /^\d{8}$/;
-
 /**
- * Monta o handler do Better Auth em `/api/auth/*`. Único ponto de regra
- * própria: validar o formato da senha no cadastro (8 dígitos numéricos)
- * antes de delegar à lib — o Better Auth não conhece essa regra de negócio
- * específica. Login, sessão, reset de senha e unicidade de e-mail (unique
- * constraint em `user.email`, ver db/auth-schema.ts) continuam 100%
- * delegados à lib, sem autenticação paralela.
+ * Monta o handler do Better Auth em `/api/auth/*`. Login, sessão, reset de
+ * senha (via link de "esqueci minha senha") e unicidade de e-mail (unique
+ * constraint em `user.email`) continuam 100% delegados à lib, sem
+ * autenticação paralela.
+ *
+ * Único ponto de regra própria: cadastro público FECHADO — a única forma
+ * de criar conta agora é o administrador em Configurações > Usuários (ver
+ * routes/users.ts, que chama `auth.api.signUpEmail` internamente, sem
+ * passar por este HTTP endpoint — bloquear a rota pública aqui não afeta
+ * esse fluxo). Qualquer `POST .../sign-up*` feito direto contra a API
+ * (visitante que descobriu a rota, bookmark antigo etc.) é rejeitado antes
+ * de chegar no handler da lib.
  */
 export const authRoutes = new Hono<AppEnv>();
 
@@ -19,19 +22,10 @@ authRoutes.on(["GET", "POST"], "/auth/*", async (c) => {
   const isSignUpRequest = c.req.method === "POST" && c.req.path.includes("/sign-up");
 
   if (isSignUpRequest) {
-    // Clona a request antes de ler o corpo — o handler do Better Auth,
-    // chamado depois com `c.req.raw`, ainda precisa do stream original.
-    const body = await c.req.raw
-      .clone()
-      .json()
-      .catch(() => null);
-    const password = body && typeof body === "object" && "password" in body ? (body as { password?: unknown }).password : undefined;
-    if (typeof password !== "string" || !PASSWORD_PATTERN.test(password)) {
-      // Mesmo shape { code, message } dos erros do Better Auth, para que o
-      // client (better-fetch) e translateAuthError() no admin tratem este
-      // 400 igual a qualquer outro erro de auth.
-      return c.json({ code: "INVALID_PASSWORD", message: "A senha deve conter exatamente 8 números." }, 400);
-    }
+    return c.json(
+      { code: "SIGNUP_DISABLED", message: "Cadastro público desativado. Peça ao administrador para criar sua conta." },
+      403,
+    );
   }
 
   const auth = createAuth(c.env);

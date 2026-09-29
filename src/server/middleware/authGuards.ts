@@ -30,6 +30,25 @@ export async function requireApiAuth(c: Context<AppEnv>, next: Next) {
   return next();
 }
 
+/**
+ * `/api/users/*`: exige sessão válida E `role === "admin"` (campo extra do
+ * `user`, ver additionalFields em server/auth/sharedOptions.ts). Único
+ * critério de administrador hoje — nada de tabela de permissões própria.
+ * Usuário comum autenticado recebe 403 (não 401 — a sessão é válida, só
+ * falta privilégio), consistente com o resto da API.
+ */
+export async function requireAdminApiAuth(c: Context<AppEnv>, next: Next) {
+  const session = await getSession(c.env, c.req.raw);
+  if (!session) {
+    return c.json({ code: "UNAUTHORIZED", message: "Sessão inválida ou expirada." }, 401);
+  }
+  if (session.user.role !== "admin") {
+    return c.json({ code: "FORBIDDEN", message: "Apenas administradores podem acessar esta área." }, 403);
+  }
+  c.set("userId", session.user.id);
+  return next();
+}
+
 export function serveAssets(c: Context<AppEnv>) {
   return c.env.ASSETS.fetch(c.req.raw);
 }

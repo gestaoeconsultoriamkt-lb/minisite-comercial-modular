@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { accountRoutes } from "./routes/account";
 import { authRoutes } from "./routes/auth";
 import { healthRoutes } from "./routes/health";
 import { mediaRoutes } from "./routes/media";
@@ -6,6 +7,7 @@ import { minisitesRoutes } from "./routes/minisites";
 import { previewRoutes } from "./routes/preview";
 import { publicRoutes } from "./routes/public";
 import { uploadsRoutes } from "./routes/uploads";
+import { usersRoutes } from "./routes/users";
 import { requireAuth, redirectIfAuthenticated, serveAssets } from "./middleware/authGuards";
 import { getSession } from "./auth/session";
 import type { AppEnv } from "./types";
@@ -17,24 +19,25 @@ import type { AppEnv } from "./types";
  * pelo Vite em /@vite/*, /@react-refresh e /src/*). Nada disso é servido
  * automaticamente; precisa ser delegado a ASSETS explicitamente, senão cai
  * no catch-all de `/:slug` e 404. Separação conceitual de rotas:
- *   /api/*                    -> Hono (health, auth)
+ *   /api/*                    -> Hono (health, auth, usuários)
  *   /media/*                   -> Hono lendo do binding R2
  *   /assets/*, /favicon.webp,
  *   /@vite/*, /@react-refresh,
  *   /src/*, /node_modules/*     -> ASSETS (bundle/módulos do admin)
- *   /login, /cadastro,
- *   /esqueci-senha,
- *   /redefinir-senha, /app/*    -> SPA (ASSETS), com guards de sessão
+ *   /login, /esqueci-senha,
+ *   /redefinir-senha,
+ *   /definir-senha, /app/*      -> SPA (ASSETS), com guards de sessão
  *   /preview/:id                -> SSR do DRAFT, só para o dono autenticado
  *   /:slug                      -> SSR público (spike da Fase 0)
  * Ordem importa: rotas específicas antes do catch-all de slug. "preview" é
  * slug reservado (ver reservedSlugs.ts) então não há colisão possível com
  * o slug de um MiniSite real.
  *
- * `/cadastro` (criação de usuário) é uma conta normal e independente,
- * sem limite de quantos usuários podem existir — cada MiniSite continua
- * isolado por `ownerUserId` (ver routes/minisites.ts), então múltiplos
- * usuários nunca compartilham dados entre si.
+ * Cadastro público FECHADO — não existe mais rota `/cadastro`. A única
+ * forma de criar conta é o administrador em Configurações > Usuários (ver
+ * routes/users.ts); qualquer visitante que tentar `/cadastro` cai no
+ * catch-all de `/:slug` abaixo e recebe 404 ("cadastro" é slug reservado,
+ * ver reservedSlugs.ts — nunca colide com um MiniSite real).
  */
 const app = new Hono<AppEnv>();
 
@@ -42,6 +45,8 @@ app.route("/api", healthRoutes);
 app.route("/api", authRoutes);
 app.route("/api", minisitesRoutes);
 app.route("/api", uploadsRoutes);
+app.route("/api", usersRoutes);
+app.route("/api", accountRoutes);
 app.route("/", mediaRoutes);
 
 app.get("/assets/*", serveAssets);
@@ -52,10 +57,10 @@ app.get("/src/*", serveAssets);
 app.get("/node_modules/*", serveAssets);
 
 app.get("/login", redirectIfAuthenticated, serveAssets);
-app.get("/cadastro", redirectIfAuthenticated, serveAssets);
 app.get("/esqueci-senha", serveAssets);
 app.get("/redefinir-senha", serveAssets);
 app.get("/redefinir-senha/*", serveAssets);
+app.get("/definir-senha", requireAuth, serveAssets);
 
 app.all("/app", requireAuth, serveAssets);
 app.all("/app/*", requireAuth, serveAssets);
