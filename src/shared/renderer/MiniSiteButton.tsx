@@ -6,6 +6,14 @@ import type { MiniSiteButton, MiniSiteButtonStyle, MiniSiteConfig } from "../sch
 export interface MiniSiteButtonColors {
   background: string;
   text: string;
+  /**
+   * Gradiente CSS opcional (ex.: Instagram) — só usado onde o fundo já é
+   * sólido/opaco (tiers `primary` e `tertiary` fora do `glass`, ver
+   * resolveButtonSurface); nos tratamentos diluídos (`secondary`/`glass`,
+   * que passam `background` por `hexToRgba`) cai no `background` sólido
+   * normalmente, já que um gradiente não tem um único hex pra diluir.
+   */
+  backgroundImage?: string;
 }
 
 /**
@@ -36,16 +44,27 @@ function readHex(value: unknown): string | undefined {
 const WHATSAPP_GREEN = "#25D366";
 
 /**
+ * Gradiente diagonal do Instagram — roxo/violeta -> magenta/pink -> laranja
+ * -> amarelo, a mesma progressão de cor do ícone oficial da marca (ordem
+ * invertida aqui porque o botão lê da esquerda/topo pra direita/base:
+ * `to bottom right` começa no canto onde o ícone real começa amarelo).
+ * `background` continua um hex sólido (rosa) — usado como fallback nos
+ * tratamentos diluídos que não sabem lidar com gradiente (ver
+ * MiniSiteButtonColors.backgroundImage).
+ */
+const INSTAGRAM_GRADIENT =
+  "linear-gradient(to bottom right, #FEDA75 0%, #FA7E1E 25%, #D62976 50%, #962FBF 75%, #4F5BD5 100%)";
+
+/**
  * Cores oficiais/reconhecíveis de cada rede social, usadas só no modo
  * "Cores das plataformas" (ver socialColorModeSchema) — texto sempre
- * branco, mesmo padrão do WhatsApp. Aproximações de marca de mercado (a
- * maioria das plataformas usa gradiente na marca oficial; aqui o botão é
- * um pill de cor sólida, então usamos a cor sólida mais reconhecível de
- * cada uma) — suficiente para "tratamento cromático coerente", que é o que
- * foi pedido, sem depender de logos/imagens das redes.
+ * branco, mesmo padrão do WhatsApp. Instagram usa o gradiente de marca
+ * (ver INSTAGRAM_GRADIENT); as demais usam a cor sólida mais reconhecível
+ * de cada plataforma — suficiente para "tratamento cromático coerente",
+ * sem depender de logos/imagens das redes.
  */
 const SOCIAL_PLATFORM_BRAND_COLORS: Record<SocialPlatform, MiniSiteButtonColors> = {
-  instagram: { background: "#E4405F", text: "#ffffff" },
+  instagram: { background: "#D62976", text: "#ffffff", backgroundImage: INSTAGRAM_GRADIENT },
   facebook: { background: "#1877F2", text: "#ffffff" },
   tiktok: { background: "#010101", text: "#ffffff" },
   youtube: { background: "#FF0000", text: "#ffffff" },
@@ -223,11 +242,14 @@ export function resolveButtonSurface(
   tier: MiniSiteButtonTier,
   colors: MiniSiteButtonColors,
   insidePanel = false,
-): { backgroundColor: string; color: string } {
+): { backgroundColor: string; backgroundImage?: string; color: string } {
   const glassAlpha = insidePanel ? GLASS_INSIDE_PANEL_ALPHA_BY_TIER : GLASS_ALPHA_BY_TIER;
   if (tier === "primary" || (tier === "tertiary" && style !== "glass")) {
     const backgroundColor = style === "glass" ? hexToRgba(colors.background, glassAlpha.primary) : colors.background;
-    return { backgroundColor, color: colors.text };
+    // Gradiente (Instagram) só faz sentido sobre um fundo opaco — aqui é
+    // o único caso (`colors.background` usado cru, sem diluir em rgba()).
+    const backgroundImage = style !== "glass" ? colors.backgroundImage : undefined;
+    return { backgroundColor, backgroundImage, color: colors.text };
   }
   if (tier === "secondary") {
     const alpha = style === "glass" ? glassAlpha.secondary : 0.22;
@@ -314,7 +336,7 @@ export function MiniSiteButtonLink({
       target="_blank"
       rel="noopener noreferrer"
       className={miniSiteButtonClassName(style, tier, insidePanel)}
-      style={{ backgroundColor: surface.backgroundColor, color: surface.color }}
+      style={{ backgroundColor: surface.backgroundColor, backgroundImage: surface.backgroundImage, color: surface.color }}
     >
       <MiniSiteButtonSurface style={style} />
       {!insidePanel ? <MiniSiteButtonGlassSheen style={style} /> : null}
