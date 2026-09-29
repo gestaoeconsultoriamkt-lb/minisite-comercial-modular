@@ -199,12 +199,24 @@ export function miniSiteButtonClassName(style: MiniSiteButtonStyle, tier: MiniSi
 /**
  * Fundo/texto reais do botão, resolvidos por (estilo × tier × cores
  * configuradas). `glass` sempre usa a cor de fundo configurada em rgba()
- * (frosted); nos demais estilos, só o `primary` usa a cor sólida cheia —
+ * (frosted); nos demais estilos, `primary` usa a cor sólida cheia e
  * `secondary` usa a mesma cor bem diluída como um "tonal button" (o
- * "tinta" continua sendo a cor de fundo, não uma cor fixa alheia à marca);
- * `tertiary` fica transparente, com o texto/ícone em branco translúcido
- * (após a hero, o fundo da página é sempre um overlay escuro — ver
- * MiniSiteRenderer — então branco sempre lê bem ali).
+ * "tinta" continua sendo a cor de fundo, não uma cor fixa alheia à marca).
+ *
+ * `tertiary` é o tier usado EXCLUSIVAMENTE pelos links de redes sociais
+ * (ver ButtonsSection) — antes do sistema de cor por rede/WhatsApp
+ * (`appearance.socialColorMode`), ficava transparente fora do `glass`
+ * (branco translúcido sobre o overlay escuro da página). Isso deixava a
+ * própria funcionalidade de cor invisível na prática: qualquer cor
+ * calculada para o WhatsApp/Instagram/Facebook/etc. (ver
+ * getButtonColors/getSocialLinkColors) nunca aparecia, porque o fundo real
+ * do botão continuava sempre `transparent`, independente da cor recebida.
+ * Correção: `tertiary` passa a usar a MESMA cor sólida do `primary` fora do
+ * `glass` — cor de cada rede/WhatsApp realmente visível, com bom contraste
+ * (`colors.text` já é escolhido a dedo por marca/rede — ver
+ * SOCIAL_PLATFORM_BRAND_COLORS/WHATSAPP_GREEN). Dentro do `glass`, mantém o
+ * tratamento frosted translúcido que já existia (sem regressão nesse
+ * estilo).
  */
 export function resolveButtonSurface(
   style: MiniSiteButtonStyle,
@@ -212,18 +224,8 @@ export function resolveButtonSurface(
   colors: MiniSiteButtonColors,
   insidePanel = false,
 ): { backgroundColor: string; color: string } {
-  // `primary` é o único tier com fundo substancialmente opaco — só aí faz
-  // sentido confiar no par cor-de-fundo/cor-de-texto exatamente como o
-  // usuário configurou (contraste é responsabilidade dele nesse par).
-  // `secondary`/`tertiary` diluem a cor de fundo sobre o fundo sempre
-  // escuro da página (overlay em MiniSiteRenderer) — usar `colors.text`
-  // (ou pior, `colors.background`) ali arrisca texto ilegível quando a
-  // marca usa uma cor de texto escura ou próxima da própria cor de fundo
-  // (ex.: fundo e texto de tons parecidos ficam quase invisíveis diluídos
-  // sobre um fundo também escuro). Um branco translúcido fixo sempre lê
-  // bem, porque o fundo por trás é sempre escuro nesse ponto da página.
   const glassAlpha = insidePanel ? GLASS_INSIDE_PANEL_ALPHA_BY_TIER : GLASS_ALPHA_BY_TIER;
-  if (tier === "primary") {
+  if (tier === "primary" || (tier === "tertiary" && style !== "glass")) {
     const backgroundColor = style === "glass" ? hexToRgba(colors.background, glassAlpha.primary) : colors.background;
     return { backgroundColor, color: colors.text };
   }
@@ -231,7 +233,7 @@ export function resolveButtonSurface(
     const alpha = style === "glass" ? glassAlpha.secondary : 0.22;
     return { backgroundColor: hexToRgba(colors.background, alpha), color: "rgba(255,255,255,0.92)" };
   }
-  const alpha = style === "glass" ? glassAlpha.tertiary : 0;
+  const alpha = glassAlpha.tertiary;
   return { backgroundColor: alpha > 0 ? hexToRgba(colors.background, alpha) : "transparent", color: "rgba(255,255,255,0.85)" };
 }
 

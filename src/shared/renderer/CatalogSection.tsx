@@ -41,7 +41,10 @@ function CatalogImageCard({
 
   if (displayMode === "poster") {
     return (
-      <div id={id} className="flex w-40 shrink-0 flex-col gap-1.5 snap-start sm:w-48">
+      // Largura relativa ao carrossel (não pixels fixos) — mesmo princípio
+      // do card 4:5 abaixo: 1 poster deve dominar a tela no mobile, com o
+      // próximo só espiando na lateral (ver comentário do card padrão).
+      <div id={id} className="flex w-[85%] shrink-0 flex-col gap-1.5 snap-start">
         <div className={`relative w-full overflow-hidden bg-white/10 ${CARD_FRAME[visualStyle]}`}>
           <img src={getAssetUrl(item.imageKey)} alt={item.label ?? ""} loading="lazy" className="aspect-[9/16] w-full object-contain" />
           {visualStyle === "glass" ? (
@@ -62,7 +65,15 @@ function CatalogImageCard({
   }
 
   return (
-    <div id={id} className={`relative w-44 shrink-0 snap-start overflow-hidden bg-white/10 sm:w-56 ${CARD_FRAME[visualStyle]}`}>
+    // Largura em % do carrossel (não pixels fixos como `w-44`/`sm:w-56`
+    // antes) — a mesma largura fixa que parecia "grande" no preview do
+    // editor (colunas largas) ficava pequena demais no celular real, onde
+    // o conteúdo é bem mais estreito: 2 cards de ~176-224px cabiam quase
+    // inteiros lado a lado em qualquer tela de 360-414px. 85% do
+    // container garante 1 card dominante + só uma lasca do próximo,
+    // consistente em qualquer largura de tela — mesmo raciocínio já usado
+    // na Galeria (aprovada), sem alterar nenhum arquivo da Galeria.
+    <div id={id} className={`relative w-[85%] shrink-0 snap-start overflow-hidden bg-white/10 ${CARD_FRAME[visualStyle]}`}>
       <img src={getAssetUrl(item.imageKey)} alt={item.label ?? ""} loading="lazy" className="aspect-[4/5] w-full object-cover" />
       {visualStyle === "glass" ? (
         <span
