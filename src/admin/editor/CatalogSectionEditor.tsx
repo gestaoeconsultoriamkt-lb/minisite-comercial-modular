@@ -81,6 +81,11 @@ function SectionImagesField({
         </button>
       </div>
       <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleFileSelected} />
+      <p className="text-xs text-slate-400">
+        {section.displayMode === "poster"
+          ? "Para artes verticais: ideal 1080×1920 px (9:16). Use para cardápios, posters e promoções."
+          : "Formato ideal: vertical 4:5, 1200×1500 px. Mínimo 800×1000 px. Aceita JPG, PNG e WebP."}
+      </p>
       {items.length === 0 ? (
         <p className="text-xs text-slate-400">Nenhuma imagem ainda. A seção não aparece no site até ter ao menos uma foto.</p>
       ) : (
@@ -178,6 +183,14 @@ export function CatalogSectionEditor({ minisiteId, section, onChange, onRemove }
           <label className="flex items-center gap-2.5 text-sm font-medium text-slate-600">
             <ToggleSwitch checked={section.showPrices} onChange={(v) => onChange({ showPrices: v })} label="Exibir preço" />
             Exibir preço (opcional)
+          </label>
+          <label className="flex items-center gap-2.5 text-sm font-medium text-slate-600">
+            <ToggleSwitch
+              checked={section.displayMode === "poster"}
+              onChange={(v) => onChange({ displayMode: v ? "poster" : "standard" })}
+              label="Modo cardápio / poster"
+            />
+            Modo cardápio / poster (9:16)
           </label>
           <span className={`text-xs font-semibold sm:ml-auto ${sectionReady ? "text-emerald-600" : "text-slate-400"}`}>
             {!sectionReady

@@ -29,9 +29,14 @@ export function GallerySection({ config }: { config: MiniSiteConfig }) {
     <section className="mt-10 flex flex-col gap-5">
       {showHeading ? <SectionHeading icon={<TagIcon className="h-3.5 w-3.5" />} title={heading.title} visualStyle={config.appearance.visualStyle} /> : null}
       <div className="flex flex-col gap-2">
-        <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {/* Card grande (80% da largura do conteúdo) + gap: sobra ~20% de
+            "peek" da próxima foto, convidando ao swipe, sem escurecer a
+            imagem principal. `aspect-square` (1:1) mantém o card sempre
+            quadrado — nunca corta em proporção diferente da recomendada
+            no painel (ver texto de ajuda em GalleryEditor.tsx). */}
+        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {images.map((image) => (
-            <div key={image.id} className={`relative h-52 w-52 shrink-0 snap-center overflow-hidden ${frame}`}>
+            <div key={image.id} className={`relative aspect-square w-[80%] shrink-0 snap-center overflow-hidden ${frame}`}>
               <img src={getAssetUrl(image.imageKey)} alt={image.alt ?? ""} loading="lazy" className="h-full w-full object-cover" />
               {config.appearance.visualStyle === "glass" ? (
                 <span

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { hexToRgba } from "../colors";
+import type { SocialPlatform } from "../socialLinks";
 import type { MiniSiteButton, MiniSiteButtonStyle, MiniSiteConfig } from "../schemas/miniSiteConfig";
 
 export interface MiniSiteButtonColors {
@@ -35,22 +36,59 @@ function readHex(value: unknown): string | undefined {
 const WHATSAPP_GREEN = "#25D366";
 
 /**
- * Cor de fundo/texto de um botão — mesmo visual da marca por padrão, com
- * sobrescrita opcional por botão individual. Cadeia de fallback: cor
- * individual do botão -> default de marca do tipo (só "whatsapp" hoje) ->
- * cor global de botão -> cor primária da marca -> azul padrão. `button` é
- * opcional porque botões de redes sociais (sem personalização individual
- * nesta fase) chamam sem ele.
+ * Cores oficiais/reconhecíveis de cada rede social, usadas só no modo
+ * "Cores das plataformas" (ver socialColorModeSchema) — texto sempre
+ * branco, mesmo padrão do WhatsApp. Aproximações de marca de mercado (a
+ * maioria das plataformas usa gradiente na marca oficial; aqui o botão é
+ * um pill de cor sólida, então usamos a cor sólida mais reconhecível de
+ * cada uma) — suficiente para "tratamento cromático coerente", que é o que
+ * foi pedido, sem depender de logos/imagens das redes.
+ */
+const SOCIAL_PLATFORM_BRAND_COLORS: Record<SocialPlatform, MiniSiteButtonColors> = {
+  instagram: { background: "#E4405F", text: "#ffffff" },
+  facebook: { background: "#1877F2", text: "#ffffff" },
+  tiktok: { background: "#010101", text: "#ffffff" },
+  youtube: { background: "#FF0000", text: "#ffffff" },
+  linkedin: { background: "#0A66C2", text: "#ffffff" },
+  kwai: { background: "#FF6A00", text: "#ffffff" },
+};
+
+/**
+ * Cor de fundo/texto de um botão de AÇÃO (WhatsApp, Agendar, Pix...) —
+ * mesmo visual da marca por padrão, com sobrescrita opcional por botão
+ * individual. Cadeia de fallback: cor individual do botão -> default de
+ * marca do tipo (só "whatsapp", e só fora do modo "Padronizado" — ver
+ * `appearance.socialColorMode`) -> cor global de botão -> cor primária da
+ * marca -> azul padrão. `button` é opcional porque botões de redes sociais
+ * usam `getSocialLinkColors` abaixo, não este.
  */
 export function getButtonColors(config: MiniSiteConfig, button?: MiniSiteButton): MiniSiteButtonColors {
   const { appearance } = config;
+  const isWhatsapp = button?.type === "whatsapp";
+  const useWhatsappBrand = isWhatsapp && appearance.socialColorMode !== "brand";
   const individualBackground = button ? readHex(button.value.colorBackground) : undefined;
   const individualText = button ? readHex(button.value.colorText) : undefined;
-  const brandDefaultBackground = button?.type === "whatsapp" ? WHATSAPP_GREEN : undefined;
-  const brandDefaultText = button?.type === "whatsapp" ? "#ffffff" : undefined;
+  const brandDefaultBackground = useWhatsappBrand ? WHATSAPP_GREEN : undefined;
+  const brandDefaultText = useWhatsappBrand ? "#ffffff" : undefined;
   return {
     background: individualBackground || brandDefaultBackground || appearance.colorButtonBackground || appearance.colorPrimary || "#1d4ed8",
     text: individualText || brandDefaultText || appearance.colorButtonText || "#ffffff",
+  };
+}
+
+/**
+ * Cor de fundo/texto de um link de rede social (Instagram, Facebook...) —
+ * decidida pelo `appearance.socialColorMode` (ver miniSiteConfig.ts):
+ * "platforms" usa a cor reconhecível de cada plataforma; "brand" e
+ * "whatsapp" (default, comportamento que já existia) usam a mesma cor de
+ * marca dos demais botões, uniforme entre as redes.
+ */
+export function getSocialLinkColors(config: MiniSiteConfig, platform: SocialPlatform): MiniSiteButtonColors {
+  const { appearance } = config;
+  if (appearance.socialColorMode === "platforms") return SOCIAL_PLATFORM_BRAND_COLORS[platform];
+  return {
+    background: appearance.colorButtonBackground || appearance.colorPrimary || "#1d4ed8",
+    text: appearance.colorButtonText || "#ffffff",
   };
 }
 

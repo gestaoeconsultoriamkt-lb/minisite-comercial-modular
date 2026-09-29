@@ -1,12 +1,19 @@
 import type { UploadPurpose } from "./minisitesApi";
 
+/**
+ * Teto de redimensionamento por finalidade — nunca aumenta uma imagem
+ * menor, só evita que uma maior chegue ao Worker/R2 em resolução
+ * desnecessária. `section` sobe para 1920 para caber tanto o padrão 4:5
+ * (ideal 1200×1500) quanto o modo cardápio/poster 9:16 (ideal 1080×1920) —
+ * ver sectionDisplayModeSchema em miniSiteConfig.ts.
+ */
 const MAX_DIMENSION_BY_PURPOSE: Record<UploadPurpose, number> = {
   logo: 800,
   cover: 1600,
   background: 1600,
   gallery: 1600,
   card: 1000,
-  section: 1000,
+  section: 1920,
 };
 
 /**

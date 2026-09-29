@@ -80,6 +80,9 @@ export function GalleryEditor() {
       }
     >
       <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={handleFileSelected} />
+      <p className="-mt-2 text-xs text-slate-400">
+        Formato ideal: quadrado (1:1), 1200×1200 px. Mínimo 800×800 px. Aceita JPG, PNG e WebP.
+      </p>
 
       <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
         <TextField

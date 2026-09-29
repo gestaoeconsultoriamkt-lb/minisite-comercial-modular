@@ -55,6 +55,15 @@ export const sectionImageSchema = z.object({
   position: z.number().int().nonnegative(),
 });
 
+/**
+ * `standard` é o card de vitrine (4:5, `object-cover`) que já existia —
+ * default seguro para seções antigas. `poster` é para artes prontas
+ * (cardápio/promoção/story) já compostas pelo cliente: usa 9:16 e
+ * `object-contain` para nunca cortar texto/elementos da própria arte —
+ * ver CatalogSection.tsx.
+ */
+export const sectionDisplayModeSchema = z.enum(["standard", "poster"]);
+
 export const sectionSchema = z.object({
   id: z.string(),
   title: z.string().min(1),
@@ -66,6 +75,8 @@ export const sectionSchema = z.object({
   images: z.array(sectionImageSchema).default([]),
   /** Controla a exibição do preço nas imagens desta seção. */
   showPrices: z.boolean().default(true),
+  /** Modo de exibição das imagens desta seção — ver sectionDisplayModeSchema. */
+  displayMode: sectionDisplayModeSchema.default("standard"),
   /** @deprecated Estrutura de Item (cards com CTA) removida do fluxo visual/editor. Campo mantido só para não apagar dados antigos. */
   showCta: z.boolean().default(true),
   position: z.number().int().nonnegative(),
@@ -191,6 +202,18 @@ export const heroTreatmentSchema = z.enum(["classic", "destaque", "vitrine"]);
  */
 export const typographyPresetSchema = z.enum(["padrao", "elegante", "premium"]);
 
+/**
+ * Tratamento de cor dos botões de redes sociais e WhatsApp (ver
+ * getButtonColors/getSocialLinkColors em MiniSiteButton.tsx).
+ * `whatsapp` é o comportamento que já existia (WhatsApp sempre com o verde
+ * oficial, demais redes com a cor da marca) — default seguro para MiniSites
+ * antigos, que nunca tinham esse campo e sempre viam exatamente isso.
+ * `brand` padroniza tudo com a cor da marca, sem nenhuma sobrescrita.
+ * `platforms` estende o mesmo tratamento do WhatsApp para as outras redes,
+ * cada uma com a cor reconhecível da própria plataforma.
+ */
+export const socialColorModeSchema = z.enum(["brand", "whatsapp", "platforms"]);
+
 export const appearanceSchema = z
   .object({
     logoKey: z.string().optional(),
@@ -210,6 +233,7 @@ export const appearanceSchema = z
     buttonStyle: buttonStyleSchema.default("elevated"),
     heroTreatment: heroTreatmentSchema.default("classic"),
     typographyPreset: typographyPresetSchema.default("padrao"),
+    socialColorMode: socialColorModeSchema.default("whatsapp"),
   })
   .default({
     backgroundMode: "image_blurred",
@@ -221,6 +245,7 @@ export const appearanceSchema = z
     buttonStyle: "elevated",
     heroTreatment: "classic",
     typographyPreset: "padrao",
+    socialColorMode: "whatsapp",
   });
 
 export const footerSchema = z
@@ -286,3 +311,5 @@ export type MiniSiteVisualStyle = z.infer<typeof visualStyleSchema>;
 export type MiniSiteButtonStyle = z.infer<typeof buttonStyleSchema>;
 export type MiniSiteHeroTreatment = z.infer<typeof heroTreatmentSchema>;
 export type MiniSiteTypographyPreset = z.infer<typeof typographyPresetSchema>;
+export type MiniSiteSocialColorMode = z.infer<typeof socialColorModeSchema>;
+export type MiniSiteSectionDisplayMode = z.infer<typeof sectionDisplayModeSchema>;

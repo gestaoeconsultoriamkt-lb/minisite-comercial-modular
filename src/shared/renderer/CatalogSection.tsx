@@ -2,7 +2,7 @@ import { getAssetUrl } from "../assetUrl";
 import { formatCatalogPrice, getSectionImageItems, isCatalogSectionReady, type CatalogImageItem } from "../catalog";
 import { TagIcon } from "../icons";
 import { SectionHeading } from "./SectionHeading";
-import type { MiniSiteConfig, MiniSiteVisualStyle } from "../schemas/miniSiteConfig";
+import type { MiniSiteConfig, MiniSiteSectionDisplayMode, MiniSiteVisualStyle } from "../schemas/miniSiteConfig";
 
 /** Moldura do card por `visualStyle` — `simple` é o card que já existia (sem regressão). */
 const CARD_FRAME: Record<MiniSiteVisualStyle, string> = {
@@ -13,27 +13,57 @@ const CARD_FRAME: Record<MiniSiteVisualStyle, string> = {
 
 /**
  * A imagem é a unidade visual principal da seção — sem Item/CTA/descrição
- * longa. Cada imagem pode opcionalmente ter um nome curto e/ou preço,
- * mostrados numa faixa translúcida discreta sobre a base da foto, sem
- * aumentar a altura do card nem quebrar a proporção vertical.
+ * longa. Cada imagem pode opcionalmente ter um nome curto e/ou preço.
+ *
+ * `standard` (default, comportamento que já existia — só a proporção subiu
+ * de 2:3 para 4:5, mais alinhada ao tamanho recomendado no painel) mostra
+ * nome/preço numa faixa translúcida sobre a base da foto, com
+ * `object-cover`. `poster` é para artes já prontas (cardápio, promoção,
+ * peça de story) enviadas pelo cliente: usa 9:16 e `object-contain` para
+ * nunca cortar texto/elementos da própria arte, e por isso nunca sobrepõe
+ * nome/preço na imagem — eles aparecem como legenda abaixo do card.
  */
 function CatalogImageCard({
   id,
   item,
   showPrice,
   visualStyle,
+  displayMode,
 }: {
   id: string;
   item: CatalogImageItem;
   showPrice: boolean;
   visualStyle: MiniSiteVisualStyle;
+  displayMode: MiniSiteSectionDisplayMode;
 }) {
   const hasLabel = Boolean(item.label?.trim());
   const hasPrice = showPrice && typeof item.price === "number";
 
+  if (displayMode === "poster") {
+    return (
+      <div id={id} className="flex w-40 shrink-0 flex-col gap-1.5 snap-start sm:w-48">
+        <div className={`relative w-full overflow-hidden bg-white/10 ${CARD_FRAME[visualStyle]}`}>
+          <img src={getAssetUrl(item.imageKey)} alt={item.label ?? ""} loading="lazy" className="aspect-[9/16] w-full object-contain" />
+          {visualStyle === "glass" ? (
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-[inherit] bg-gradient-to-b from-white/10 via-transparent to-transparent ring-1 ring-inset ring-white/10"
+            />
+          ) : null}
+        </div>
+        {hasLabel || hasPrice ? (
+          <div className="px-0.5 text-center">
+            {hasLabel ? <p className="truncate text-[13px] font-semibold text-white">{item.label}</p> : null}
+            {hasPrice ? <p className="text-[13px] font-semibold text-white/70">{formatCatalogPrice(item.price!)}</p> : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
-    <div id={id} className={`relative w-40 shrink-0 snap-start overflow-hidden bg-white/10 sm:w-48 ${CARD_FRAME[visualStyle]}`}>
-      <img src={getAssetUrl(item.imageKey)} alt={item.label ?? ""} loading="lazy" className="aspect-[2/3] w-full object-cover" />
+    <div id={id} className={`relative w-44 shrink-0 snap-start overflow-hidden bg-white/10 sm:w-56 ${CARD_FRAME[visualStyle]}`}>
+      <img src={getAssetUrl(item.imageKey)} alt={item.label ?? ""} loading="lazy" className="aspect-[4/5] w-full object-cover" />
       {visualStyle === "glass" ? (
         <span
           aria-hidden
@@ -80,6 +110,7 @@ export function CatalogSection({ config }: { config: MiniSiteConfig }) {
                     item={item}
                     showPrice={section.showPrices}
                     visualStyle={visualStyle}
+                    displayMode={section.displayMode}
                   />
                 ))}
               </div>

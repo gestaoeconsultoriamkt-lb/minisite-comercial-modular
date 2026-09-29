@@ -9,6 +9,7 @@ import type {
   MiniSiteHeroTreatment,
   MiniSiteLogoPosition,
   MiniSiteLogoTreatment,
+  MiniSiteSocialColorMode,
   MiniSiteTypographyPreset,
   MiniSiteVisualStyle,
 } from "../../shared/schemas/miniSiteConfig";
@@ -73,6 +74,7 @@ export function VisualIdentityEditor() {
           shape="square"
           imageKey={appearance.logoKey}
           onChange={(key) => updateAppearance({ logoKey: key })}
+          hint="Prefira PNG ou WebP com fundo transparente. Ideal 800×800 px ou maior — adaptamos automaticamente, sem deformar."
         />
         <ImageUploadField
           label="Capa"
@@ -225,6 +227,21 @@ export function VisualIdentityEditor() {
         <p className="mt-3 text-xs text-slate-400">
           Todos os botões do site (ação e redes sociais) usam essas duas cores — visual único e consistente da marca.
         </p>
+
+        <div className="mt-5 max-w-xs">
+          <AppearanceSelect<MiniSiteSocialColorMode>
+            id="socialColorMode"
+            label="Estilo de cor dos botões sociais"
+            value={appearance.socialColorMode}
+            onChange={(value) => updateAppearance({ socialColorMode: value })}
+            options={[
+              { value: "brand", label: "Padronizado (cor da marca)" },
+              { value: "whatsapp", label: "WhatsApp destacado" },
+              { value: "platforms", label: "Cores das plataformas" },
+            ]}
+            hint="Padronizado: todos seguem a cor da marca. WhatsApp destacado: só o WhatsApp usa o verde oficial (padrão). Cores das plataformas: cada rede usa sua cor reconhecível."
+          />
+        </div>
       </div>
     </EditorSection>
   );

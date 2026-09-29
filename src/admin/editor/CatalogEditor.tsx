@@ -20,6 +20,7 @@ export function CatalogEditor() {
         imageKeys: [],
         images: [],
         showPrices: true,
+        displayMode: "standard",
         showCta: true,
         position: config.sections.length,
         cards: [],

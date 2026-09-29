@@ -5,6 +5,7 @@ import { EDITABLE_BUTTON_TYPES, getButtonHref, getButtonLabel, isButtonReady } f
 import { SOCIAL_PLATFORM_LABELS, getFilledSocialEntries } from "../socialLinks";
 import {
   getButtonColors,
+  getSocialLinkColors,
   miniSiteButtonClassName,
   resolveButtonSurface,
   MiniSiteButtonLink,
@@ -108,7 +109,6 @@ export function ButtonsSection({
 
   if (readyButtons.length === 0 && socialEntries.length === 0) return null;
 
-  const socialColors = getButtonColors(config);
   const style = config.appearance.buttonStyle;
   // Hierarquia: o 1º botão de ação pronto é `primary`, os demais `secondary`.
   // Redes sociais são `tertiary` — a menos que não haja NENHUM botão de
@@ -174,13 +174,14 @@ export function ButtonsSection({
       {socialEntries.map(({ platform, href }, index) => {
         const Icon = SOCIAL_ICONS[platform];
         const tier: MiniSiteButtonTier = !hasActionButtons && index === 0 ? "primary" : "tertiary";
+        const colors = getSocialLinkColors(config, platform);
         return (
           <MiniSiteButtonLink
             key={platform}
             href={href}
             icon={<Icon className="h-5 w-5" />}
             label={SOCIAL_PLATFORM_LABELS[platform]}
-            colors={socialColors}
+            colors={colors}
             style={style}
             tier={tier}
             insidePanel={insidePanel}
