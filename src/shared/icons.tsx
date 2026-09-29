@@ -161,10 +161,21 @@ export function LinkedinIcon(props: IconProps) {
   );
 }
 
+/**
+ * Ícone da câmera de duas lentes (marca registrada do Kwai) — antes este
+ * componente desenhava um "X" (dois traços cruzados), visualmente idêntico
+ * ao ícone do X/Twitter, sem nenhuma relação com a marca real do Kwai.
+ * Mesmo nível de simplificação/estilo (contorno, `strokeWidth` herdado de
+ * `base`) dos demais ícones de rede social deste arquivo — não é um
+ * traçado 1:1 do logo oficial, mas preserva a silhueta reconhecível:
+ * lente grande + lente pequena lado a lado, corpo arredondado por baixo.
+ */
 export function KwaiIcon(props: IconProps) {
   return (
     <svg {...base} {...props}>
-      <path d="M4 4h6.5L14 9l3.5-5H20l-5 8 5 8h-2.5L14 15l-3.5 5H4l5-8Z" />
+      <circle cx="8.5" cy="7.5" r="4" />
+      <circle cx="16" cy="8" r="2.4" />
+      <path d="M4.5 12.5h15a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-15a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2Z" />
     </svg>
   );
 }

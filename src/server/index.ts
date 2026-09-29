@@ -19,9 +19,9 @@ import type { AppEnv } from "./types";
  * no catch-all de `/:slug` e 404. Separação conceitual de rotas:
  *   /api/*                    -> Hono (health, auth)
  *   /media/*                   -> Hono lendo do binding R2
- *   /assets/*, /@vite/*,
- *   /@react-refresh, /src/*,
- *   /node_modules/*             -> ASSETS (bundle/módulos do admin)
+ *   /assets/*, /favicon.webp,
+ *   /@vite/*, /@react-refresh,
+ *   /src/*, /node_modules/*     -> ASSETS (bundle/módulos do admin)
  *   /login, /cadastro,
  *   /esqueci-senha,
  *   /redefinir-senha, /app/*    -> SPA (ASSETS), com guards de sessão
@@ -45,6 +45,7 @@ app.route("/api", uploadsRoutes);
 app.route("/", mediaRoutes);
 
 app.get("/assets/*", serveAssets);
+app.get("/favicon.webp", serveAssets);
 app.get("/@vite/*", serveAssets);
 app.get("/@react-refresh", serveAssets);
 app.get("/src/*", serveAssets);
