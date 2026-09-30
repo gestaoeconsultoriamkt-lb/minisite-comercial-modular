@@ -192,14 +192,22 @@ function BioSystemHomePage() {
                   HTML/CSS). Largura responsiva, altura automática, contain — nunca
                   estica/distorce a proporção original (1357x1159). Mais estreita só
                   abaixo de sm: a ponta direita encostava no WhatsApp flutuante fixo
-                  (ver FloatingWhatsApp) na largura cheia; sm+/desktop inalterados. */}
-              <div className="relative mx-0 w-full max-w-[190px] sm:mx-auto sm:max-w-[420px] lg:mx-0 lg:ml-auto lg:max-w-[520px]">
+                  (ver FloatingWhatsApp) na largura cheia; sm+ inalterado.
+                  Em lg+: `justify-self-start` + `w-fit` tiram o item do
+                  `stretch` padrão do grid — a caixa passa a ter exatamente
+                  o tamanho da imagem (maior que a faixa da coluna) e cresce
+                  ANCORADA NA BORDA ESQUERDA da coluna (onde o gap de
+                  32px/40px já a separa do texto), sobrando só pra a
+                  DIREITA, vazia. A coluna de texto em si nunca muda de
+                  largura (grid track continua a mesma) — zero efeito no
+                  layout da esquerda. */}
+              <div className="relative mx-0 w-full max-w-[190px] sm:mx-auto sm:max-w-[420px] lg:mx-0 lg:w-fit lg:max-w-none lg:justify-self-start">
                 <img
                   src="/assets/biosystem-phone-mockups.webp"
                   alt="Dois celulares mostrando exemplos de Mini Sites — um restaurante e uma clínica de estética"
                   width={1357}
                   height={1159}
-                  className="h-auto w-full object-contain"
+                  className="h-auto w-full object-contain lg:h-[min(680px,calc(100vh-330px))] lg:w-auto lg:max-w-none"
                   loading="eager"
                 />
               </div>
