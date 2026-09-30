@@ -14,6 +14,18 @@ export interface MiniSiteButtonColors {
    * normalmente, já que um gradiente não tem um único hex pra diluir.
    */
   backgroundImage?: string;
+  /**
+   * Escape hatch: quando `true`, `resolveButtonSurface` ignora COMPLETAMENTE
+   * tier/estilo (sem diluir em rgba, sem frosted do `glass`, sem gradiente)
+   * e usa `background`/`text` exatamente como vieram aqui. Hoje só o estilo
+   * "oficial" do WhatsApp liga isso (ver getButtonColors) — motivo: o botão
+   * de WhatsApp nem sempre é o primeiro pronto (tier `primary`); quando cai
+   * em `secondary`, o tratamento "tonal" padrão diluía QUALQUER cor pra 22%
+   * de opacidade, tornando "#25D366 chapado" impossível de fato nesse tier.
+   * Nenhum outro botão liga esta flag — Instagram/Facebook/etc. e o
+   * WhatsApp "premium" continuam exatamente como sempre estiveram.
+   */
+  forceFlat?: boolean;
 }
 
 /**
@@ -107,28 +119,37 @@ const SOCIAL_PLATFORM_BRAND_COLORS: Record<SocialPlatform, MiniSiteButtonColors>
  * independentemente de `appearance.socialColorMode` (que só decide a cor
  * dos links de rede social — Instagram/Facebook/etc., ver
  * getSocialLinkColors), da paleta do site ou de qualquer outra cor global.
- * Único jeito de mudar essa cor continua sendo a sobrescrita individual do
- * próprio botão (`colorBackground`), uma ação explícita do admin nesse
- * botão específico, não uma configuração global.
+ *
+ * Estilo "oficial" tem PRIORIDADE ABSOLUTA sobre qualquer outra regra de
+ * cor do WhatsApp — inclusive a cor individual do botão: retorna direto
+ * `#25D366`/branco chapado, com `forceFlat: true` pra `resolveButtonSurface`
+ * não diluir isso em rgba() no tier `secondary`/`glass` (ver
+ * MiniSiteButtonColors.forceFlat — sem essa flag, um WhatsApp que não é o
+ * primeiro botão pronto virava tier `secondary` e QUALQUER cor, mesmo
+ * chapada aqui, saía diluída a 22% de opacidade na tela, impossível de
+ * distinguir do estilo "premium"). Estilo "premium" mantém 100% do
+ * comportamento anterior (cor individual continua podendo sobrescrever,
+ * gradiente só em tier primary/tertiary, etc.).
  */
 export function getButtonColors(config: MiniSiteConfig, button?: MiniSiteButton): MiniSiteButtonColors {
   const { appearance } = config;
   const isWhatsapp = button?.type === "whatsapp";
+  const whatsappStyle = isWhatsapp ? readWhatsappStyle(button?.value.whatsappStyle) : "premium";
+
+  if (isWhatsapp && whatsappStyle === "oficial") {
+    return { background: WHATSAPP_GREEN, text: "#ffffff", backgroundImage: undefined, forceFlat: true };
+  }
+
   const useWhatsappBrand = isWhatsapp;
   const individualBackground = button ? readHex(button.value.colorBackground) : undefined;
   const individualText = button ? readHex(button.value.colorText) : undefined;
   const brandDefaultBackground = useWhatsappBrand ? WHATSAPP_GREEN : undefined;
   const brandDefaultText = useWhatsappBrand ? "#ffffff" : undefined;
-  // "oficial": verde chapado, o mais fiel possível à marca. "premium"
-  // (default): mesmo verde + gradiente sutil de profundidade — ver
-  // WhatsappButtonStyle acima.
-  const whatsappStyle = isWhatsapp ? readWhatsappStyle(button?.value.whatsappStyle) : "premium";
   return {
     background: individualBackground || brandDefaultBackground || appearance.colorButtonBackground || appearance.colorPrimary || "#1d4ed8",
     // Gradiente só quando o verde padrão de fato está em uso (nunca sobre
-    // cor individual ou cor global da marca, que não são "o WhatsApp") e só
-    // no estilo "premium" — "oficial" fica chapado de propósito.
-    backgroundImage: useWhatsappBrand && !individualBackground && whatsappStyle === "premium" ? WHATSAPP_GRADIENT : undefined,
+    // cor individual ou cor global da marca, que não são "o WhatsApp").
+    backgroundImage: useWhatsappBrand && !individualBackground ? WHATSAPP_GRADIENT : undefined,
     text: individualText || brandDefaultText || appearance.colorButtonText || "#ffffff",
   };
 }
@@ -281,6 +302,13 @@ export function resolveButtonSurface(
   colors: MiniSiteButtonColors,
   insidePanel = false,
 ): { backgroundColor: string; backgroundImage?: string; color: string } {
+  // Prioridade absoluta: ignora tier/estilo/glass por completo — sem isso,
+  // um WhatsApp fora do tier `primary` (ex.: não é o primeiro botão pronto)
+  // caía no tratamento "tonal" abaixo e tinha a cor diluída a 22% de
+  // opacidade, tornando "verde oficial chapado" impossível nesse tier.
+  if (colors.forceFlat) {
+    return { backgroundColor: colors.background, backgroundImage: undefined, color: colors.text };
+  }
   const glassAlpha = insidePanel ? GLASS_INSIDE_PANEL_ALPHA_BY_TIER : GLASS_ALPHA_BY_TIER;
   if (tier === "primary" || (tier === "tertiary" && style !== "glass")) {
     const backgroundColor = style === "glass" ? hexToRgba(colors.background, glassAlpha.primary) : colors.background;
