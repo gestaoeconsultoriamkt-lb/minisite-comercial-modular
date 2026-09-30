@@ -1,6 +1,6 @@
 import type { SVGProps } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { WhatsAppIcon, StarIcon, InstagramIcon, MapPinIcon, LinkIcon } from "../../shared/icons";
+import { WhatsAppIcon, MapPinIcon, LinkIcon } from "../../shared/icons";
 import { TYPOGRAPHY_FONT_LINK_HREF } from "../../shared/typography";
 // Mesmo truque de renderMiniSitePage.tsx: CSS do Tailwind do admin embutida
 // inline como string — esta página também é servida pura pelo Worker, sem
@@ -104,90 +104,6 @@ const BENEFITS: BenefitItem[] = [
   { Icon: SmartphoneGlyph, title: "Design moderno", description: "Layouts profissionais e otimizados para celular." },
 ];
 
-/**
- * Pílula de ação dentro dos mockups de telefone — puramente ilustrativa
- * (não é o componente real do MiniSite, ver src/shared/renderer/
- * MiniSiteButton.tsx; import cross-tree o exigiria estar em `shared/`, e
- * este é conteúdo fixo/estático desta página, não configurável).
- */
-function MockButton({
-  Icon,
-  label,
-  tone,
-}: {
-  Icon: (props: IconProps) => React.JSX.Element;
-  label: string;
-  tone: "whatsapp" | "light" | "instagram";
-}) {
-  const toneClass =
-    tone === "whatsapp"
-      ? "bg-[#25D366] text-white"
-      : tone === "instagram"
-        ? "bg-gradient-to-br from-[#FEDA75] via-[#D62976] to-[#4F5BD5] text-white"
-        : "bg-white text-brand-navy-900 shadow-sm";
-  return (
-    <div className={`flex items-center gap-2 rounded-full px-3.5 py-2.5 text-[13px] font-semibold ${toneClass}`}>
-      <Icon className="h-4 w-4 shrink-0" />
-      <span className="truncate">{label}</span>
-    </div>
-  );
-}
-
-/** Mockup do telefone principal (pizzaria) — capa, nome, botões de ação e catálogo. */
-function PhoneMockPizzaria() {
-  return (
-    <div className="relative flex flex-col overflow-hidden rounded-[2.25rem] border-[6px] border-brand-navy-950 bg-white shadow-2xl">
-      <div className="h-32 w-full bg-gradient-to-br from-amber-700 via-orange-800 to-brand-navy-900" aria-hidden />
-      <div className="absolute left-1/2 top-14 flex h-16 w-16 -translate-x-1/2 items-center justify-center rounded-full border-4 border-white bg-brand-navy-900 text-2xl shadow-lg">
-        🍕
-      </div>
-      <div className="flex flex-col gap-3 px-4 pb-4 pt-10 text-center">
-        <div>
-          <p className="text-base font-extrabold text-brand-navy-900">Pizzaria Dom Capelli</p>
-          <p className="text-xs text-slate-500">Sabor que reúne pessoas</p>
-        </div>
-        <div className="flex flex-col gap-2">
-          <MockButton Icon={WhatsAppIcon} label="Fazer pedido no WhatsApp" tone="whatsapp" />
-          <MockButton Icon={StarIcon} label="Avalie no Google" tone="light" />
-          <MockButton Icon={InstagramIcon} label="Siga no Instagram" tone="instagram" />
-          <MockButton Icon={MapPinIcon} label="Como chegar" tone="light" />
-        </div>
-        <div className="mt-1 grid grid-cols-3 gap-2 text-left">
-          {[
-            { emoji: "🍕", label: "Pizzas Tradicionais" },
-            { emoji: "🥟", label: "Esfihas Especiais" },
-            { emoji: "🍫", label: "Pizzas Doces" },
-          ].map((item) => (
-            <div key={item.label} className="flex flex-col gap-1">
-              <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-100 text-xl">{item.emoji}</div>
-              <p className="text-[10px] font-medium leading-tight text-slate-500">{item.label}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Mockup do telefone secundário (clínica), parcialmente atrás do principal. */
-function PhoneMockClinica() {
-  return (
-    <div className="flex flex-col overflow-hidden rounded-[2rem] border-[5px] border-brand-navy-950 bg-white shadow-2xl">
-      <div className="h-28 w-full bg-gradient-to-br from-rose-200 via-rose-300 to-brand-navy-800" aria-hidden />
-      <div className="flex flex-col gap-2.5 px-3.5 pb-4 pt-4 text-center">
-        <p className="text-sm font-extrabold tracking-wide text-brand-navy-900">Áurea</p>
-        <p className="-mt-1.5 text-[10px] uppercase tracking-[0.2em] text-slate-400">Clínica de Estética</p>
-        <div className="mt-1 flex flex-col gap-2">
-          <MockButton Icon={WhatsAppIcon} label="Agende pelo WhatsApp" tone="whatsapp" />
-          <MockButton Icon={LinkIcon} label="Conheça nossos serviços" tone="light" />
-          <MockButton Icon={InstagramIcon} label="Siga no Instagram" tone="instagram" />
-          <MockButton Icon={MapPinIcon} label="Como chegar" tone="light" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function FloatingWhatsApp() {
   return (
     <a
@@ -270,16 +186,22 @@ function BioSystemHomePage() {
                 </a>
               </div>
 
-              <div className="relative mx-auto w-full max-w-[380px] lg:mx-0 lg:ml-auto">
-                <div className="absolute -right-6 top-10 hidden w-[78%] rotate-[9deg] opacity-90 sm:block">
-                  <PhoneMockClinica />
-                </div>
-                {/* Sem rotação/mais estreito no mobile (abaixo de sm): evita que a
-                    ponta do telefone alcance o canto onde fica o WhatsApp
-                    flutuante fixo (ver FloatingWhatsApp) — nada tampa nada. */}
-                <div className="relative mx-auto w-[70%] rotate-0 sm:mx-0 sm:w-[82%] sm:rotate-[-6deg] lg:w-[86%]">
-                  <PhoneMockPizzaria />
-                </div>
+              {/* Composição premium dos dois celulares — asset institucional único
+                  (ver public/assets/biosystem-phone-mockups.png), com alpha real,
+                  tratado como imagem indivisível (nunca recortada/redesenhada em
+                  HTML/CSS). Largura responsiva, altura automática, contain — nunca
+                  estica/distorce a proporção original (540x462). Mais estreita só
+                  abaixo de sm: a ponta direita encostava no WhatsApp flutuante fixo
+                  (ver FloatingWhatsApp) na largura cheia; sm+/desktop inalterados. */}
+              <div className="relative mx-0 w-full max-w-[190px] sm:mx-auto sm:max-w-[420px] lg:mx-0 lg:ml-auto lg:max-w-[520px]">
+                <img
+                  src="/assets/biosystem-phone-mockups.png"
+                  alt="Dois celulares mostrando exemplos de Mini Sites — um restaurante e uma clínica de estética"
+                  width={540}
+                  height={462}
+                  className="h-auto w-full object-contain"
+                  loading="eager"
+                />
               </div>
             </div>
           </main>
