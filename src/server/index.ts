@@ -9,7 +9,7 @@ import { publicRoutes } from "./routes/public";
 import { uploadsRoutes } from "./routes/uploads";
 import { usersRoutes } from "./routes/users";
 import { requireAuth, redirectIfAuthenticated, serveAssets } from "./middleware/authGuards";
-import { getSession } from "./auth/session";
+import { renderHomePage } from "./render/renderHomePage";
 import type { AppEnv } from "./types";
 
 /**
@@ -27,6 +27,9 @@ import type { AppEnv } from "./types";
  *   /login, /esqueci-senha,
  *   /redefinir-senha,
  *   /definir-senha, /app/*      -> SPA (ASSETS), com guards de sessão
+ *   /                           -> landing page pública BioSystem (SSR,
+ *                                  ver render/renderHomePage.tsx) — sempre
+ *                                  a mesma, sem checar sessão
  *   /preview/:id                -> SSR do DRAFT, só para o dono autenticado
  *   /:slug                      -> SSR público (spike da Fase 0)
  * Ordem importa: rotas específicas antes do catch-all de slug. "preview" é
@@ -65,10 +68,10 @@ app.get("/definir-senha", requireAuth, serveAssets);
 app.all("/app", requireAuth, serveAssets);
 app.all("/app/*", requireAuth, serveAssets);
 
-app.get("/", async (c) => {
-  const session = await getSession(c.env, c.req.raw);
-  return c.redirect(session ? "/app/minisites" : "/login", 302);
-});
+// Landing page pública (BioSystem) — sempre a mesma pra qualquer visitante,
+// autenticado ou não; "Entrar" leva pra /login, que já redireciona sozinho
+// pra /app/minisites se a sessão já existir (ver redirectIfAuthenticated).
+app.get("/", (c) => c.html(renderHomePage()));
 
 app.route("/", previewRoutes);
 app.route("/", publicRoutes);
