@@ -187,18 +187,18 @@ function BioSystemHomePage() {
               </div>
 
               {/* Composição premium dos dois celulares — asset institucional único
-                  (ver public/assets/biosystem-phone-mockups.png), com alpha real,
+                  (ver public/assets/biosystem-phone-mockups.webp), com alpha real,
                   tratado como imagem indivisível (nunca recortada/redesenhada em
                   HTML/CSS). Largura responsiva, altura automática, contain — nunca
-                  estica/distorce a proporção original (540x462). Mais estreita só
+                  estica/distorce a proporção original (1357x1159). Mais estreita só
                   abaixo de sm: a ponta direita encostava no WhatsApp flutuante fixo
                   (ver FloatingWhatsApp) na largura cheia; sm+/desktop inalterados. */}
               <div className="relative mx-0 w-full max-w-[190px] sm:mx-auto sm:max-w-[420px] lg:mx-0 lg:ml-auto lg:max-w-[520px]">
                 <img
-                  src="/assets/biosystem-phone-mockups.png"
+                  src="/assets/biosystem-phone-mockups.webp"
                   alt="Dois celulares mostrando exemplos de Mini Sites — um restaurante e uma clínica de estética"
-                  width={540}
-                  height={462}
+                  width={1357}
+                  height={1159}
                   className="h-auto w-full object-contain"
                   loading="eager"
                 />
