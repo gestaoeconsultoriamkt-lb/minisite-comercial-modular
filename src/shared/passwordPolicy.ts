@@ -19,7 +19,7 @@ export function isValidPassword(value: unknown): value is string {
  */
 export const MIN_DEFINITIVE_PASSWORD_LENGTH = 10;
 
-export const DEFINITIVE_PASSWORD_MESSAGE = `A nova senha deve ter no mínimo ${MIN_DEFINITIVE_PASSWORD_LENGTH} caracteres.`;
+export const DEFINITIVE_PASSWORD_MESSAGE = `Use no mínimo ${MIN_DEFINITIVE_PASSWORD_LENGTH} caracteres.`;
 
 export function isValidDefinitivePassword(value: unknown): value is string {
   return typeof value === "string" && value.length >= MIN_DEFINITIVE_PASSWORD_LENGTH;
