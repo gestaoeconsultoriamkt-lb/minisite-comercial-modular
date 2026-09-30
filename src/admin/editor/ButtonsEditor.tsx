@@ -138,6 +138,20 @@ function ButtonRow({ type }: { type: EditableButtonType }) {
                 value={typeof value.message === "string" ? value.message : ""}
                 onChange={(e) => upsertButton({ message: e.target.value })}
               />
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor={`${type}-style`} className="text-sm font-semibold text-brand-navy-900">
+                  Estilo do botão
+                </label>
+                <select
+                  id={`${type}-style`}
+                  value={value.whatsappStyle === "oficial" ? "oficial" : "premium"}
+                  onChange={(e) => upsertButton({ whatsappStyle: e.target.value })}
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 px-3 text-sm font-medium text-slate-700 shadow-[inset_0_1px_2px_rgba(15,23,42,0.03)] transition hover:border-slate-300 focus:border-brand-blue-500 focus:outline-none focus:ring-[3px] focus:ring-brand-blue-500/15"
+                >
+                  <option value="premium">Verde premium (gradiente elegante)</option>
+                  <option value="oficial">Verde oficial (fiel à marca)</option>
+                </select>
+              </div>
             </>
           ) : null}
 

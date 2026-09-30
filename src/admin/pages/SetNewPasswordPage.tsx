@@ -9,7 +9,7 @@ import { Alert } from "../components/Alert";
 import { ShieldCheckIcon } from "../components/icons";
 import { authClient } from "../lib/authClient";
 import { setNewPassword, UsersApiError } from "../lib/usersApi";
-import { PASSWORD_PATTERN } from "../../shared/passwordPolicy";
+import { isValidDefinitivePassword, DEFINITIVE_PASSWORD_MESSAGE, MIN_DEFINITIVE_PASSWORD_LENGTH } from "../../shared/passwordPolicy";
 import { FullPageSpinner } from "../components/FullPageSpinner";
 
 /**
@@ -36,8 +36,8 @@ export function SetNewPasswordPage() {
     event.preventDefault();
     if (loading) return;
 
-    if (!PASSWORD_PATTERN.test(newPassword)) {
-      setError("A senha deve conter exatamente 8 números.");
+    if (!isValidDefinitivePassword(newPassword)) {
+      setError(DEFINITIVE_PASSWORD_MESSAGE);
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -81,16 +81,14 @@ export function SetNewPasswordPage() {
               label="Nova senha"
               name="newPassword"
               autoComplete="new-password"
-              placeholder="8 números"
+              placeholder="Mínimo de 10 caracteres"
               value={newPassword}
-              onChange={(e) => setNewPasswordValue(e.target.value.replace(/\D/g, "").slice(0, 8))}
+              onChange={(e) => setNewPasswordValue(e.target.value)}
               required
-              minLength={8}
-              maxLength={8}
-              inputMode="numeric"
+              minLength={MIN_DEFINITIVE_PASSWORD_LENGTH}
               autoFocus
             />
-            <p className="mt-1.5 text-xs text-slate-400">Exatamente 8 números, sem letras (ex.: 12345678).</p>
+            <p className="mt-1.5 text-xs text-slate-400">{DEFINITIVE_PASSWORD_MESSAGE}</p>
           </div>
 
           <PasswordField
@@ -99,11 +97,9 @@ export function SetNewPasswordPage() {
             autoComplete="new-password"
             placeholder="Repita a nova senha"
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value.replace(/\D/g, "").slice(0, 8))}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             required
-            minLength={8}
-            maxLength={8}
-            inputMode="numeric"
+            minLength={MIN_DEFINITIVE_PASSWORD_LENGTH}
           />
 
           <Button type="submit" loading={loading} icon={<ShieldCheckIcon className="h-4 w-4" />}>

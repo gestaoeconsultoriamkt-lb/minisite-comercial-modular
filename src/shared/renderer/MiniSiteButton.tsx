@@ -52,6 +52,21 @@ const WHATSAPP_GREEN = "#25D366";
 const WHATSAPP_GRADIENT = "linear-gradient(to bottom, #25D366, #128C7E)";
 
 /**
+ * Estilo do botão de WhatsApp — opção exclusiva desse tipo de botão (ver
+ * ButtonsEditor.tsx), guardada solta em `button.value.whatsappStyle`
+ * (mesmo padrão de `phone`/`message`/`colorBackground`, sem mudar o schema
+ * de `buttonSchema.value`, que já é `z.record(unknown)`). "premium" é o
+ * default (gradiente elegante, comportamento que já existia) — qualquer
+ * valor ausente/inválido cai em "premium" de propósito, pra nenhum
+ * MiniSite já montado mudar de aparência sozinho.
+ */
+export type WhatsappButtonStyle = "oficial" | "premium";
+
+function readWhatsappStyle(value: unknown): WhatsappButtonStyle {
+  return value === "oficial" ? "oficial" : "premium";
+}
+
+/**
  * Gradiente diagonal do Instagram — roxo/violeta -> magenta/pink -> laranja
  * -> amarelo, a mesma progressão de cor do ícone oficial da marca (ordem
  * invertida aqui porque o botão lê da esquerda/topo pra direita/base:
@@ -104,11 +119,16 @@ export function getButtonColors(config: MiniSiteConfig, button?: MiniSiteButton)
   const individualText = button ? readHex(button.value.colorText) : undefined;
   const brandDefaultBackground = useWhatsappBrand ? WHATSAPP_GREEN : undefined;
   const brandDefaultText = useWhatsappBrand ? "#ffffff" : undefined;
+  // "oficial": verde chapado, o mais fiel possível à marca. "premium"
+  // (default): mesmo verde + gradiente sutil de profundidade — ver
+  // WhatsappButtonStyle acima.
+  const whatsappStyle = isWhatsapp ? readWhatsappStyle(button?.value.whatsappStyle) : "premium";
   return {
     background: individualBackground || brandDefaultBackground || appearance.colorButtonBackground || appearance.colorPrimary || "#1d4ed8",
     // Gradiente só quando o verde padrão de fato está em uso (nunca sobre
-    // cor individual ou cor global da marca, que não são "o WhatsApp").
-    backgroundImage: useWhatsappBrand && !individualBackground ? WHATSAPP_GRADIENT : undefined,
+    // cor individual ou cor global da marca, que não são "o WhatsApp") e só
+    // no estilo "premium" — "oficial" fica chapado de propósito.
+    backgroundImage: useWhatsappBrand && !individualBackground && whatsappStyle === "premium" ? WHATSAPP_GRADIENT : undefined,
     text: individualText || brandDefaultText || appearance.colorButtonText || "#ffffff",
   };
 }
